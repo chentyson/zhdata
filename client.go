@@ -228,7 +228,7 @@ func (a *clientApp) acceptLoop() {
 			id:    atomic.AddUint32(&nextID, 1),
 			local: c,
 			atyp:  atyp, addr: addr, port: port,
-			rq:   make(chan []byte, 32),
+			rq:   make(chan []byte, 64),
 			done: make(chan struct{}),
 		}
 		a.mu.Lock()
@@ -393,7 +393,23 @@ func (cn *cConn) sessionLoop() {
 			cn.sess = nil
 			cn.sessMap = map[uint16]*cStream{}
 		}
+		// A dead session cannot be resumed mid-stream: the server-side backend
+		// connection and reassembler state died with it, so "re-opening" the
+		// stream would dial the target again and splice a fresh response into
+		// a half-consumed app socket (downloads hang/corrupt) or silently lose
+		// the middle of an upload. Fail the streams homed on this slot fast so
+		// the app retries; spread lanes (home elsewhere) keep the stream alive.
+		var dead []*cStream
+		for _, s := range cn.members {
+			if s.home == cn {
+				dead = append(dead, s)
+			}
+		}
 		a.mu.Unlock()
+		for _, s := range dead {
+			a.logf("slot %d lost: failing stream %d (sid=%d) instead of resuming corrupt", cn.idx, s.id, s.sid)
+			s.teardown()
+		}
 		switch err {
 		case errGoaway:
 			// another connection holds this (uuid,slot). If our session died
@@ -448,6 +464,22 @@ func (cn *cConn) dispatch(gen uint64, f *Frame) {
 		select {
 		case s.rq <- f.Payload:
 		case <-s.done:
+		default:
+			// The app-side reader is momentarily behind. Wait a short, bounded
+			// time (a browser JS stall is normally <100ms), then fail ONLY this
+			// stream. Never block the session reader indefinitely: that used to
+			// freeze every stream on the slot until the peer's 15s write
+			// timeout killed the whole TCP session (and the app hung).
+			select {
+			case s.rq <- f.Payload:
+			case <-s.done:
+			case <-time.After(2 * time.Second):
+				a.logf("downlink queue full sid=%d slot=%d for 2s -> fail stream (app not reading)", f.SID, cn.idx)
+				if sess != nil {
+					sess.sendCtrl(Frame{Typ: tReset, SID: f.SID})
+				}
+				s.teardown()
+			}
 		}
 	case tClose:
 		if s != nil {

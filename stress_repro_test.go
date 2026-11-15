@@ -22,6 +22,7 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
+	"io"
 	"net"
 	"testing"
 	"time"
@@ -311,5 +312,79 @@ func TestStressClientLaneCreditIsStaticWindow(t *testing.T) {
 	}
 	if want := lanes * laneCapMax; frames != want {
 		t.Fatalf("frames handed out = %d, want %d", frames, want)
+	}
+}
+
+// nopConn is a net.Conn whose methods are no-ops, for whitebox stream tests
+// that only need teardown() to be able to Close() the local socket.
+type nopConn struct{}
+
+func (nopConn) Read([]byte) (int, error)         { return 0, io.EOF }
+func (nopConn) Write(p []byte) (int, error)      { return len(p), nil }
+func (nopConn) Close() error                     { return nil }
+func (nopConn) LocalAddr() net.Addr              { return nil }
+func (nopConn) RemoteAddr() net.Addr             { return nil }
+func (nopConn) SetDeadline(time.Time) error      { return nil }
+func (nopConn) SetReadDeadline(time.Time) error  { return nil }
+func (nopConn) SetWriteDeadline(time.Time) error { return nil }
+
+// TestStressDownlinkQueueFullFailsStream pins the v0.10.1 downlink contract: a
+// stalled app reader must not block the session's frame reader indefinitely.
+// The old code blocked forever on a full rq, which froze every stream on the
+// slot and (after the peer's 15s write timeout) killed the whole TCP session —
+// in the field that produced hung downloads. Now dispatch waits at most ~2s,
+// then fails only that stream.
+func TestStressDownlinkQueueFullFailsStream(t *testing.T) {
+	a := stressNewClientApp(t, 1)
+	cn := a.conns[0]
+
+	s := &cStream{
+		app:      a,
+		id:       42,
+		sid:      4242,
+		home:     cn,
+		conns:    []*cConn{cn},
+		local:    nopConn{},
+		rq:       make(chan []byte, 2),
+		done:     make(chan struct{}),
+		laneSent: map[*cConn]uint32{},
+		laneAck:  map[*cConn]uint32{},
+		laneCap:  map[*cConn]int{},
+	}
+	a.mu.Lock()
+	a.streams[s.id] = s
+	cn.members[s.id] = s
+	cn.sessMap[s.sid] = s
+	cn.gen = 1
+	a.mu.Unlock()
+
+	// Fill the downlink queue so the next DATA frame has nowhere to go.
+	s.rq <- []byte("x")
+	s.rq <- []byte("y")
+
+	start := time.Now()
+	done := make(chan struct{})
+	go func() {
+		cn.dispatch(1, &Frame{Typ: tData, SID: s.sid, Payload: []byte("z")})
+		close(done)
+	}()
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("dispatch blocked on a full downlink queue: session reader can stall again")
+	}
+	if waited := time.Since(start); waited > 4*time.Second {
+		t.Fatalf("dispatch took %v, want bounded (~2s)", waited)
+	}
+	select {
+	case <-s.done:
+	default:
+		t.Fatal("stream was not failed after downlink queue stayed full")
+	}
+	a.mu.Lock()
+	_, still := a.streams[s.id]
+	a.mu.Unlock()
+	if still {
+		t.Fatal("stream still registered after downlink queue overflow")
 	}
 }

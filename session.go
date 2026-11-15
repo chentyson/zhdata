@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/cipher"
+	"log"
 	"net"
 	"sync"
 	"time"
@@ -148,7 +149,10 @@ func (s *session) writer() {
 		buf := encodeFrame(&f)
 		s.tx.XORKeyStream(buf, buf)
 		s.conn.SetWriteDeadline(deadline(writeTimeout))
+		t0 := time.Now()
 		if _, err := s.conn.Write(buf); err != nil {
+			log.Printf("[session] %s write err after %v (frame typ=%d sid=%d len=%d): %v",
+				s.name, time.Since(t0).Round(time.Millisecond), f.Typ, f.SID, len(f.Payload), err)
 			s.close()
 			return
 		}
