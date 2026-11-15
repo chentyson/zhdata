@@ -1,0 +1,616 @@
+2026/11/15 13:31:22 [client] socks5 listening on 127.0.0.1:49888 -> C498.uwintech.com:49888,C498.uwintech.com:49889,C498.uwintech.com:49890,C498.uwintech.com:49891,C498.uwintech.com:49892,C498.uwintech.com:49893,C498.uwintech.com:49894,C498.uwintech.com:49895,C498.uwintech.com:49896,C498.uwintech.com:49897,C498.uwintech.com:49898,C498.uwintech.com:49899,C498.uwintech.com:49900,C498.uwintech.com:49901,C498.uwintech.com:49902,C498.uwintech.com:49903,C498.uwintech.com:49904,C498.uwintech.com:49905,C498.uwintech.com:49906,C498.uwintech.com:49907,C498.uwintech.com:49908,C498.uwintech.com:49909,C498.uwintech.com:49910,C498.uwintech.com:49911,C498.uwintech.com:49912,C498.uwintech.com:49913,C498.uwintech.com:49914,C498.uwintech.com:49915,C498.uwintech.com:49916,C498.uwintech.com:49917,C498.uwintech.com:49918,C498.uwintech.com:49919
+2026/11/15 13:31:23 [client] session established slot=4 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=18 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=3 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=8 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=24 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=25 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=30 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=27 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=23 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=15 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=19 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=13 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=20 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=29 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=14 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=11 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=9 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=21 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=5 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=16 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=26 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=6 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=0 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=7 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=10 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=17 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=31 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=28 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=2 (gen=1, reopen streams=0)
+2026/11/15 13:31:23 [client] session established slot=12 (gen=1, reopen streams=0)
+2026/11/15 13:31:24 [client] session established slot=1 (gen=1, reopen streams=0)
+2026/11/15 13:31:25 [client] session established slot=22 (gen=1, reopen streams=0)
+2026/11/15 13:31:31 [client] open ack slot=1 sid=2
+2026/11/15 13:31:31 [client] open ack slot=2 sid=3
+2026/11/15 13:31:31 [client] open ack slot=3 sid=4
+2026/11/15 13:31:31 [client] open ack slot=0 sid=1
+2026/11/15 13:31:32 [client] stream 3 spread to 2 slots (sid=3, sent=131688)
+2026/11/15 13:31:32 [client] stream 1 spread to 2 slots (sid=1, sent=144504)
+2026/11/15 13:31:32 [client] stream 1 spread to 3 slots (sid=1, sent=275576)
+2026/11/15 13:31:32 [client] stream 3 spread to 3 slots (sid=3, sent=262760)
+2026/11/15 13:31:32 [client] stream 3 spread to 4 slots (sid=3, sent=393832)
+2026/11/15 13:31:32 [client] stream 1 spread to 4 slots (sid=1, sent=406648)
+2026/11/15 13:31:32 [client] stream 3 spread to 5 slots (sid=3, sent=524904)
+2026/11/15 13:31:32 [client] stream 1 spread to 5 slots (sid=1, sent=537720)
+2026/11/15 13:31:32 [client] stream 3 spread to 6 slots (sid=3, sent=655976)
+2026/11/15 13:31:32 [client] stream 1 spread to 6 slots (sid=1, sent=668792)
+2026/11/15 13:31:32 [client] stream 1 spread to 7 slots (sid=1, sent=799864)
+2026/11/15 13:31:32 [client] stream 3 spread to 7 slots (sid=3, sent=787048)
+2026/11/15 13:31:32 [client] stream 3 spread to 8 slots (sid=3, sent=918120)
+2026/11/15 13:31:32 [client] stream 1 spread to 8 slots (sid=1, sent=930936)
+2026/11/15 13:31:32 [client] stream 3 spread to 9 slots (sid=3, sent=1049192)
+2026/11/15 13:31:32 [client] stream 1 spread to 9 slots (sid=1, sent=1062008)
+2026/11/15 13:31:32 [client] stream 3 spread to 10 slots (sid=3, sent=1180264)
+2026/11/15 13:31:32 [client] stream 1 spread to 10 slots (sid=1, sent=1193080)
+2026/11/15 13:31:32 [client] stream 3 spread to 11 slots (sid=3, sent=1311336)
+2026/11/15 13:31:32 [client] stream 1 spread to 11 slots (sid=1, sent=1324152)
+2026/11/15 13:31:32 [client] stream 3 spread to 12 slots (sid=3, sent=1442408)
+2026/11/15 13:31:32 [client] stream 1 spread to 12 slots (sid=1, sent=1455224)
+2026/11/15 13:31:32 [client] stream 3 spread to 13 slots (sid=3, sent=1573480)
+2026/11/15 13:31:32 [client] stream 1 spread to 13 slots (sid=1, sent=1586296)
+2026/11/15 13:31:32 [client] stream 3 spread to 14 slots (sid=3, sent=1704064)
+2026/11/15 13:31:32 [client] stream 1 spread to 14 slots (sid=1, sent=1704064)
+2026/11/15 13:31:32 [client] stream 3 spread to 15 slots (sid=3, sent=1835136)
+2026/11/15 13:31:32 [client] stream 1 spread to 15 slots (sid=1, sent=1835136)
+2026/11/15 13:31:32 [client] stream 3 spread to 16 slots (sid=3, sent=1966208)
+2026/11/15 13:31:32 [client] stream 1 spread to 16 slots (sid=1, sent=1966208)
+2026/11/15 13:31:33 [client] stream 2 spread to 2 slots (sid=2, sent=131688)
+2026/11/15 13:31:33 [client] stream 2 spread to 3 slots (sid=2, sent=262760)
+2026/11/15 13:31:35 [client] stream 1 closeWriteLocal
+2026/11/15 13:31:35 [client] stream 4 spread to 2 slots (sid=4, sent=2113664)
+2026/11/15 13:31:35 [client] stream 4 spread to 3 slots (sid=4, sent=2130048)
+2026/11/15 13:31:35 [client] stream 4 spread to 4 slots (sid=4, sent=2146432)
+2026/11/15 13:31:35 [client] stream 4 spread to 5 slots (sid=4, sent=2162816)
+2026/11/15 13:31:35 [client] stream 4 spread to 6 slots (sid=4, sent=2179200)
+2026/11/15 13:31:35 [client] stream 4 spread to 7 slots (sid=4, sent=2195584)
+2026/11/15 13:31:35 [client] stream 4 spread to 8 slots (sid=4, sent=2211968)
+2026/11/15 13:31:35 [client] stream 4 spread to 9 slots (sid=4, sent=2228352)
+2026/11/15 13:31:35 [client] stream 4 spread to 10 slots (sid=4, sent=2244736)
+2026/11/15 13:31:35 [client] stream 2 spread to 4 slots (sid=2, sent=3620992)
+2026/11/15 13:31:35 [client] stream 2 spread to 5 slots (sid=2, sent=3637376)
+2026/11/15 13:31:35 [client] stream 2 spread to 6 slots (sid=2, sent=3653760)
+2026/11/15 13:31:35 [client] stream 2 spread to 7 slots (sid=2, sent=3670144)
+2026/11/15 13:31:35 [client] stream 2 spread to 8 slots (sid=2, sent=3686528)
+2026/11/15 13:31:35 [client] stream 2 spread to 9 slots (sid=2, sent=3702912)
+2026/11/15 13:31:37 [client] stream 3 closeWriteLocal
+2026/11/15 13:31:38 [client] stream 2 closeWriteLocal
+2026/11/15 13:32:33 [client] open ack slot=0 sid=5
+2026/11/15 13:32:34 [client] open ack slot=3 sid=8
+2026/11/15 13:32:34 [client] open ack slot=8 sid=13
+2026/11/15 13:32:34 [client] open ack slot=7 sid=12
+2026/11/15 13:32:34 [client] open ack slot=1 sid=6
+2026/11/15 13:32:34 [client] open ack slot=2 sid=7
+2026/11/15 13:32:34 [client] open ack slot=6 sid=11
+2026/11/15 13:32:34 [client] open ack slot=5 sid=10
+2026/11/15 13:32:34 [client] open ack slot=9 sid=14
+2026/11/15 13:32:34 [client] open ack slot=12 sid=17
+2026/11/15 13:32:34 [client] open ack slot=11 sid=16
+2026/11/15 13:32:34 [client] open ack slot=4 sid=9
+2026/11/15 13:32:35 [client] open ack slot=13 sid=19
+2026/11/15 13:32:35 [client] open ack slot=14 sid=20
+2026/11/15 13:32:35 [client] open ack slot=15 sid=21
+2026/11/15 13:32:35 [client] open ack slot=0 sid=18
+2026/11/15 13:32:35 [client] open ack slot=10 sid=15
+2026/11/15 13:32:35 [client] open ack slot=16 sid=22
+2026/11/15 13:32:36 [client] open ack slot=17 sid=23
+2026/11/15 13:32:36 [client] open ack slot=18 sid=24
+2026/11/15 13:32:36 [client] open ack slot=19 sid=25
+2026/11/15 13:32:36 [client] open ack slot=20 sid=26
+2026/11/15 13:32:36 [client] open ack slot=22 sid=28
+2026/11/15 13:32:36 [client] open ack slot=27 sid=33
+2026/11/15 13:32:36 [client] open ack slot=21 sid=27
+2026/11/15 13:32:36 [client] open ack slot=25 sid=31
+2026/11/15 13:32:36 [client] open ack slot=23 sid=29
+2026/11/15 13:32:36 [client] open ack slot=26 sid=32
+2026/11/15 13:32:36 [client] open ack slot=29 sid=35
+2026/11/15 13:32:36 [client] open ack slot=31 sid=37
+2026/11/15 13:32:36 [client] open ack slot=24 sid=30
+2026/11/15 13:32:36 [client] open ack slot=28 sid=34
+2026/11/15 13:32:36 [client] open ack slot=1 sid=39
+2026/11/15 13:32:36 [client] open ack slot=3 sid=41
+2026/11/15 13:32:36 [client] open ack slot=30 sid=36
+2026/11/15 13:32:36 [client] open ack slot=6 sid=44
+2026/11/15 13:32:36 [client] open ack slot=8 sid=46
+2026/11/15 13:32:36 [client] open ack slot=5 sid=43
+2026/11/15 13:32:36 [client] open ack slot=0 sid=38
+2026/11/15 13:32:36 [client] open ack slot=7 sid=45
+2026/11/15 13:32:36 [client] open ack slot=4 sid=42
+2026/11/15 13:32:36 [client] open ack slot=9 sid=47
+2026/11/15 13:32:36 [client] open ack slot=10 sid=48
+2026/11/15 13:32:36 [client] open ack slot=11 sid=49
+2026/11/15 13:32:36 [client] open ack slot=12 sid=50
+2026/11/15 13:32:36 [client] open ack slot=2 sid=40
+2026/11/15 13:32:36 [client] open ack slot=13 sid=51
+2026/11/15 13:32:36 [client] open ack slot=14 sid=52
+2026/11/15 13:32:37 [client] open ack slot=18 sid=56
+2026/11/15 13:32:37 [client] open ack slot=19 sid=57
+2026/11/15 13:32:37 [client] open ack slot=16 sid=54
+2026/11/15 13:32:37 [client] open ack slot=17 sid=55
+2026/11/15 13:32:37 [client] open ack slot=13 sid=58
+2026/11/15 13:32:37 [client] open ack slot=23 sid=62
+2026/11/15 13:32:37 [client] open ack slot=22 sid=61
+2026/11/15 13:32:37 [client] open ack slot=21 sid=60
+2026/11/15 13:32:37 [client] open ack slot=20 sid=59
+2026/11/15 13:32:37 [client] open ack slot=24 sid=63
+2026/11/15 13:32:37 [client] open ack slot=26 sid=65
+2026/11/15 13:32:37 [client] open ack slot=25 sid=64
+2026/11/15 13:32:37 [client] open ack slot=29 sid=68
+2026/11/15 13:32:37 [client] open ack slot=28 sid=67
+2026/11/15 13:32:37 [client] open ack slot=15 sid=53
+2026/11/15 13:32:38 [client] open ack slot=27 sid=66
+2026/11/15 13:32:38 [client] open ack slot=31 sid=70
+2026/11/15 13:32:38 [client] open ack slot=30 sid=69
+2026/11/15 13:32:38 [client] open ack slot=0 sid=71
+2026/11/15 13:32:38 [client] open ack slot=1 sid=72
+2026/11/15 13:32:38 [client] open ack slot=2 sid=73
+2026/11/15 13:32:38 [client] open ack slot=3 sid=74
+2026/11/15 13:32:38 [client] open ack slot=4 sid=75
+2026/11/15 13:32:38 [client] open ack slot=7 sid=78
+2026/11/15 13:32:38 [client] open ack slot=6 sid=77
+2026/11/15 13:32:38 [client] open ack slot=8 sid=79
+2026/11/15 13:32:38 [client] open ack slot=5 sid=76
+2026/11/15 13:32:38 [client] open ack slot=9 sid=80
+2026/11/15 13:32:38 [client] open ack slot=10 sid=81
+2026/11/15 13:32:38 [client] open ack slot=11 sid=82
+2026/11/15 13:32:38 [client] open ack slot=12 sid=84
+2026/11/15 13:32:38 [client] open ack slot=11 sid=83
+2026/11/15 13:32:38 [client] open ack slot=16 sid=88
+2026/11/15 13:32:38 [client] open ack slot=15 sid=87
+2026/11/15 13:32:38 [client] open ack slot=14 sid=86
+2026/11/15 13:32:38 [client] open ack slot=13 sid=85
+2026/11/15 13:32:38 [client] open ack slot=17 sid=89
+2026/11/15 13:32:39 [client] open ack slot=14 sid=90
+2026/11/15 13:32:39 [client] open ack slot=18 sid=91
+2026/11/15 13:32:39 [client] open ack slot=19 sid=92
+2026/11/15 13:32:39 [client] open ack slot=20 sid=93
+2026/11/15 13:32:39 [client] open ack slot=22 sid=95
+2026/11/15 13:32:39 [client] open ack slot=23 sid=96
+2026/11/15 13:32:39 [client] open ack slot=21 sid=94
+2026/11/15 13:32:39 [client] stream 93 closeWriteLocal
+2026/11/15 13:32:40 [client] open ack slot=24 sid=100
+2026/11/15 13:32:40 [client] open ack slot=20 sid=99
+2026/11/15 13:32:40 [client] open ack slot=25 sid=101
+2026/11/15 13:32:40 [client] open ack slot=26 sid=102
+2026/11/15 13:32:40 [client] open ack slot=28 sid=104
+2026/11/15 13:32:40 [client] open ack slot=27 sid=103
+2026/11/15 13:32:40 [client] open ack slot=29 sid=105
+2026/11/15 13:32:40 [client] open ack slot=30 sid=106
+2026/11/15 13:32:40 [client] open ack slot=0 sid=108
+2026/11/15 13:32:40 [client] open ack slot=2 sid=110
+2026/11/15 13:32:40 [client] open ack slot=1 sid=109
+2026/11/15 13:32:40 [client] open ack slot=31 sid=107
+2026/11/15 13:32:40 [client] open ack slot=3 sid=111
+2026/11/15 13:32:40 [client] open ack slot=4 sid=112
+2026/11/15 13:32:40 [client] open ack slot=5 sid=113
+2026/11/15 13:32:40 [client] open ack slot=7 sid=115
+2026/11/15 13:32:40 [client] open ack slot=8 sid=116
+2026/11/15 13:32:40 [client] open ack slot=14 sid=122
+2026/11/15 13:32:40 [client] open ack slot=6 sid=114
+2026/11/15 13:32:40 [client] open ack slot=9 sid=117
+2026/11/15 13:32:40 [client] open ack slot=17 sid=125
+2026/11/15 13:32:40 [client] open ack slot=19 sid=127
+2026/11/15 13:32:40 [client] open ack slot=12 sid=120
+2026/11/15 13:32:40 [client] stream 125 closeWriteLocal
+2026/11/15 13:32:40 [client] stream 122 closeWriteLocal
+2026/11/15 13:32:40 [client] open ack slot=10 sid=118
+2026/11/15 13:32:40 [client] stream 127 closeWriteLocal
+2026/11/15 13:32:40 [client] stream 120 closeWriteLocal
+2026/11/15 13:32:40 [client] stream 118 closeWriteLocal
+2026/11/15 13:32:41 [client] open ack slot=13 sid=121
+2026/11/15 13:32:41 [client] open ack slot=15 sid=123
+2026/11/15 13:32:41 [client] open ack slot=14 sid=130
+2026/11/15 13:32:41 [client] open ack slot=18 sid=126
+2026/11/15 13:32:41 [client] stream 126 closeWriteLocal
+2026/11/15 13:32:41 [client] open ack slot=21 sid=132
+2026/11/15 13:32:41 [client] open ack slot=16 sid=124
+2026/11/15 13:32:41 [client] open ack slot=19 sid=131
+2026/11/15 13:32:41 [client] stream 121 closeWriteLocal
+2026/11/15 13:32:41 [client] stream 54 closeWriteLocal
+2026/11/15 13:32:41 [client] stream 124 closeWriteLocal
+2026/11/15 13:32:41 [client] stream 34 closeWriteLocal
+2026/11/15 13:32:41 [client] open ack slot=17 sid=129
+2026/11/15 13:32:41 [client] open ack slot=10 sid=134
+2026/11/15 13:32:41 [client] open ack slot=16 sid=137
+2026/11/15 13:32:41 [client] open ack slot=13 sid=136
+2026/11/15 13:32:41 [client] open ack slot=12 sid=135
+2026/11/15 13:32:41 [client] open ack slot=11 sid=119
+2026/11/15 13:32:41 [client] open ack slot=18 sid=138
+2026/11/15 13:32:41 [client] open ack slot=28 sid=139
+2026/11/15 13:32:41 [client] open ack slot=24 sid=143
+2026/11/15 13:32:41 [client] open ack slot=23 sid=142
+2026/11/15 13:32:41 [client] stream 105 closeWriteLocal
+2026/11/15 13:32:41 [client] open ack slot=22 sid=141
+2026/11/15 13:32:41 [client] open ack slot=20 sid=140
+2026/11/15 13:32:41 [client] open ack slot=25 sid=144
+2026/11/15 13:32:41 [client] open ack slot=19 sid=145
+2026/11/15 13:32:41 [client] open ack slot=26 sid=146
+2026/11/15 13:32:42 [client] open ack slot=27 sid=147
+2026/11/15 13:32:42 [client] open ack slot=29 sid=148
+2026/11/15 13:32:42 [client] open ack slot=29 sid=150
+2026/11/15 13:32:42 [client] open ack slot=28 sid=149
+2026/11/15 13:32:42 [client] stream 113 closeWriteLocal
+2026/11/15 13:32:42 [client] open ack slot=30 sid=151
+2026/11/15 13:32:42 [client] stream 119 closeWriteLocal
+2026/11/15 13:32:42 [client] open ack slot=5 sid=152
+2026/11/15 13:32:42 [client] open ack slot=31 sid=155
+2026/11/15 13:32:42 [client] open ack slot=11 sid=153
+2026/11/15 13:32:42 [client] open ack slot=16 sid=154
+2026/11/15 13:32:42 [client] open ack slot=0 sid=156
+2026/11/15 13:32:43 [client] open ack slot=1 sid=157
+2026/11/15 13:32:43 [client] open ack slot=2 sid=158
+2026/11/15 13:32:43 [client] open ack slot=3 sid=159
+2026/11/15 13:32:43 [client] open ack slot=4 sid=160
+2026/11/15 13:32:43 [client] stream 95 closeWriteLocal
+2026/11/15 13:32:43 [client] open ack slot=5 sid=161
+2026/11/15 13:32:43 [client] open ack slot=6 sid=162
+2026/11/15 13:32:43 [client] open ack slot=7 sid=163
+2026/11/15 13:32:43 [client] open ack slot=8 sid=164
+2026/11/15 13:32:43 [client] open ack slot=22 sid=165
+2026/11/15 13:32:43 [client] open ack slot=11 sid=168
+2026/11/15 13:32:43 [client] open ack slot=10 sid=167
+2026/11/15 13:32:44 [client] open ack slot=9 sid=166
+2026/11/15 13:32:44 [client] stream 117 closeWriteLocal
+2026/11/15 13:32:44 [client] open ack slot=12 sid=169
+2026/11/15 13:32:44 [client] open ack slot=14 sid=171
+2026/11/15 13:32:44 [client] open ack slot=15 sid=172
+2026/11/15 13:32:44 [client] open ack slot=16 sid=173
+2026/11/15 13:32:44 [client] open ack slot=13 sid=170
+2026/11/15 13:32:44 [client] open ack slot=17 sid=174
+2026/11/15 13:32:44 [client] open ack slot=20 sid=177
+2026/11/15 13:32:44 [client] open ack slot=21 sid=178
+2026/11/15 13:32:44 [client] open ack slot=19 sid=176
+2026/11/15 13:32:44 [client] open ack slot=18 sid=175
+2026/11/15 13:32:45 [client] stream 137 closeWriteLocal
+2026/11/15 13:32:45 [client] stream 83 closeWriteLocal
+2026/11/15 13:32:46 [client] open ack slot=28 sid=180
+2026/11/15 13:32:46 [client] stream 164 closeWriteLocal
+2026/11/15 13:32:47 [client] open ack slot=9 sid=181
+2026/11/15 13:32:47 [client] open ack slot=11 sid=182
+2026/11/15 13:32:48 [client] open ack slot=12 sid=183
+2026/11/15 13:32:48 [client] stream 62 closeWriteLocal
+2026/11/15 13:32:49 [client] open ack slot=8 sid=185
+2026/11/15 13:32:49 [client] open ack slot=23 sid=186
+2026/11/15 13:32:49 [client] stream 91 closeWriteLocal
+2026/11/15 13:32:51 [client] open ack slot=14 sid=179
+2026/11/15 13:32:51 [client] stream 181 closeWriteLocal
+2026/11/15 13:32:51 [client] open ack slot=16 sid=189
+2026/11/15 13:32:52 [client] stream 36 closeWriteLocal
+2026/11/15 13:32:53 [client] open ack slot=25 sid=190
+2026/11/15 13:32:54 [client] open ack slot=30 sid=191
+2026/11/15 13:32:54 [client] stream 64 closeWriteLocal
+2026/11/15 13:32:54 [client] open ack slot=8 sid=188
+2026/11/15 13:32:56 [client] stream 179 closeWriteLocal
+2026/11/15 13:32:57 [client] stream 175 closeWriteLocal
+2026/11/15 13:32:58 [client] open ack slot=4 sid=192
+2026/11/15 13:32:59 [client] open ack slot=28 sid=187
+2026/11/15 13:33:01 [client] open ack slot=14 sid=197
+2026/11/15 13:33:01 [client] open ack slot=14 sid=194
+2026/11/15 13:33:02 [client] open ack slot=13 sid=184
+2026/11/15 13:33:02 [client] open ack slot=18 sid=201
+2026/11/15 13:33:04 [client] open ack slot=17 sid=200
+2026/11/15 13:33:04 [client] stream 192 closeWriteLocal
+2026/11/15 13:33:04 [client] open ack slot=16 sid=195
+2026/11/15 13:33:05 [client] open ack slot=16 sid=199
+2026/11/15 13:33:05 [client] open ack slot=4 sid=202
+2026/11/15 13:33:06 [client] open ack slot=23 sid=203
+2026/11/15 13:33:06 [client] stream 169 closeWriteLocal
+2026/11/15 13:33:06 [client] stream 197 spread to 2 slots (sid=197, sent=144907)
+2026/11/15 13:33:06 [client] stream 197 spread to 3 slots (sid=197, sent=275979)
+2026/11/15 13:33:06 [client] stream 197 spread to 4 slots (sid=197, sent=407051)
+2026/11/15 13:33:06 [client] stream 197 spread to 5 slots (sid=197, sent=538123)
+2026/11/15 13:33:06 [client] stream 197 spread to 6 slots (sid=197, sent=661267)
+2026/11/15 13:33:06 [client] stream 197 spread to 7 slots (sid=197, sent=792339)
+2026/11/15 13:33:06 [client] stream 197 spread to 8 slots (sid=197, sent=923411)
+2026/11/15 13:33:06 [client] stream 197 spread to 9 slots (sid=197, sent=1054483)
+2026/11/15 13:33:06 [client] stream 197 spread to 10 slots (sid=197, sent=1185555)
+2026/11/15 13:33:06 [client] stream 197 spread to 11 slots (sid=197, sent=1316627)
+2026/11/15 13:33:06 [client] stream 197 spread to 12 slots (sid=197, sent=1447699)
+2026/11/15 13:33:06 [client] stream 197 spread to 13 slots (sid=197, sent=1578771)
+2026/11/15 13:33:06 [client] stream 197 spread to 14 slots (sid=197, sent=1709843)
+2026/11/15 13:33:06 [client] stream 197 spread to 15 slots (sid=197, sent=1840915)
+2026/11/15 13:33:06 [client] stream 197 spread to 16 slots (sid=197, sent=1971987)
+2026/11/15 13:33:06 [client] stream 194 spread to 2 slots (sid=194, sent=145050)
+2026/11/15 13:33:06 [client] stream 194 spread to 3 slots (sid=194, sent=276122)
+2026/11/15 13:33:06 [client] stream 194 spread to 4 slots (sid=194, sent=407194)
+2026/11/15 13:33:06 [client] stream 194 spread to 5 slots (sid=194, sent=538266)
+2026/11/15 13:33:06 [client] stream 194 spread to 6 slots (sid=194, sent=669338)
+2026/11/15 13:33:06 [client] stream 194 spread to 7 slots (sid=194, sent=800410)
+2026/11/15 13:33:06 [client] stream 194 spread to 8 slots (sid=194, sent=931482)
+2026/11/15 13:33:06 [client] stream 194 spread to 9 slots (sid=194, sent=1059798)
+2026/11/15 13:33:06 [client] stream 194 spread to 10 slots (sid=194, sent=1189574)
+2026/11/15 13:33:06 [client] stream 194 spread to 11 slots (sid=194, sent=1323402)
+2026/11/15 13:33:06 [client] stream 194 spread to 12 slots (sid=194, sent=1454474)
+2026/11/15 13:33:06 [client] stream 194 spread to 13 slots (sid=194, sent=1585546)
+2026/11/15 13:33:06 [client] stream 194 spread to 14 slots (sid=194, sent=1716618)
+2026/11/15 13:33:06 [client] stream 194 spread to 15 slots (sid=194, sent=1847690)
+2026/11/15 13:33:06 [client] stream 194 spread to 16 slots (sid=194, sent=1978762)
+2026/11/15 13:33:06 [client] stream 203 spread to 2 slots (sid=203, sent=142320)
+2026/11/15 13:33:06 [client] stream 203 spread to 3 slots (sid=203, sent=273392)
+2026/11/15 13:33:10 [client] open ack slot=8 sid=193
+2026/11/15 13:33:10 [client] open ack slot=8 sid=196
+2026/11/15 13:33:10 [client] stream 197 closeWriteLocal
+2026/11/15 13:33:11 [client] stream 202 spread to 2 slots (sid=202, sent=355376)
+2026/11/15 13:33:11 [client] stream 202 spread to 3 slots (sid=202, sent=371760)
+2026/11/15 13:33:11 [client] stream 202 spread to 4 slots (sid=202, sent=404528)
+2026/11/15 13:33:11 [client] stream 202 spread to 5 slots (sid=202, sent=535600)
+2026/11/15 13:33:11 [client] stream 202 spread to 6 slots (sid=202, sent=666672)
+2026/11/15 13:33:11 [client] stream 202 spread to 7 slots (sid=202, sent=797744)
+2026/11/15 13:33:11 [client] stream 202 spread to 8 slots (sid=202, sent=928816)
+2026/11/15 13:33:11 [client] stream 202 spread to 9 slots (sid=202, sent=1059888)
+2026/11/15 13:33:11 [client] stream 202 spread to 10 slots (sid=202, sent=1190960)
+2026/11/15 13:33:11 [client] stream 203 spread to 4 slots (sid=203, sent=1626722)
+2026/11/15 13:33:11 [client] stream 203 spread to 5 slots (sid=203, sent=1643106)
+2026/11/15 13:33:11 [client] stream 203 spread to 6 slots (sid=203, sent=1659490)
+2026/11/15 13:33:11 [client] stream 203 spread to 7 slots (sid=203, sent=1675874)
+2026/11/15 13:33:11 [client] stream 203 spread to 8 slots (sid=203, sent=1692258)
+2026/11/15 13:33:11 [client] stream 203 spread to 9 slots (sid=203, sent=1708642)
+2026/11/15 13:33:11 [client] stream 194 closeWriteLocal
+2026/11/15 13:33:11 [client] stream 203 spread to 10 slots (sid=203, sent=3513104)
+2026/11/15 13:33:11 [client] stream 203 spread to 11 slots (sid=203, sent=3529488)
+2026/11/15 13:33:11 [client] stream 203 spread to 12 slots (sid=203, sent=3545872)
+2026/11/15 13:33:11 [client] stream 203 spread to 13 slots (sid=203, sent=3562256)
+2026/11/15 13:33:11 [client] stream 203 spread to 14 slots (sid=203, sent=3578640)
+2026/11/15 13:33:11 [client] stream 203 spread to 15 slots (sid=203, sent=3595024)
+2026/11/15 13:33:11 [client] stream 203 spread to 16 slots (sid=203, sent=3611408)
+2026/11/15 13:33:11 [client] stream 202 spread to 11 slots (sid=202, sent=2436144)
+2026/11/15 13:33:11 [client] stream 202 spread to 12 slots (sid=202, sent=2452528)
+2026/11/15 13:33:11 [client] stream 202 spread to 13 slots (sid=202, sent=2468912)
+2026/11/15 13:33:11 [client] stream 202 spread to 14 slots (sid=202, sent=2485296)
+2026/11/15 13:33:11 [client] stream 202 spread to 15 slots (sid=202, sent=2501680)
+2026/11/15 13:33:11 [client] stream 202 spread to 16 slots (sid=202, sent=2518064)
+2026/11/15 13:33:20 [client] stream 63 closeWriteLocal
+2026/11/15 13:33:21 [client] open ack slot=15 sid=198
+2026/11/15 13:33:21 [client] stream 195 closeWriteLocal
+2026/11/15 13:33:22 [client] open ack slot=30 sid=209
+2026/11/15 13:33:22 [client] open ack slot=29 sid=208
+2026/11/15 13:33:22 [client] open ack slot=31 sid=210
+2026/11/15 13:33:22 [client] open ack slot=1 sid=212
+2026/11/15 13:33:22 [client] open ack slot=0 sid=211
+2026/11/15 13:33:25 [client] open ack slot=6 sid=214
+2026/11/15 13:33:26 [client] stream 210 closeWriteLocal
+2026/11/15 13:33:26 [client] stream 212 closeWriteLocal
+2026/11/15 13:33:27 [client] stream 196 closeWriteLocal
+2026/11/15 13:33:27 [client] stream 193 closeWriteLocal
+2026/11/15 13:33:27 [client] open ack slot=2 sid=213
+2026/11/15 13:33:28 [client] stream 59 closeWriteLocal
+2026/11/15 13:33:28 [client] open ack slot=24 sid=207
+2026/11/15 13:33:28 [client] stream 176 closeWriteLocal
+2026/11/15 13:33:28 [client] open ack slot=16 sid=206
+2026/11/15 13:33:28 [client] open ack slot=12 sid=204
+2026/11/15 13:33:28 [client] open ack slot=8 sid=215
+2026/11/15 13:33:28 [client] open ack slot=4 sid=216
+2026/11/15 13:33:28 [client] open ack slot=8 sid=217
+2026/11/15 13:33:29 [client] open ack slot=12 sid=218
+2026/11/15 13:33:29 [client] open ack slot=19 sid=222
+2026/11/15 13:33:29 [client] open ack slot=2 sid=229
+2026/11/15 13:33:29 [client] open ack slot=26 sid=227
+2026/11/15 13:33:29 [client] open ack slot=8 sid=231
+2026/11/15 13:33:29 [client] open ack slot=9 sid=232
+2026/11/15 13:33:29 [client] open ack slot=23 sid=225
+2026/11/15 13:33:29 [client] open ack slot=15 sid=220
+2026/11/15 13:33:29 [client] open ack slot=17 sid=221
+2026/11/15 13:33:29 [client] open ack slot=21 sid=224
+2026/11/15 13:33:29 [client] open ack slot=10 sid=233
+2026/11/15 13:33:29 [client] open ack slot=11 sid=234
+2026/11/15 13:33:29 [client] open ack slot=13 sid=236
+2026/11/15 13:33:29 [client] open ack slot=24 sid=247
+2026/11/15 13:33:29 [client] open ack slot=12 sid=235
+2026/11/15 13:33:29 [client] open ack slot=19 sid=242
+2026/11/15 13:33:29 [client] open ack slot=16 sid=239
+2026/11/15 13:33:29 [client] open ack slot=15 sid=238
+2026/11/15 13:33:29 [client] open ack slot=26 sid=249
+2026/11/15 13:33:29 [client] open ack slot=21 sid=244
+2026/11/15 13:33:29 [client] open ack slot=4 sid=230
+2026/11/15 13:33:29 [client] open ack slot=1 sid=253
+2026/11/15 13:33:29 [client] open ack slot=31 sid=252
+2026/11/15 13:33:29 [client] open ack slot=17 sid=240
+2026/11/15 13:33:29 [client] open ack slot=18 sid=241
+2026/11/15 13:33:29 [client] open ack slot=2 sid=254
+2026/11/15 13:33:29 [client] open ack slot=23 sid=246
+2026/11/15 13:33:29 [client] open ack slot=4 sid=256
+2026/11/15 13:33:29 [client] open ack slot=3 sid=255
+2026/11/15 13:33:29 [client] open ack slot=27 sid=250
+2026/11/15 13:33:29 [client] open ack slot=5 sid=257
+2026/11/15 13:33:29 [client] open ack slot=6 sid=258
+2026/11/15 13:33:29 [client] open ack slot=8 sid=260
+2026/11/15 13:33:30 [client] open ack slot=10 sid=262
+2026/11/15 13:33:30 [client] open ack slot=9 sid=261
+2026/11/15 13:33:30 [client] open ack slot=11 sid=264
+2026/11/15 13:33:30 [client] open ack slot=13 sid=266
+2026/11/15 13:33:30 [client] open ack slot=15 sid=268
+2026/11/15 13:33:30 [client] open ack slot=12 sid=265
+2026/11/15 13:33:30 [client] open ack slot=7 sid=263
+2026/11/15 13:33:30 [client] open ack slot=16 sid=269
+2026/11/15 13:33:30 [client] stream 232 closeWriteLocal
+2026/11/15 13:33:30 [client] open ack slot=28 sid=228
+2026/11/15 13:33:30 [client] open ack slot=28 sid=251
+2026/11/15 13:33:30 [client] open ack slot=17 sid=272
+2026/11/15 13:33:31 [client] stream 151 closeWriteLocal
+2026/11/15 13:33:31 [client] open ack slot=14 sid=205
+2026/11/15 13:33:31 [client] open ack slot=22 sid=245
+2026/11/15 13:33:31 [client] open ack slot=14 sid=237
+2026/11/15 13:33:31 [client] open ack slot=14 sid=219
+2026/11/15 13:33:31 [client] open ack slot=22 sid=274
+2026/11/15 13:33:31 [client] open ack slot=14 sid=267
+2026/11/15 13:33:31 [client] open ack slot=6 sid=270
+2026/11/15 13:33:31 [client] open ack slot=25 sid=248
+2026/11/15 13:33:31 [client] open ack slot=25 sid=226
+2026/11/15 13:33:31 [client] open ack slot=25 sid=275
+2026/11/15 13:33:31 [client] stream 215 closeWriteLocal
+2026/11/15 13:33:31 [client] stream 216 closeWriteLocal
+2026/11/15 13:33:31 [client] open ack slot=21 sid=277
+2026/11/15 13:33:32 [client] open ack slot=24 sid=278
+2026/11/15 13:33:34 [client] stream 250 closeWriteLocal
+2026/11/15 13:33:36 [client] open ack slot=4 sid=279
+2026/11/15 13:33:37 [client] stream 44 closeWriteLocal
+2026/11/15 13:33:37 [client] stream 49 closeWriteLocal
+2026/11/15 13:33:37 [client] open ack slot=23 sid=280
+2026/11/15 13:33:37 [client] open ack slot=20 sid=223
+2026/11/15 13:33:37 [client] open ack slot=20 sid=243
+2026/11/15 13:33:37 [client] stream 58 closeWriteLocal
+2026/11/15 13:33:38 [client] stream 70 closeWriteLocal
+2026/11/15 13:33:39 [client] stream 234 closeWriteLocal
+2026/11/15 13:33:39 [client] open ack slot=27 sid=281
+2026/11/15 13:33:39 [client] stream 253 closeWriteLocal
+2026/11/15 13:33:40 [client] stream 220 closeWriteLocal
+2026/11/15 13:33:40 [client] open ack slot=30 sid=282
+2026/11/15 13:33:40 [client] stream 264 closeWriteLocal
+2026/11/15 13:33:40 [client] open ack slot=11 sid=283
+2026/11/15 13:33:40 [client] open ack slot=23 sid=288
+2026/11/15 13:33:40 [client] open ack slot=20 sid=287
+2026/11/15 13:33:40 [client] open ack slot=26 sid=290
+2026/11/15 13:33:40 [client] open ack slot=24 sid=289
+2026/11/15 13:33:40 [client] stream 287 closeWriteLocal
+2026/11/15 13:33:40 [client] stream 283 closeWriteLocal
+2026/11/15 13:33:40 [client] open ack slot=11 sid=285
+2026/11/15 13:33:40 [client] stream 288 closeWriteLocal
+2026/11/15 13:33:40 [client] stream 289 closeWriteLocal
+2026/11/15 13:33:40 [client] stream 101 closeWriteLocal
+2026/11/15 13:33:40 [client] open ack slot=4 sid=284
+2026/11/15 13:33:40 [client] stream 284 closeWriteLocal
+2026/11/15 13:33:40 [client] stream 285 closeWriteLocal
+2026/11/15 13:33:40 [client] stream 290 closeWriteLocal
+2026/11/15 13:33:41 [client] open ack slot=19 sid=286
+2026/11/15 13:33:41 [client] stream 286 closeWriteLocal
+2026/11/15 13:33:41 [client] open ack slot=11 sid=291
+2026/11/15 13:33:41 [client] open ack slot=19 sid=294
+2026/11/15 13:33:41 [client] open ack slot=4 sid=292
+2026/11/15 13:33:41 [client] open ack slot=20 sid=295
+2026/11/15 13:33:41 [client] open ack slot=11 sid=293
+2026/11/15 13:33:42 [client] open ack slot=23 sid=297
+2026/11/15 13:33:42 [client] open ack slot=8 sid=296
+2026/11/15 13:33:42 [client] stream 266 closeWriteLocal
+2026/11/15 13:33:43 [client] stream 198 closeWriteLocal
+2026/11/15 13:33:43 [client] stream 270 closeWriteLocal
+2026/11/15 13:33:43 [client] stream 159 closeWriteLocal
+2026/11/15 13:33:44 [client] stream 161 closeWriteLocal
+2026/11/15 13:33:44 [client] stream 154 closeWriteLocal
+2026/11/15 13:33:44 [client] stream 243 closeWriteLocal
+2026/11/15 13:33:46 [client] stream 167 closeWriteLocal
+2026/11/15 13:33:47 [client] stream 254 closeWriteLocal
+2026/11/15 13:33:48 [client] stream 238 closeWriteLocal
+2026/11/15 13:33:49 [client] stream 163 closeWriteLocal
+2026/11/15 13:33:50 [client] stream 241 closeWriteLocal
+2026/11/15 13:33:50 [client] stream 162 closeWriteLocal
+2026/11/15 13:33:58 [client] stream 206 closeWriteLocal
+2026/11/15 13:34:00 [client] stream 239 closeWriteLocal
+2026/11/15 13:34:01 [client] stream 205 closeWriteLocal
+2026/11/15 13:34:02 [client] stream 187 closeWriteLocal
+2026/11/15 13:34:02 [client] stream 200 closeWriteLocal
+2026/11/15 13:34:02 [client] open ack slot=6 sid=298
+2026/11/15 13:34:02 [client] stream 201 closeWriteLocal
+2026/11/15 13:34:03 [client] stream 278 closeWriteLocal
+2026/11/15 13:34:03 [client] open ack slot=6 sid=299
+2026/11/15 13:34:04 [client] open ack slot=9 sid=300
+2026/11/15 13:34:04 [client] stream 184 closeWriteLocal
+2026/11/15 13:34:05 [client] stream 199 closeWriteLocal
+2026/11/15 13:34:05 [client] open ack slot=16 sid=301
+2026/11/15 13:34:05 [client] open ack slot=13 sid=302
+2026/11/15 13:34:06 [client] open ack slot=14 sid=303
+2026/11/15 13:34:06 [client] open ack slot=15 sid=304
+2026/11/15 13:34:07 [client] stream 302 closeWriteLocal
+2026/11/15 13:34:07 [client] stream 301 closeWriteLocal
+2026/11/15 13:34:10 [client] stream 218 closeWriteLocal
+2026/11/15 13:34:19 [client] stream 224 closeWriteLocal
+2026/11/15 13:34:20 [client] open ack slot=16 sid=305
+2026/11/15 13:34:20 [client] stream 305 closeWriteLocal
+2026/11/15 13:34:20 [client] stream 102 closeWriteLocal
+2026/11/15 13:34:22 [client] stream 115 closeWriteLocal
+2026/11/15 13:34:22 [client] stream 157 closeWriteLocal
+2026/11/15 13:34:29 [client] stream 41 closeWriteLocal
+2026/11/15 13:34:29 [client] stream 27 closeWriteLocal
+2026/11/15 13:34:29 [client] stream 76 closeWriteLocal
+2026/11/15 13:34:29 [client] stream 148 closeWriteLocal
+2026/11/15 13:34:29 [client] stream 37 closeWriteLocal
+2026/11/15 13:34:29 [client] stream 80 closeWriteLocal
+2026/11/15 13:34:29 [client] stream 71 closeWriteLocal
+2026/11/15 13:34:30 [client] open ack slot=9 sid=308
+2026/11/15 13:34:30 [client] stream 73 closeWriteLocal
+2026/11/15 13:34:32 [client] stream 141 closeWriteLocal
+2026/11/15 13:34:36 [client] stream 303 closeWriteLocal
+2026/11/15 13:34:37 [client] stream 279 closeWriteLocal
+2026/11/15 13:34:37 [client] open ack slot=1 sid=309
+2026/11/15 13:34:40 [client] stream 103 closeWriteLocal
+2026/11/15 13:34:40 [client] open ack slot=16 sid=310
+2026/11/15 13:34:40 [client] open ack slot=1 sid=313
+2026/11/15 13:34:40 [client] open ack slot=31 sid=312
+2026/11/15 13:34:40 [client] open ack slot=6 sid=317
+2026/11/15 13:34:40 [client] open ack slot=27 sid=311
+2026/11/15 13:34:40 [client] stream 317 closeWriteLocal
+2026/11/15 13:34:40 [client] open ack slot=9 sid=318
+2026/11/15 13:34:40 [client] stream 313 closeWriteLocal
+2026/11/15 13:34:40 [client] open ack slot=5 sid=316
+2026/11/15 13:34:40 [client] stream 318 closeWriteLocal
+2026/11/15 13:34:40 [client] open ack slot=4 sid=315
+2026/11/15 13:34:40 [client] stream 315 closeWriteLocal
+2026/11/15 13:34:41 [client] stream 316 closeWriteLocal
+2026/11/15 13:34:41 [client] open ack slot=3 sid=314
+2026/11/15 13:34:41 [client] stream 314 closeWriteLocal
+2026/11/15 13:34:41 [client] open ack slot=1 sid=319
+2026/11/15 13:34:41 [client] stream 311 closeWriteLocal
+2026/11/15 13:34:41 [client] stream 312 closeWriteLocal
+2026/11/15 13:34:41 [client] stream 295 closeWriteLocal
+2026/11/15 13:34:42 [client] open ack slot=31 sid=321
+2026/11/15 13:34:42 [client] open ack slot=3 sid=322
+2026/11/15 13:34:42 [client] open ack slot=11 sid=327
+2026/11/15 13:34:42 [client] open ack slot=4 sid=323
+2026/11/15 13:34:42 [client] open ack slot=14 sid=329
+2026/11/15 13:34:42 [client] open ack slot=27 sid=320
+2026/11/15 13:34:42 [client] open ack slot=5 sid=324
+2026/11/15 13:34:42 [client] open ack slot=17 sid=332
+2026/11/15 13:34:42 [client] open ack slot=6 sid=325
+2026/11/15 13:34:42 [client] open ack slot=5 sid=348
+2026/11/15 13:34:42 [client] open ack slot=13 sid=328
+2026/11/15 13:34:42 [client] open ack slot=22 sid=336
+2026/11/15 13:34:42 [client] open ack slot=20 sid=334
+2026/11/15 13:34:42 [client] open ack slot=30 sid=341
+2026/11/15 13:34:42 [client] open ack slot=16 sid=331
+2026/11/15 13:34:42 [client] open ack slot=9 sid=326
+2026/11/15 13:34:42 [client] open ack slot=28 sid=340
+2026/11/15 13:34:42 [client] open ack slot=24 sid=337
+2026/11/15 13:34:42 [client] open ack slot=3 sid=346
+2026/11/15 13:34:42 [client] open ack slot=27 sid=339
+2026/11/15 13:34:42 [client] open ack slot=31 sid=342
+2026/11/15 13:34:42 [client] open ack slot=7 sid=350
+2026/11/15 13:34:42 [client] open ack slot=6 sid=349
+2026/11/15 13:34:42 [client] open ack slot=15 sid=330
+2026/11/15 13:34:42 [client] open ack slot=18 sid=333
+2026/11/15 13:34:42 [client] open ack slot=21 sid=335
+2026/11/15 13:34:42 [client] open ack slot=26 sid=338
+2026/11/15 13:34:42 [client] open ack slot=2 sid=345
+2026/11/15 13:34:42 [client] open ack slot=0 sid=343
+2026/11/15 13:34:42 [client] open ack slot=9 sid=351
+2026/11/15 13:34:42 [client] open ack slot=12 sid=354
+2026/11/15 13:34:42 [client] open ack slot=10 sid=352
+2026/11/15 13:34:42 [client] open ack slot=14 sid=356
+2026/11/15 13:34:42 [client] open ack slot=13 sid=355
+2026/11/15 13:34:42 [client] open ack slot=11 sid=353
+2026/11/15 13:34:42 [client] open ack slot=1 sid=357
+2026/11/15 13:34:42 [client] open ack slot=17 sid=360
+2026/11/15 13:34:42 [client] open ack slot=15 sid=358
+2026/11/15 13:34:42 [client] open ack slot=16 sid=359
+2026/11/15 13:34:42 [client] open ack slot=19 sid=362
+2026/11/15 13:34:42 [client] open ack slot=4 sid=347
+2026/11/15 13:34:43 [client] open ack slot=18 sid=361
+2026/11/15 13:34:43 [client] open ack slot=20 sid=363
+2026/11/15 13:34:43 [client] open ack slot=1 sid=364
+2026/11/15 13:34:43 [client] open ack slot=1 sid=365
+2026/11/15 13:34:43 [client] open ack slot=18 sid=368
+2026/11/15 13:34:46 [client] stream 269 closeWriteLocal
+2026/11/15 13:34:49 [client] stream 338 closeWriteLocal
+2026/11/15 13:34:52 [client] stream 329 closeWriteLocal
+2026/11/15 13:34:52 [client] stream 341 closeWriteLocal
+2026/11/15 13:34:53 [client] stream 342 closeWriteLocal
+2026/11/15 13:34:53 [client] stream 346 closeWriteLocal
+2026/11/15 13:34:55 [client] open ack slot=0 sid=370

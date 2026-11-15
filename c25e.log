@@ -1,0 +1,2025 @@
+2026/11/15 10:44:42 [client] socks5 listening on 127.0.0.1:49888 -> C498.uwintech.com:49888,C498.uwintech.com:49889,C498.uwintech.com:49890,C498.uwintech.com:49891,C498.uwintech.com:49892,C498.uwintech.com:49893,C498.uwintech.com:49894,C498.uwintech.com:49895,C498.uwintech.com:49896,C498.uwintech.com:49897,C498.uwintech.com:49898,C498.uwintech.com:49899,C498.uwintech.com:49900,C498.uwintech.com:49901,C498.uwintech.com:49902,C498.uwintech.com:49903
+2026/11/15 10:44:42 [client] session established slot=2 (gen=1, reopen streams=0)
+2026/11/15 10:44:42 [client] session established slot=4 (gen=1, reopen streams=0)
+2026/11/15 10:44:42 [client] session established slot=12 (gen=1, reopen streams=0)
+2026/11/15 10:44:42 [client] session established slot=6 (gen=1, reopen streams=0)
+2026/11/15 10:44:42 [client] session established slot=10 (gen=1, reopen streams=0)
+2026/11/15 10:44:42 [client] session established slot=13 (gen=1, reopen streams=0)
+2026/11/15 10:44:42 [client] session established slot=1 (gen=1, reopen streams=0)
+2026/11/15 10:44:42 [client] session established slot=11 (gen=1, reopen streams=0)
+2026/11/15 10:44:42 [client] session established slot=5 (gen=1, reopen streams=0)
+2026/11/15 10:44:42 [client] session established slot=3 (gen=1, reopen streams=0)
+2026/11/15 10:44:42 [client] session established slot=9 (gen=1, reopen streams=0)
+2026/11/15 10:44:42 [client] session established slot=14 (gen=1, reopen streams=0)
+2026/11/15 10:44:42 [client] session established slot=0 (gen=1, reopen streams=0)
+2026/11/15 10:44:42 [client] session established slot=15 (gen=1, reopen streams=0)
+2026/11/15 10:44:43 [client] session established slot=8 (gen=1, reopen streams=0)
+2026/11/15 10:44:43 [client] session established slot=7 (gen=1, reopen streams=0)
+2026/11/15 10:44:48 [client] open ack slot=0 sid=1
+2026/11/15 10:44:49 [client] stream 1 spread to 2 slots (sid=1, sent=131200)
+2026/11/15 10:44:49 [client] stream 1 spread to 3 slots (sid=1, sent=262272)
+2026/11/15 10:44:49 [client] stream 1 spread to 4 slots (sid=1, sent=393344)
+2026/11/15 10:45:16 [client] stream 1 closeWriteLocal
+2026/11/15 10:45:16 [client] pumpUp EOF/err stream=1 sent=52428928 err=EOF
+2026/11/15 10:45:16 [client] open ack slot=2 sid=4
+2026/11/15 10:45:16 [client] open ack slot=1 sid=3
+2026/11/15 10:45:16 [client] open ack slot=3 sid=5
+2026/11/15 10:45:16 [client] open ack slot=0 sid=2
+2026/11/15 10:45:17 [client] stream 2 spread to 2 slots (sid=2, sent=131200)
+2026/11/15 10:45:17 [client] stream 2 spread to 3 slots (sid=2, sent=262272)
+2026/11/15 10:45:17 [client] stream 3 spread to 2 slots (sid=3, sent=131200)
+2026/11/15 10:45:17 [client] stream 4 spread to 2 slots (sid=4, sent=131200)
+2026/11/15 10:45:17 [client] stream 5 spread to 2 slots (sid=5, sent=131200)
+2026/11/15 10:45:17 [client] stream 3 spread to 3 slots (sid=3, sent=262272)
+2026/11/15 10:45:17 [client] stream 3 spread to 4 slots (sid=3, sent=393344)
+2026/11/15 10:45:17 [client] stream 5 spread to 3 slots (sid=5, sent=274928)
+2026/11/15 10:45:17 [client] stream 2 spread to 4 slots (sid=2, sent=406000)
+2026/11/15 10:45:17 [client] stream 4 spread to 3 slots (sid=4, sent=274928)
+2026/11/15 10:45:17 [client] stream 5 spread to 4 slots (sid=5, sent=406000)
+2026/11/15 10:45:17 [client] stream 4 spread to 4 slots (sid=4, sent=406000)
+2026/11/15 10:45:42 [client] stream 4 closeWriteLocal
+2026/11/15 10:45:42 [client] pumpUp EOF/err stream=4 sent=52428928 err=EOF
+2026/11/15 10:45:46 [client] stream 5 closeWriteLocal
+2026/11/15 10:45:46 [client] pumpUp EOF/err stream=5 sent=52428928 err=EOF
+2026/11/15 10:45:49 [client] stream 3 closeWriteLocal
+2026/11/15 10:45:49 [client] pumpUp EOF/err stream=3 sent=52428928 err=EOF
+2026/11/15 10:45:57 [client] stream 2 closeWriteLocal
+2026/11/15 10:45:57 [client] pumpUp EOF/err stream=2 sent=52428928 err=EOF
+2026/11/15 10:45:57 [client] open ack slot=1 sid=7
+2026/11/15 10:45:57 [client] open ack slot=3 sid=9
+2026/11/15 10:45:57 [client] open ack slot=0 sid=6
+2026/11/15 10:45:57 [client] open ack slot=2 sid=8
+2026/11/15 10:46:12 [client] stream 7 closeWriteLocal
+2026/11/15 10:46:12 [client] pumpUp EOF/err stream=7 sent=81 err=EOF
+2026/11/15 10:46:18 [client] stream 9 closeWriteLocal
+2026/11/15 10:46:18 [client] pumpUp EOF/err stream=9 sent=81 err=EOF
+2026/11/15 10:46:20 [client] stream 6 closeWriteLocal
+2026/11/15 10:46:20 [client] pumpUp EOF/err stream=6 sent=81 err=EOF
+2026/11/15 10:46:21 [client] stream 8 closeWriteLocal
+2026/11/15 10:46:21 [client] pumpUp EOF/err stream=8 sent=81 err=EOF
+2026/11/15 10:48:22 [client] open ack slot=0 sid=10
+2026/11/15 10:48:23 [client] stream 10 spread to 2 slots (sid=10, sent=131200)
+2026/11/15 10:48:23 [client] stream 10 spread to 3 slots (sid=10, sent=262272)
+2026/11/15 10:48:23 [client] stream 10 spread to 4 slots (sid=10, sent=393344)
+2026/11/15 10:49:04 [client] stream 10 closeWriteLocal
+2026/11/15 10:49:04 [client] pumpUp EOF/err stream=10 sent=52428928 err=EOF
+2026/11/15 10:56:27 [client] open ack slot=0 sid=11
+2026/11/15 10:56:28 [client] open ack slot=1 sid=12
+2026/11/15 10:56:29 [client] pumpUp EOF/err stream=11 sent=594 err=EOF
+2026/11/15 10:56:29 [client] pumpUp EOF/err stream=12 sent=669 err=read tcp 127.0.0.1:49888->127.0.0.1:54601: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 10:56:31 [client] open ack slot=0 sid=13
+2026/11/15 10:56:32 [client] pumpUp EOF/err stream=13 sent=977 err=EOF
+2026/11/15 10:56:33 [client] open ack slot=0 sid=14
+2026/11/15 10:56:33 [client] stream 14 closeWriteLocal
+2026/11/15 10:56:33 [client] pumpUp EOF/err stream=14 sent=630 err=EOF
+2026/11/15 10:56:34 [client] open ack slot=0 sid=15
+2026/11/15 10:56:35 [client] stream 15 closeWriteLocal
+2026/11/15 10:56:35 [client] pumpUp EOF/err stream=15 sent=630 err=EOF
+2026/11/15 10:56:36 [client] open ack slot=0 sid=16
+2026/11/15 10:56:38 [client] open ack slot=1 sid=17
+2026/11/15 10:56:38 [client] open ack slot=7 sid=23
+2026/11/15 10:56:38 [client] open ack slot=3 sid=19
+2026/11/15 10:56:38 [client] open ack slot=5 sid=21
+2026/11/15 10:56:38 [client] open ack slot=4 sid=20
+2026/11/15 10:56:38 [client] open ack slot=6 sid=22
+2026/11/15 10:56:38 [client] open ack slot=2 sid=18
+2026/11/15 10:56:38 [client] open ack slot=14 sid=30
+2026/11/15 10:56:38 [client] open ack slot=15 sid=31
+2026/11/15 10:56:38 [client] open ack slot=4 sid=36
+2026/11/15 10:56:38 [client] open ack slot=9 sid=25
+2026/11/15 10:56:38 [client] open ack slot=0 sid=32
+2026/11/15 10:56:38 [client] open ack slot=1 sid=33
+2026/11/15 10:56:38 [client] open ack slot=13 sid=29
+2026/11/15 10:56:38 [client] open ack slot=11 sid=27
+2026/11/15 10:56:38 [client] open ack slot=8 sid=24
+2026/11/15 10:56:38 [client] open ack slot=12 sid=28
+2026/11/15 10:56:38 [client] open ack slot=10 sid=26
+2026/11/15 10:56:38 [client] open ack slot=2 sid=34
+2026/11/15 10:56:39 [client] open ack slot=5 sid=37
+2026/11/15 10:56:39 [client] open ack slot=3 sid=35
+2026/11/15 10:56:39 [client] open ack slot=6 sid=38
+2026/11/15 10:56:39 [client] open ack slot=7 sid=39
+2026/11/15 10:56:39 [client] open ack slot=8 sid=40
+2026/11/15 10:56:40 [client] open ack slot=10 sid=42
+2026/11/15 10:56:40 [client] open ack slot=9 sid=41
+2026/11/15 10:56:40 [client] open ack slot=11 sid=43
+2026/11/15 10:56:40 [client] open ack slot=13 sid=45
+2026/11/15 10:56:40 [client] open ack slot=15 sid=47
+2026/11/15 10:56:40 [client] open ack slot=2 sid=50
+2026/11/15 10:56:40 [client] open ack slot=0 sid=48
+2026/11/15 10:56:40 [client] open ack slot=1 sid=49
+2026/11/15 10:56:40 [client] open ack slot=12 sid=44
+2026/11/15 10:56:40 [client] open ack slot=4 sid=52
+2026/11/15 10:56:40 [client] open ack slot=6 sid=54
+2026/11/15 10:56:40 [client] open ack slot=5 sid=53
+2026/11/15 10:56:40 [client] open ack slot=14 sid=46
+2026/11/15 10:56:40 [client] open ack slot=8 sid=56
+2026/11/15 10:56:40 [client] open ack slot=7 sid=55
+2026/11/15 10:56:40 [client] open ack slot=9 sid=57
+2026/11/15 10:56:40 [client] open ack slot=10 sid=58
+2026/11/15 10:56:40 [client] open ack slot=13 sid=61
+2026/11/15 10:56:40 [client] open ack slot=11 sid=59
+2026/11/15 10:56:40 [client] open ack slot=14 sid=62
+2026/11/15 10:56:40 [client] open ack slot=0 sid=64
+2026/11/15 10:56:40 [client] open ack slot=2 sid=66
+2026/11/15 10:56:40 [client] open ack slot=10 sid=74
+2026/11/15 10:56:40 [client] open ack slot=3 sid=51
+2026/11/15 10:56:40 [client] stream 66 closeWriteLocal
+2026/11/15 10:56:40 [client] pumpUp EOF/err stream=66 sent=629 err=EOF
+2026/11/15 10:56:40 [client] open ack slot=9 sid=73
+2026/11/15 10:56:40 [client] open ack slot=4 sid=68
+2026/11/15 10:56:40 [client] open ack slot=12 sid=60
+2026/11/15 10:56:40 [client] stream 73 closeWriteLocal
+2026/11/15 10:56:40 [client] pumpUp EOF/err stream=73 sent=623 err=EOF
+2026/11/15 10:56:40 [client] open ack slot=1 sid=65
+2026/11/15 10:56:40 [client] stream 68 closeWriteLocal
+2026/11/15 10:56:40 [client] pumpUp EOF/err stream=68 sent=645 err=EOF
+2026/11/15 10:56:41 [client] open ack slot=15 sid=63
+2026/11/15 10:56:41 [client] stream 65 closeWriteLocal
+2026/11/15 10:56:41 [client] pumpUp EOF/err stream=65 sent=630 err=EOF
+2026/11/15 10:56:41 [client] open ack slot=5 sid=69
+2026/11/15 10:56:41 [client] open ack slot=3 sid=67
+2026/11/15 10:56:41 [client] open ack slot=7 sid=71
+2026/11/15 10:56:41 [client] stream 67 closeWriteLocal
+2026/11/15 10:56:41 [client] pumpUp EOF/err stream=67 sent=629 err=EOF
+2026/11/15 10:56:41 [client] open ack slot=13 sid=78
+2026/11/15 10:56:41 [client] open ack slot=11 sid=75
+2026/11/15 10:56:41 [client] stream 69 closeWriteLocal
+2026/11/15 10:56:41 [client] pumpUp EOF/err stream=69 sent=629 err=EOF
+2026/11/15 10:56:41 [client] open ack slot=1 sid=79
+2026/11/15 10:56:41 [client] open ack slot=12 sid=76
+2026/11/15 10:56:41 [client] open ack slot=2 sid=77
+2026/11/15 10:56:41 [client] stream 79 closeWriteLocal
+2026/11/15 10:56:41 [client] pumpUp EOF/err stream=79 sent=630 err=EOF
+2026/11/15 10:56:41 [client] open ack slot=3 sid=80
+2026/11/15 10:56:41 [client] open ack slot=4 sid=81
+2026/11/15 10:56:41 [client] pumpUp EOF/err stream=76 sent=1952 err=EOF
+2026/11/15 10:56:41 [client] open ack slot=5 sid=82
+2026/11/15 10:56:41 [client] open ack slot=9 sid=83
+2026/11/15 10:56:41 [client] stream 71 closeWriteLocal
+2026/11/15 10:56:41 [client] open ack slot=14 sid=84
+2026/11/15 10:56:41 [client] pumpUp EOF/err stream=71 sent=1954 err=EOF
+2026/11/15 10:56:41 [client] open ack slot=8 sid=72
+2026/11/15 10:56:41 [client] stream 72 closeWriteLocal
+2026/11/15 10:56:41 [client] pumpUp EOF/err stream=72 sent=629 err=EOF
+2026/11/15 10:56:41 [client] open ack slot=6 sid=70
+2026/11/15 10:56:41 [client] open ack slot=1 sid=85
+2026/11/15 10:56:41 [client] open ack slot=7 sid=86
+2026/11/15 10:56:41 [client] open ack slot=8 sid=87
+2026/11/15 10:56:41 [client] open ack slot=12 sid=88
+2026/11/15 10:56:42 [client] open ack slot=5 sid=95
+2026/11/15 10:56:42 [client] open ack slot=3 sid=93
+2026/11/15 10:56:42 [client] open ack slot=4 sid=94
+2026/11/15 10:56:42 [client] open ack slot=12 sid=102
+2026/11/15 10:56:42 [client] open ack slot=10 sid=100
+2026/11/15 10:56:42 [client] open ack slot=8 sid=98
+2026/11/15 10:56:42 [client] open ack slot=2 sid=92
+2026/11/15 10:56:42 [client] open ack slot=15 sid=89
+2026/11/15 10:56:42 [client] open ack slot=1 sid=91
+2026/11/15 10:56:42 [client] open ack slot=7 sid=97
+2026/11/15 10:56:42 [client] open ack slot=11 sid=101
+2026/11/15 10:56:42 [client] open ack slot=9 sid=99
+2026/11/15 10:56:42 [client] open ack slot=0 sid=90
+2026/11/15 10:56:42 [client] open ack slot=13 sid=103
+2026/11/15 10:56:42 [client] open ack slot=6 sid=96
+2026/11/15 10:56:42 [client] stream 46 closeWriteLocal
+2026/11/15 10:56:42 [client] pumpUp EOF/err stream=46 sent=2957 err=EOF
+2026/11/15 10:56:43 [client] pumpUp EOF/err stream=75 sent=1922 err=EOF
+2026/11/15 10:56:43 [client] open ack slot=15 sid=105
+2026/11/15 10:56:43 [client] open ack slot=14 sid=104
+2026/11/15 10:56:43 [client] open ack slot=0 sid=106
+2026/11/15 10:56:43 [client] open ack slot=2 sid=108
+2026/11/15 10:56:43 [client] open ack slot=1 sid=107
+2026/11/15 10:56:43 [client] open ack slot=11 sid=109
+2026/11/15 10:56:43 [client] open ack slot=14 sid=110
+2026/11/15 10:56:43 [client] stream 100 closeWriteLocal
+2026/11/15 10:56:43 [client] pumpUp EOF/err stream=100 sent=2755 err=EOF
+2026/11/15 10:56:43 [client] open ack slot=3 sid=111
+2026/11/15 10:56:43 [client] stream 47 closeWriteLocal
+2026/11/15 10:56:43 [client] pumpUp EOF/err stream=47 sent=3004 err=EOF
+2026/11/15 10:56:43 [client] open ack slot=4 sid=112
+2026/11/15 10:56:43 [client] open ack slot=10 sid=113
+2026/11/15 10:56:43 [client] open ack slot=6 sid=115
+2026/11/15 10:56:43 [client] open ack slot=8 sid=117
+2026/11/15 10:56:43 [client] open ack slot=5 sid=114
+2026/11/15 10:56:43 [client] open ack slot=7 sid=116
+2026/11/15 10:56:43 [client] open ack slot=15 sid=118
+2026/11/15 10:56:43 [client] pumpUp EOF/err stream=45 sent=3020 err=EOF
+2026/11/15 10:56:43 [client] pumpUp EOF/err stream=52 sent=3064 err=EOF
+2026/11/15 10:56:43 [client] pumpUp EOF/err stream=53 sent=3030 err=EOF
+2026/11/15 10:56:43 [client] pumpUp EOF/err stream=49 sent=2999 err=EOF
+2026/11/15 10:56:43 [client] pumpUp EOF/err stream=44 sent=2962 err=EOF
+2026/11/15 10:56:43 [client] open ack slot=9 sid=119
+2026/11/15 10:56:43 [client] open ack slot=12 sid=122
+2026/11/15 10:56:43 [client] open ack slot=11 sid=121
+2026/11/15 10:56:43 [client] pumpUp EOF/err stream=50 sent=3091 err=EOF
+2026/11/15 10:56:43 [client] open ack slot=15 sid=125
+2026/11/15 10:56:43 [client] open ack slot=13 sid=123
+2026/11/15 10:56:43 [client] open ack slot=0 sid=126
+2026/11/15 10:56:43 [client] open ack slot=10 sid=120
+2026/11/15 10:56:44 [client] open ack slot=7 sid=138
+2026/11/15 10:56:44 [client] open ack slot=2 sid=133
+2026/11/15 10:56:44 [client] open ack slot=1 sid=132
+2026/11/15 10:56:44 [client] open ack slot=12 sid=130
+2026/11/15 10:56:44 [client] open ack slot=5 sid=136
+2026/11/15 10:56:44 [client] open ack slot=3 sid=134
+2026/11/15 10:56:44 [client] open ack slot=4 sid=135
+2026/11/15 10:56:44 [client] open ack slot=1 sid=127
+2026/11/15 10:56:44 [client] open ack slot=4 sid=128
+2026/11/15 10:56:44 [client] open ack slot=6 sid=137
+2026/11/15 10:56:44 [client] open ack slot=13 sid=131
+2026/11/15 10:56:44 [client] open ack slot=5 sid=129
+2026/11/15 10:56:44 [client] open ack slot=14 sid=124
+2026/11/15 10:56:44 [client] open ack slot=2 sid=139
+2026/11/15 10:56:44 [client] pumpUp EOF/err stream=51 sent=3052 err=EOF
+2026/11/15 10:56:44 [client] open ack slot=9 sid=141
+2026/11/15 10:56:44 [client] open ack slot=12 sid=144
+2026/11/15 10:56:44 [client] open ack slot=8 sid=140
+2026/11/15 10:56:44 [client] open ack slot=10 sid=142
+2026/11/15 10:56:44 [client] open ack slot=15 sid=147
+2026/11/15 10:56:44 [client] open ack slot=11 sid=143
+2026/11/15 10:56:44 [client] open ack slot=0 sid=148
+2026/11/15 10:56:44 [client] open ack slot=14 sid=146
+2026/11/15 10:56:44 [client] open ack slot=5 sid=170
+2026/11/15 10:56:44 [client] open ack slot=10 sid=158
+2026/11/15 10:56:44 [client] open ack slot=8 sid=173
+2026/11/15 10:56:44 [client] open ack slot=9 sid=157
+2026/11/15 10:56:44 [client] open ack slot=14 sid=162
+2026/11/15 10:56:44 [client] open ack slot=3 sid=167
+2026/11/15 10:56:44 [client] open ack slot=5 sid=153
+2026/11/15 10:56:44 [client] open ack slot=5 sid=186
+2026/11/15 10:56:44 [client] open ack slot=9 sid=190
+2026/11/15 10:56:44 [client] open ack slot=15 sid=163
+2026/11/15 10:56:44 [client] open ack slot=6 sid=154
+2026/11/15 10:56:44 [client] open ack slot=3 sid=151
+2026/11/15 10:56:44 [client] pumpUp EOF/err stream=184 sent=1994 err=read tcp 127.0.0.1:49888->127.0.0.1:64707: use of closed network connection
+2026/11/15 10:56:44 [client] open ack slot=10 sid=175
+2026/11/15 10:56:44 [client] open ack slot=14 sid=195
+2026/11/15 10:56:44 [client] open ack slot=10 sid=191
+2026/11/15 10:56:44 [client] open ack slot=15 sid=196
+2026/11/15 10:56:44 [client] open ack slot=15 sid=180
+2026/11/15 10:56:44 [client] open ack slot=0 sid=164
+2026/11/15 10:56:44 [client] open ack slot=3 sid=168
+2026/11/15 10:56:44 [client] open ack slot=6 sid=171
+2026/11/15 10:56:44 [client] open ack slot=9 sid=174
+2026/11/15 10:56:44 [client] open ack slot=7 sid=155
+2026/11/15 10:56:44 [client] pumpUp EOF/err stream=48 sent=3079 err=EOF
+2026/11/15 10:56:44 [client] open ack slot=7 sid=172
+2026/11/15 10:56:44 [client] open ack slot=8 sid=189
+2026/11/15 10:56:44 [client] open ack slot=3 sid=200
+2026/11/15 10:56:44 [client] open ack slot=13 sid=145
+2026/11/15 10:56:44 [client] open ack slot=8 sid=156
+2026/11/15 10:56:44 [client] open ack slot=9 sid=207
+2026/11/15 10:56:44 [client] open ack slot=8 sid=206
+2026/11/15 10:56:44 [client] open ack slot=13 sid=161
+2026/11/15 10:56:44 [client] open ack slot=15 sid=213
+2026/11/15 10:56:44 [client] open ack slot=13 sid=178
+2026/11/15 10:56:44 [client] open ack slot=13 sid=194
+2026/11/15 10:56:44 [client] open ack slot=11 sid=209
+2026/11/15 10:56:44 [client] open ack slot=11 sid=159
+2026/11/15 10:56:44 [client] open ack slot=4 sid=152
+2026/11/15 10:56:44 [client] open ack slot=4 sid=185
+2026/11/15 10:56:44 [client] open ack slot=1 sid=198
+2026/11/15 10:56:44 [client] open ack slot=13 sid=211
+2026/11/15 10:56:44 [client] open ack slot=1 sid=215
+2026/11/15 10:56:44 [client] open ack slot=1 sid=149
+2026/11/15 10:56:44 [client] open ack slot=10 sid=208
+2026/11/15 10:56:44 [client] open ack slot=4 sid=201
+2026/11/15 10:56:44 [client] open ack slot=1 sid=182
+2026/11/15 10:56:44 [client] open ack slot=3 sid=202
+2026/11/15 10:56:44 [client] open ack slot=11 sid=192
+2026/11/15 10:56:44 [client] open ack slot=4 sid=169
+2026/11/15 10:56:44 [client] open ack slot=4 sid=219
+2026/11/15 10:56:44 [client] open ack slot=1 sid=165
+2026/11/15 10:56:44 [client] open ack slot=14 sid=179
+2026/11/15 10:56:44 [client] open ack slot=11 sid=176
+2026/11/15 10:56:44 [client] pumpUp EOF/err stream=211 sent=2031 err=EOF
+2026/11/15 10:56:44 [client] stream 219 closeWriteLocal
+2026/11/15 10:56:44 [client] open ack slot=14 sid=212
+2026/11/15 10:56:44 [client] pumpUp EOF/err stream=219 sent=630 err=EOF
+2026/11/15 10:56:44 [client] pumpUp EOF/err stream=212 sent=1967 err=EOF
+2026/11/15 10:56:44 [client] open ack slot=6 sid=187
+2026/11/15 10:56:44 [client] open ack slot=6 sid=204
+2026/11/15 10:56:44 [client] open ack slot=12 sid=177
+2026/11/15 10:56:44 [client] open ack slot=12 sid=193
+2026/11/15 10:56:44 [client] open ack slot=3 sid=217
+2026/11/15 10:56:44 [client] open ack slot=0 sid=197
+2026/11/15 10:56:44 [client] open ack slot=7 sid=188
+2026/11/15 10:56:44 [client] open ack slot=7 sid=205
+2026/11/15 10:56:44 [client] open ack slot=0 sid=181
+2026/11/15 10:56:44 [client] open ack slot=5 sid=203
+2026/11/15 10:56:44 [client] open ack slot=0 sid=214
+2026/11/15 10:56:44 [client] open ack slot=5 sid=220
+2026/11/15 10:56:44 [client] open ack slot=0 sid=218
+2026/11/15 10:56:45 [client] open ack slot=6 sid=221
+2026/11/15 10:56:45 [client] open ack slot=2 sid=150
+2026/11/15 10:56:45 [client] open ack slot=2 sid=166
+2026/11/15 10:56:45 [client] open ack slot=2 sid=183
+2026/11/15 10:56:45 [client] open ack slot=2 sid=199
+2026/11/15 10:56:45 [client] pumpUp EOF/err stream=111 sent=2020 err=EOF
+2026/11/15 10:56:45 [client] open ack slot=2 sid=216
+2026/11/15 10:56:45 [client] open ack slot=13 sid=223
+2026/11/15 10:56:45 [client] open ack slot=7 sid=222
+2026/11/15 10:56:45 [client] open ack slot=14 sid=224
+2026/11/15 10:56:45 [client] pumpUp EOF/err stream=216 sent=1958 err=EOF
+2026/11/15 10:56:45 [client] stream 181 closeWriteLocal
+2026/11/15 10:56:45 [client] open ack slot=8 sid=226
+2026/11/15 10:56:45 [client] pumpUp EOF/err stream=227 sent=1930 err=read tcp 127.0.0.1:49888->127.0.0.1:62695: use of closed network connection
+2026/11/15 10:56:45 [client] open ack slot=4 sid=225
+2026/11/15 10:56:45 [client] open ack slot=3 sid=229
+2026/11/15 10:56:45 [client] open ack slot=10 sid=228
+2026/11/15 10:56:45 [client] open ack slot=13 sid=232
+2026/11/15 10:56:45 [client] open ack slot=11 sid=230
+2026/11/15 10:56:45 [client] open ack slot=12 sid=160
+2026/11/15 10:56:45 [client] pumpUp EOF/err stream=234 sent=1930 err=read tcp 127.0.0.1:49888->127.0.0.1:58268: use of closed network connection
+2026/11/15 10:56:45 [client] open ack slot=12 sid=210
+2026/11/15 10:56:45 [client] open ack slot=12 sid=231
+2026/11/15 10:56:45 [client] open ack slot=14 sid=235
+2026/11/15 10:56:45 [client] open ack slot=15 sid=236
+2026/11/15 10:56:45 [client] open ack slot=1 sid=238
+2026/11/15 10:56:45 [client] open ack slot=0 sid=237
+2026/11/15 10:56:45 [client] open ack slot=9 sid=239
+2026/11/15 10:56:45 [client] open ack slot=2 sid=233
+2026/11/15 10:56:46 [client] open ack slot=2 sid=240
+2026/11/15 10:56:46 [client] pumpUp EOF/err stream=145 sent=1938 err=EOF
+2026/11/15 10:56:46 [client] pumpUp EOF/err stream=141 sent=2033 err=EOF
+2026/11/15 10:56:46 [client] pumpUp EOF/err stream=142 sent=1970 err=EOF
+2026/11/15 10:56:46 [client] pumpUp EOF/err stream=140 sent=2033 err=EOF
+2026/11/15 10:56:46 [client] pumpUp EOF/err stream=144 sent=1958 err=EOF
+2026/11/15 10:56:46 [client] pumpUp EOF/err stream=143 sent=2022 err=EOF
+2026/11/15 10:56:46 [client] pumpUp EOF/err stream=181 sent=2716 err=EOF
+2026/11/15 10:56:46 [client] open ack slot=4 sid=242
+2026/11/15 10:56:46 [client] open ack slot=7 sid=245
+2026/11/15 10:56:46 [client] open ack slot=6 sid=244
+2026/11/15 10:56:46 [client] open ack slot=9 sid=247
+2026/11/15 10:56:46 [client] stream 97 closeWriteLocal
+2026/11/15 10:56:46 [client] pumpUp EOF/err stream=97 sent=2736 err=EOF
+2026/11/15 10:56:46 [client] pumpUp EOF/err stream=248 sent=1962 err=read tcp 127.0.0.1:49888->127.0.0.1:60113: use of closed network connection
+2026/11/15 10:56:46 [client] open ack slot=3 sid=241
+2026/11/15 10:56:46 [client] open ack slot=11 sid=249
+2026/11/15 10:56:46 [client] open ack slot=5 sid=243
+2026/11/15 10:56:46 [client] pumpUp EOF/err stream=221 sent=1969 err=EOF
+2026/11/15 10:56:46 [client] pumpUp EOF/err stream=217 sent=1919 err=EOF
+2026/11/15 10:56:46 [client] pumpUp EOF/err stream=214 sent=1999 err=EOF
+2026/11/15 10:56:46 [client] pumpUp EOF/err stream=210 sent=1935 err=EOF
+2026/11/15 10:56:46 [client] pumpUp EOF/err stream=213 sent=1967 err=EOF
+2026/11/15 10:56:46 [client] pumpUp EOF/err stream=152 sent=1964 err=EOF
+2026/11/15 10:56:46 [client] pumpUp EOF/err stream=177 sent=1963 err=EOF
+2026/11/15 10:56:46 [client] open ack slot=10 sid=250
+2026/11/15 10:56:46 [client] open ack slot=12 sid=251
+2026/11/15 10:56:46 [client] open ack slot=13 sid=252
+2026/11/15 10:56:46 [client] pumpUp EOF/err stream=222 sent=1997 err=EOF
+2026/11/15 10:56:47 [client] open ack slot=8 sid=246
+2026/11/15 10:56:47 [client] pumpUp EOF/err stream=224 sent=1922 err=EOF
+2026/11/15 10:56:47 [client] stream 120 closeWriteLocal
+2026/11/15 10:56:47 [client] pumpUp EOF/err stream=120 sent=3485 err=EOF
+2026/11/15 10:56:47 [client] open ack slot=12 sid=253
+2026/11/15 10:56:47 [client] open ack slot=7 sid=255
+2026/11/15 10:56:47 [client] open ack slot=0 sid=254
+2026/11/15 10:56:47 [client] pumpUp EOF/err stream=233 sent=1953 err=EOF
+2026/11/15 10:56:47 [client] open ack slot=10 sid=256
+2026/11/15 10:56:48 [client] stream 77 closeWriteLocal
+2026/11/15 10:56:48 [client] pumpUp EOF/err stream=77 sent=2585 err=EOF
+2026/11/15 10:56:48 [client] open ack slot=15 sid=260
+2026/11/15 10:56:48 [client] open ack slot=0 sid=261
+2026/11/15 10:56:48 [client] open ack slot=14 sid=259
+2026/11/15 10:56:48 [client] open ack slot=2 sid=257
+2026/11/15 10:56:48 [client] open ack slot=12 sid=258
+2026/11/15 10:56:48 [client] pumpUp EOF/err stream=246 sent=1991 err=EOF
+2026/11/15 10:56:48 [client] stream 232 closeWriteLocal
+2026/11/15 10:56:48 [client] stream 85 closeWriteLocal
+2026/11/15 10:56:48 [client] pumpUp EOF/err stream=85 sent=2703 err=EOF
+2026/11/15 10:56:48 [client] stream 201 closeWriteLocal
+2026/11/15 10:56:48 [client] open ack slot=1 sid=263
+2026/11/15 10:56:48 [client] stream 231 closeWriteLocal
+2026/11/15 10:56:49 [client] open ack slot=8 sid=262
+2026/11/15 10:56:49 [client] open ack slot=2 sid=264
+2026/11/15 10:56:49 [client] pumpUp EOF/err stream=231 sent=3851 err=read tcp 127.0.0.1:49888->127.0.0.1:53806: use of closed network connection
+2026/11/15 10:56:49 [client] stream 60 closeWriteLocal
+2026/11/15 10:56:49 [client] pumpUp EOF/err stream=60 sent=7024 err=EOF
+2026/11/15 10:56:49 [client] open ack slot=3 sid=265
+2026/11/15 10:56:49 [client] pumpUp EOF/err stream=178 sent=2771 err=EOF
+2026/11/15 10:56:49 [client] pumpUp EOF/err stream=232 sent=3855 err=read tcp 127.0.0.1:49888->127.0.0.1:53807: use of closed network connection
+2026/11/15 10:56:49 [client] stream 19 closeWriteLocal
+2026/11/15 10:56:49 [client] stream 240 closeWriteLocal
+2026/11/15 10:56:49 [client] pumpUp EOF/err stream=201 sent=5670 err=EOF
+2026/11/15 10:56:49 [client] pumpUp EOF/err stream=160 sent=2901 err=EOF
+2026/11/15 10:56:49 [client] open ack slot=13 sid=267
+2026/11/15 10:56:49 [client] open ack slot=4 sid=269
+2026/11/15 10:56:50 [client] open ack slot=13 sid=271
+2026/11/15 10:56:50 [client] pumpUp EOF/err stream=19 sent=2006 err=EOF
+2026/11/15 10:56:50 [client] stream 245 closeWriteLocal
+2026/11/15 10:56:50 [client] pumpUp EOF/err stream=240 sent=4249 err=EOF
+2026/11/15 10:56:50 [client] open ack slot=2 sid=272
+2026/11/15 10:56:50 [client] open ack slot=3 sid=273
+2026/11/15 10:56:51 [client] open ack slot=4 sid=274
+2026/11/15 10:56:51 [client] stream 37 closeWriteLocal
+2026/11/15 10:56:51 [client] pumpUp EOF/err stream=245 sent=10676 err=read tcp 127.0.0.1:49888->127.0.0.1:62262: use of closed network connection
+2026/11/15 10:56:51 [client] pumpUp EOF/err stream=188 sent=2797 err=EOF
+2026/11/15 10:56:52 [client] open ack slot=7 sid=275
+2026/11/15 10:56:52 [client] pumpUp EOF/err stream=37 sent=3185 err=EOF
+2026/11/15 10:56:52 [client] open ack slot=5 sid=277
+2026/11/15 10:56:52 [client] stream 92 closeWriteLocal
+2026/11/15 10:56:52 [client] pumpUp EOF/err stream=92 sent=2871 err=EOF
+2026/11/15 10:56:53 [client] pumpUp EOF/err stream=82 sent=3437 err=EOF
+2026/11/15 10:56:53 [client] pumpUp EOF/err stream=87 sent=2838 err=EOF
+2026/11/15 10:56:53 [client] open ack slot=6 sid=278
+2026/11/15 10:56:53 [client] open ack slot=12 sid=268
+2026/11/15 10:56:53 [client] open ack slot=12 sid=266
+2026/11/15 10:56:53 [client] open ack slot=12 sid=270
+2026/11/15 10:56:54 [client] stream 236 closeWriteLocal
+2026/11/15 10:56:54 [client] stream 94 closeWriteLocal
+2026/11/15 10:56:54 [client] open ack slot=8 sid=280
+2026/11/15 10:56:54 [client] open ack slot=7 sid=276
+2026/11/15 10:56:54 [client] open ack slot=7 sid=279
+2026/11/15 10:56:54 [client] stream 271 closeWriteLocal
+2026/11/15 10:56:54 [client] pumpUp EOF/err stream=271 sent=7083 err=read tcp 127.0.0.1:49888->127.0.0.1:63593: use of closed network connection
+2026/11/15 10:56:54 [client] stream 103 closeWriteLocal
+2026/11/15 10:56:54 [client] stream 157 closeWriteLocal
+2026/11/15 10:56:54 [client] pumpUp EOF/err stream=157 sent=2834 err=EOF
+2026/11/15 10:56:55 [client] pumpUp EOF/err stream=236 sent=6118 err=EOF
+2026/11/15 10:56:55 [client] open ack slot=13 sid=281
+2026/11/15 10:56:55 [client] open ack slot=2 sid=282
+2026/11/15 10:56:55 [client] stream 282 closeWriteLocal
+2026/11/15 10:56:55 [client] pumpUp EOF/err stream=282 sent=630 err=EOF
+2026/11/15 10:56:55 [client] pumpUp EOF/err stream=94 sent=3168 err=EOF
+2026/11/15 10:56:55 [client] stream 179 closeWriteLocal
+2026/11/15 10:56:55 [client] pumpUp EOF/err stream=179 sent=2775 err=EOF
+2026/11/15 10:56:55 [client] open ack slot=9 sid=284
+2026/11/15 10:56:55 [client] pumpUp EOF/err stream=103 sent=3456 err=EOF
+2026/11/15 10:56:55 [client] stream 167 closeWriteLocal
+2026/11/15 10:56:55 [client] pumpUp EOF/err stream=167 sent=2848 err=EOF
+2026/11/15 10:56:55 [client] stream 247 closeWriteLocal
+2026/11/15 10:56:56 [client] open ack slot=13 sid=286
+2026/11/15 10:56:56 [client] pumpUp EOF/err stream=175 sent=2888 err=EOF
+2026/11/15 10:56:56 [client] open ack slot=14 sid=285
+2026/11/15 10:56:56 [client] pumpUp EOF/err stream=194 sent=2927 err=EOF
+2026/11/15 10:56:56 [client] open ack slot=10 sid=288
+2026/11/15 10:56:56 [client] pumpUp EOF/err stream=151 sent=3045 err=EOF
+2026/11/15 10:56:56 [client] pumpUp EOF/err stream=195 sent=2797 err=EOF
+2026/11/15 10:56:56 [client] pumpUp EOF/err stream=63 sent=3218 err=EOF
+2026/11/15 10:56:56 [client] pumpUp EOF/err stream=247 sent=4197 err=EOF
+2026/11/15 10:56:57 [client] open ack slot=13 sid=289
+2026/11/15 10:56:57 [client] open ack slot=15 sid=287
+2026/11/15 10:56:57 [client] stream 118 closeWriteLocal
+2026/11/15 10:56:57 [client] stream 31 closeWriteLocal
+2026/11/15 10:56:57 [client] pumpUp EOF/err stream=31 sent=47570 err=EOF
+2026/11/15 10:56:57 [client] open ack slot=3 sid=290
+2026/11/15 10:56:58 [client] pumpUp EOF/err stream=241 sent=2712 err=EOF
+2026/11/15 10:56:58 [client] pumpUp EOF/err stream=27 sent=8762 err=EOF
+2026/11/15 10:56:58 [client] pumpUp EOF/err stream=156 sent=2890 err=EOF
+2026/11/15 10:56:58 [client] pumpUp EOF/err stream=118 sent=3004 err=EOF
+2026/11/15 10:56:58 [client] open ack slot=15 sid=291
+2026/11/15 10:57:00 [client] stream 155 closeWriteLocal
+2026/11/15 10:57:00 [client] open ack slot=5 sid=283
+2026/11/15 10:57:01 [client] pumpUp EOF/err stream=155 sent=3114 err=EOF
+2026/11/15 10:57:02 [client] stream 154 closeWriteLocal
+2026/11/15 10:57:02 [client] pumpUp EOF/err stream=154 sent=3051 err=EOF
+2026/11/15 10:57:02 [client] open ack slot=15 sid=292
+2026/11/15 10:57:02 [client] pumpUp EOF/err stream=28 sent=16454 err=EOF
+2026/11/15 10:57:02 [client] stream 274 closeWriteLocal
+2026/11/15 10:57:02 [client] stream 269 closeWriteLocal
+2026/11/15 10:57:03 [client] pumpUp EOF/err stream=274 sent=3257 err=EOF
+2026/11/15 10:57:03 [client] pumpUp EOF/err stream=269 sent=13710 err=EOF
+2026/11/15 10:57:03 [client] pumpUp EOF/err stream=26 sent=18002 err=EOF
+2026/11/15 10:57:04 [client] pumpUp EOF/err stream=280 sent=3689 err=read tcp 127.0.0.1:49888->127.0.0.1:55970: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 10:57:04 [client] pumpUp EOF/err stream=284 sent=3471 err=read tcp 127.0.0.1:49888->127.0.0.1:51262: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 10:57:04 [client] pumpUp EOF/err stream=277 sent=3558 err=EOF
+2026/11/15 10:57:04 [client] pumpUp EOF/err stream=258 sent=4183 err=EOF
+2026/11/15 10:57:04 [client] pumpUp EOF/err stream=286 sent=3624 err=read tcp 127.0.0.1:49888->127.0.0.1:53884: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 10:57:04 [client] pumpUp EOF/err stream=289 sent=3689 err=EOF
+2026/11/15 10:57:04 [client] pumpUp EOF/err stream=288 sent=2806 err=read tcp 127.0.0.1:49888->127.0.0.1:56259: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 10:57:04 [client] pumpUp EOF/err stream=259 sent=5143 err=EOF
+2026/11/15 10:57:04 [client] pumpUp EOF/err stream=261 sent=3592 err=EOF
+2026/11/15 10:57:04 [client] pumpUp EOF/err stream=260 sent=4211 err=read tcp 127.0.0.1:49888->127.0.0.1:59658: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 10:57:04 [client] pumpUp EOF/err stream=278 sent=3535 err=read tcp 127.0.0.1:49888->127.0.0.1:56329: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 10:57:04 [client] pumpUp EOF/err stream=279 sent=3560 err=read tcp 127.0.0.1:49888->127.0.0.1:56330: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 10:57:04 [client] pumpUp EOF/err stream=276 sent=3753 err=read tcp 127.0.0.1:49888->127.0.0.1:50063: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 10:57:04 [client] stream 169 closeWriteLocal
+2026/11/15 10:57:04 [client] pumpUp EOF/err stream=169 sent=2893 err=EOF
+2026/11/15 10:57:05 [client] open ack slot=4 sid=293
+2026/11/15 10:57:05 [client] stream 257 closeWriteLocal
+2026/11/15 10:57:05 [client] stream 293 closeWriteLocal
+2026/11/15 10:57:05 [client] pumpUp EOF/err stream=257 sent=5140 err=EOF
+2026/11/15 10:57:05 [client] pumpUp EOF/err stream=293 sent=630 err=EOF
+2026/11/15 10:57:05 [client] open ack slot=4 sid=294
+2026/11/15 10:57:06 [client] open ack slot=12 sid=299
+2026/11/15 10:57:08 [client] pumpUp EOF/err stream=129 sent=7842 err=EOF
+2026/11/15 10:57:08 [client] stream 268 closeWriteLocal
+2026/11/15 10:57:08 [client] stream 266 closeWriteLocal
+2026/11/15 10:57:09 [client] open ack slot=7 sid=295
+2026/11/15 10:57:09 [client] pumpUp EOF/err stream=268 sent=3188 err=EOF
+2026/11/15 10:57:09 [client] pumpUp EOF/err stream=266 sent=3188 err=EOF
+2026/11/15 10:57:09 [client] stream 294 closeWriteLocal
+2026/11/15 10:57:09 [client] pumpUp EOF/err stream=294 sent=3007 err=EOF
+2026/11/15 10:57:10 [client] open ack slot=4 sid=300
+2026/11/15 10:57:10 [client] open ack slot=8 sid=296
+2026/11/15 10:57:11 [client] open ack slot=4 sid=302
+2026/11/15 10:57:11 [client] open ack slot=12 sid=301
+2026/11/15 10:57:11 [client] stream 301 spread to 2 slots (sid=301, sent=134346)
+2026/11/15 10:57:11 [client] stream 301 spread to 3 slots (sid=301, sent=273676)
+2026/11/15 10:57:11 [client] stream 301 spread to 4 slots (sid=301, sent=404748)
+2026/11/15 10:57:11 [client] stream 302 spread to 2 slots (sid=302, sent=142953)
+2026/11/15 10:57:11 [client] stream 302 spread to 3 slots (sid=302, sent=274025)
+2026/11/15 10:57:11 [client] stream 302 spread to 4 slots (sid=302, sent=405097)
+2026/11/15 10:57:11 [client] open ack slot=10 sid=298
+2026/11/15 10:57:11 [client] stream 299 spread to 2 slots (sid=299, sent=138237)
+2026/11/15 10:57:11 [client] stream 299 spread to 3 slots (sid=299, sent=269161)
+2026/11/15 10:57:11 [client] stream 299 spread to 4 slots (sid=299, sent=400233)
+2026/11/15 10:57:11 [client] stream 296 spread to 2 slots (sid=296, sent=134915)
+2026/11/15 10:57:11 [client] stream 296 spread to 3 slots (sid=296, sent=265839)
+2026/11/15 10:57:11 [client] stream 296 spread to 4 slots (sid=296, sent=397345)
+2026/11/15 10:57:12 [client] pumpUp EOF/err stream=262 sent=3652 err=EOF
+2026/11/15 10:57:12 [client] open ack slot=9 sid=297
+2026/11/15 10:57:12 [client] pumpUp EOF/err stream=265 sent=3768 err=EOF
+2026/11/15 10:57:14 [client] pumpUp EOF/err stream=191 sent=2634 err=EOF
+2026/11/15 10:57:15 [client] stream 180 closeWriteLocal
+2026/11/15 10:57:15 [client] stream 153 closeWriteLocal
+2026/11/15 10:57:15 [client] pumpUp EOF/err stream=263 sent=3824 err=EOF
+2026/11/15 10:57:16 [client] pumpUp EOF/err stream=192 sent=2763 err=EOF
+2026/11/15 10:57:16 [client] pumpUp EOF/err stream=180 sent=3697 err=EOF
+2026/11/15 10:57:16 [client] pumpUp EOF/err stream=153 sent=3744 err=EOF
+2026/11/15 10:57:16 [client] open ack slot=8 sid=303
+2026/11/15 10:57:16 [client] stream 303 closeWriteLocal
+2026/11/15 10:57:16 [client] pumpUp EOF/err stream=303 sent=630 err=EOF
+2026/11/15 10:57:16 [client] pumpUp EOF/err stream=304 sent=2026 err=read tcp 127.0.0.1:49888->127.0.0.1:63959: use of closed network connection
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=164 sent=2844 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=20 sent=2108 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=256 sent=2817 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=283 sent=2069 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=298 sent=2065 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=21 sent=2028 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=287 sent=2133 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=242 sent=7166 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=264 sent=5247 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=281 sent=3354 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=187 sent=2780 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=297 sent=2336 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=168 sent=2866 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=117 sent=3896 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=205 sent=2239 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=134 sent=4751 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=137 sent=4183 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=237 sent=2095 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=22 sent=2066 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=270 sent=2027 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=131 sent=4214 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=208 sent=2207 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=23 sent=2066 err=EOF
+2026/11/15 10:57:17 [client] pumpUp EOF/err stream=136 sent=3135 err=EOF
+2026/11/15 10:57:20 [client] pumpUp EOF/err stream=305 sent=1962 err=read tcp 127.0.0.1:49888->127.0.0.1:61397: use of closed network connection
+2026/11/15 10:57:23 [client] open ack slot=10 sid=307
+2026/11/15 10:57:24 [client] open ack slot=5 sid=306
+2026/11/15 10:57:24 [client] stream 306 spread to 2 slots (sid=306, sent=141316)
+2026/11/15 10:57:24 [client] stream 306 spread to 3 slots (sid=306, sent=272388)
+2026/11/15 10:57:24 [client] stream 306 spread to 4 slots (sid=306, sent=403460)
+2026/11/15 10:57:25 [client] pumpUp EOF/err stream=302 sent=25037261 err=read tcp 127.0.0.1:49888->127.0.0.1:58132: use of closed network connection
+2026/11/15 10:57:26 [client] stream 300 closeWriteLocal
+2026/11/15 10:57:26 [client] pumpUp EOF/err stream=300 sent=3007 err=EOF
+2026/11/15 10:57:27 [client] stream 295 closeWriteLocal
+2026/11/15 10:57:27 [client] pumpUp EOF/err stream=295 sent=3740 err=EOF
+2026/11/15 10:57:27 [client] open ack slot=7 sid=314
+2026/11/15 10:57:27 [client] open ack slot=8 sid=315
+2026/11/15 10:57:27 [client] open ack slot=10 sid=316
+2026/11/15 10:57:28 [client] open ack slot=6 sid=309
+2026/11/15 10:57:28 [client] open ack slot=2 sid=321
+2026/11/15 10:57:28 [client] open ack slot=7 sid=326
+2026/11/15 10:57:28 [client] pumpUp EOF/err stream=299 sent=12590413 err=EOF
+2026/11/15 10:57:28 [client] pumpUp EOF/err stream=306 sent=3858434 err=EOF
+2026/11/15 10:57:28 [client] open ack slot=15 sid=319
+2026/11/15 10:57:28 [client] pumpUp EOF/err stream=296 sent=25037261 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=312 sent=2271 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=324 sent=2000 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=325 sent=1936 err=EOF
+2026/11/15 10:57:29 [client] open ack slot=8 sid=329
+2026/11/15 10:57:29 [client] open ack slot=10 sid=330
+2026/11/15 10:57:29 [client] open ack slot=7 sid=337
+2026/11/15 10:57:29 [client] open ack slot=6 sid=325
+2026/11/15 10:57:29 [client] open ack slot=15 sid=332
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=84 sent=2957 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=316 sent=5949 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=315 sent=5934 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=70 sent=2926 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=290 sent=3452 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=42 sent=2681 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=43 sent=2693 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=16 sent=5670 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=17 sent=2999 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=307 sent=3050 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=33 sent=47374 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=41 sent=2660 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=39 sent=3390 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=158 sent=3073 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=18 sent=41122 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=54 sent=2936 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=113 sent=2733 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=24 sent=3339 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=101 sent=2906 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=96 sent=3607 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=109 sent=4482 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=121 sent=2841 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=102 sent=2606 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=80 sent=2828 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=93 sent=2961 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=253 sent=2982 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=98 sent=3265 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=74 sent=11304 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=56 sent=2664 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=59 sent=3058 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=57 sent=2682 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=55 sent=2715 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=89 sent=3299 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=58 sent=2630 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=78 sent=2629 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=83 sent=2900 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=90 sent=2601 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=81 sent=3322 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=99 sent=3091 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=61 sent=10398 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=91 sent=2645 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=62 sent=3203 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=228 sent=2747 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=193 sent=2831 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=86 sent=7922 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=88 sent=4321 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=64 sent=3283 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=314 sent=10294 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=106 sent=2752 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=107 sent=3093 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=104 sent=62525 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=95 sent=2808 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=115 sent=3235 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=110 sent=2978 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=122 sent=9704 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=114 sent=2752 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=119 sent=2677 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=291 sent=3508 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=112 sent=2775 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=254 sent=2753 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=108 sent=2597 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=174 sent=2700 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=116 sent=3664 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=239 sent=3822 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=123 sent=4543 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=171 sent=2711 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=185 sent=2790 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=138 sent=11403 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=189 sent=2813 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=165 sent=2787 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=125 sent=3829 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=124 sent=2883 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=159 sent=2883 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=203 sent=10190 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=292 sent=2896 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=176 sent=2919 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=173 sent=2780 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=147 sent=3616 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=200 sent=3683 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=250 sent=2799 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=218 sent=12550 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=139 sent=3023 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=223 sent=2906 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=170 sent=2943 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=182 sent=2677 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=190 sent=2879 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=202 sent=3799 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=133 sent=3273 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=135 sent=2606 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=127 sent=7880 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=128 sent=10634 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=162 sent=2837 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=206 sent=2766 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=230 sent=5670 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=172 sent=2991 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=130 sent=3015 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=209 sent=3341 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=285 sent=6087 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=132 sent=9608 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=126 sent=2955 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=146 sent=3064 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=198 sent=8703 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=275 sent=6457 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=207 sent=2817 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=273 sent=5083 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=197 sent=2758 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=226 sent=2784 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=186 sent=2890 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=244 sent=2811 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=225 sent=2828 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=249 sent=3227 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=215 sent=3296 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=251 sent=8925 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=163 sent=2873 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=238 sent=3150 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=196 sent=2678 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=267 sent=2731 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=166 sent=2747 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=252 sent=7810 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=229 sent=8782 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=235 sent=9751 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=204 sent=8874 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=272 sent=2802 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=148 sent=3254 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=161 sent=5994 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=255 sent=4203 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=199 sent=3212 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=149 sent=2966 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=183 sent=2704 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=243 sent=5491 err=EOF
+2026/11/15 10:57:29 [client] pumpUp EOF/err stream=150 sent=5654 err=EOF
+2026/11/15 10:57:29 [client] open ack slot=6 sid=336
+2026/11/15 10:57:30 [client] open ack slot=1 sid=340
+2026/11/15 10:57:30 [client] open ack slot=11 sid=341
+2026/11/15 10:57:30 [client] open ack slot=1 sid=342
+2026/11/15 10:57:30 [client] open ack slot=10 sid=344
+2026/11/15 10:57:30 [client] open ack slot=1 sid=348
+2026/11/15 10:57:30 [client] open ack slot=14 sid=346
+2026/11/15 10:57:30 [client] open ack slot=9 sid=343
+2026/11/15 10:57:30 [client] open ack slot=2 sid=349
+2026/11/15 10:57:30 [client] open ack slot=1 sid=357
+2026/11/15 10:57:30 [client] open ack slot=11 sid=354
+2026/11/15 10:57:30 [client] open ack slot=11 sid=345
+2026/11/15 10:57:30 [client] pumpUp EOF/err stream=321 sent=2303 err=EOF
+2026/11/15 10:57:30 [client] open ack slot=14 sid=355
+2026/11/15 10:57:30 [client] open ack slot=10 sid=353
+2026/11/15 10:57:30 [client] open ack slot=7 sid=350
+2026/11/15 10:57:30 [client] open ack slot=9 sid=352
+2026/11/15 10:57:30 [client] open ack slot=2 sid=358
+2026/11/15 10:57:30 [client] open ack slot=7 sid=360
+2026/11/15 10:57:30 [client] open ack slot=6 sid=359
+2026/11/15 10:57:30 [client] open ack slot=9 sid=362
+2026/11/15 10:57:30 [client] open ack slot=8 sid=351
+2026/11/15 10:57:30 [client] open ack slot=8 sid=361
+2026/11/15 10:57:30 [client] open ack slot=2 sid=363
+2026/11/15 10:57:30 [client] open ack slot=10 sid=364
+2026/11/15 10:57:30 [client] open ack slot=11 sid=365
+2026/11/15 10:57:30 [client] open ack slot=14 sid=368
+2026/11/15 10:57:30 [client] open ack slot=15 sid=369
+2026/11/15 10:57:30 [client] open ack slot=1 sid=371
+2026/11/15 10:57:30 [client] open ack slot=6 sid=374
+2026/11/15 10:57:31 [client] pumpUp EOF/err stream=339 sent=2315 err=EOF
+2026/11/15 10:57:31 [client] open ack slot=7 sid=375
+2026/11/15 10:57:31 [client] pumpUp EOF/err stream=338 sent=2498 err=EOF
+2026/11/15 10:57:31 [client] open ack slot=2 sid=372
+2026/11/15 10:57:31 [client] stream 348 closeWriteLocal
+2026/11/15 10:57:31 [client] pumpUp EOF/err stream=348 sent=2729 err=EOF
+2026/11/15 10:57:31 [client] open ack slot=8 sid=378
+2026/11/15 10:57:31 [client] open ack slot=4 sid=311
+2026/11/15 10:57:31 [client] open ack slot=4 sid=313
+2026/11/15 10:57:31 [client] open ack slot=1 sid=379
+2026/11/15 10:57:31 [client] open ack slot=5 sid=308
+2026/11/15 10:57:31 [client] open ack slot=5 sid=339
+2026/11/15 10:57:31 [client] open ack slot=5 sid=335
+2026/11/15 10:57:31 [client] open ack slot=10 sid=381
+2026/11/15 10:57:31 [client] open ack slot=5 sid=324
+2026/11/15 10:57:31 [client] open ack slot=5 sid=376
+2026/11/15 10:57:31 [client] stream 308 closeWriteLocal
+2026/11/15 10:57:31 [client] open ack slot=5 sid=327
+2026/11/15 10:57:31 [client] pumpUp EOF/err stream=308 sent=630 err=EOF
+2026/11/15 10:57:31 [client] open ack slot=12 sid=317
+2026/11/15 10:57:31 [client] open ack slot=11 sid=382
+2026/11/15 10:57:31 [client] open ack slot=9 sid=380
+2026/11/15 10:57:32 [client] pumpUp EOF/err stream=340 sent=2219 err=EOF
+2026/11/15 10:57:32 [client] stream 336 closeWriteLocal
+2026/11/15 10:57:32 [client] stream 359 closeWriteLocal
+2026/11/15 10:57:32 [client] pumpUp EOF/err stream=336 sent=4949 err=EOF
+2026/11/15 10:57:32 [client] pumpUp EOF/err stream=359 sent=2989 err=EOF
+2026/11/15 10:57:32 [client] open ack slot=5 sid=383
+2026/11/15 10:57:32 [client] open ack slot=12 sid=310
+2026/11/15 10:57:32 [client] open ack slot=12 sid=366
+2026/11/15 10:57:32 [client] open ack slot=12 sid=328
+2026/11/15 10:57:32 [client] pumpUp EOF/err stream=328 sent=2004 err=EOF
+2026/11/15 10:57:32 [client] open ack slot=6 sid=384
+2026/11/15 10:57:32 [client] open ack slot=4 sid=334
+2026/11/15 10:57:32 [client] open ack slot=4 sid=323
+2026/11/15 10:57:32 [client] open ack slot=6 sid=386
+2026/11/15 10:57:32 [client] open ack slot=12 sid=387
+2026/11/15 10:57:32 [client] open ack slot=1 sid=385
+2026/11/15 10:57:32 [client] open ack slot=13 sid=318
+2026/11/15 10:57:32 [client] open ack slot=13 sid=367
+2026/11/15 10:57:32 [client] pumpUp EOF/err stream=322 sent=2259 err=EOF
+2026/11/15 10:57:32 [client] open ack slot=12 sid=388
+2026/11/15 10:57:32 [client] open ack slot=14 sid=391
+2026/11/15 10:57:32 [client] open ack slot=13 sid=331
+2026/11/15 10:57:32 [client] open ack slot=13 sid=390
+2026/11/15 10:57:33 [client] open ack slot=15 sid=392
+2026/11/15 10:57:33 [client] pumpUp EOF/err stream=327 sent=1925 err=EOF
+2026/11/15 10:57:33 [client] pumpUp EOF/err stream=323 sent=1925 err=EOF
+2026/11/15 10:57:33 [client] pumpUp EOF/err stream=366 sent=2466 err=EOF
+2026/11/15 10:57:33 [client] stream 367 closeWriteLocal
+2026/11/15 10:57:34 [client] open ack slot=4 sid=394
+2026/11/15 10:57:34 [client] pumpUp EOF/err stream=389 sent=2030 err=EOF
+2026/11/15 10:57:34 [client] open ack slot=5 sid=395
+2026/11/15 10:57:34 [client] open ack slot=12 sid=396
+2026/11/15 10:57:34 [client] pumpUp EOF/err stream=390 sent=2026 err=EOF
+2026/11/15 10:57:34 [client] pumpUp EOF/err stream=367 sent=2344 err=EOF
+2026/11/15 10:57:34 [client] open ack slot=2 sid=399
+2026/11/15 10:57:35 [client] open ack slot=13 sid=401
+2026/11/15 10:57:35 [client] stream 380 closeWriteLocal
+2026/11/15 10:57:35 [client] open ack slot=1 sid=398
+2026/11/15 10:57:35 [client] pumpUp EOF/err stream=398 sent=1953 err=EOF
+2026/11/15 10:57:35 [client] stream 384 closeWriteLocal
+2026/11/15 10:57:35 [client] pumpUp EOF/err stream=397 sent=2017 err=EOF
+2026/11/15 10:57:36 [client] pumpUp EOF/err stream=380 sent=4377 err=EOF
+2026/11/15 10:57:36 [client] pumpUp EOF/err stream=384 sent=4598 err=EOF
+2026/11/15 10:57:36 [client] pumpUp EOF/err stream=399 sent=1985 err=EOF
+2026/11/15 10:57:37 [client] open ack slot=6 sid=402
+2026/11/15 10:57:37 [client] open ack slot=9 sid=403
+2026/11/15 10:57:37 [client] pumpUp EOF/err stream=362 sent=3012 err=EOF
+2026/11/15 10:57:38 [client] pumpUp EOF/err stream=32 sent=31177 err=EOF
+2026/11/15 10:57:38 [client] pumpUp EOF/err stream=35 sent=2821 err=EOF
+2026/11/15 10:57:38 [client] pumpUp EOF/err stream=382 sent=5721 err=EOF
+2026/11/15 10:57:38 [client] stream 319 closeWriteLocal
+2026/11/15 10:57:39 [client] stream 326 closeWriteLocal
+2026/11/15 10:57:39 [client] pumpUp EOF/err stream=326 sent=30275 err=EOF
+2026/11/15 10:57:39 [client] open ack slot=7 sid=405
+2026/11/15 10:57:39 [client] open ack slot=9 sid=406
+2026/11/15 10:57:39 [client] open ack slot=9 sid=418
+2026/11/15 10:57:39 [client] open ack slot=5 sid=414
+2026/11/15 10:57:39 [client] open ack slot=11 sid=420
+2026/11/15 10:57:39 [client] open ack slot=8 sid=417
+2026/11/15 10:57:39 [client] open ack slot=15 sid=424
+2026/11/15 10:57:39 [client] open ack slot=14 sid=423
+2026/11/15 10:57:39 [client] open ack slot=6 sid=415
+2026/11/15 10:57:39 [client] open ack slot=2 sid=411
+2026/11/15 10:57:39 [client] open ack slot=12 sid=421
+2026/11/15 10:57:39 [client] open ack slot=11 sid=407
+2026/11/15 10:57:39 [client] open ack slot=10 sid=419
+2026/11/15 10:57:39 [client] open ack slot=13 sid=408
+2026/11/15 10:57:39 [client] open ack slot=7 sid=416
+2026/11/15 10:57:39 [client] open ack slot=1 sid=410
+2026/11/15 10:57:39 [client] open ack slot=4 sid=413
+2026/11/15 10:57:39 [client] pumpUp EOF/err stream=319 sent=4763 err=EOF
+2026/11/15 10:57:39 [client] open ack slot=13 sid=422
+2026/11/15 10:57:40 [client] open ack slot=1 sid=427
+2026/11/15 10:57:40 [client] open ack slot=2 sid=428
+2026/11/15 10:57:40 [client] open ack slot=5 sid=431
+2026/11/15 10:57:40 [client] open ack slot=4 sid=430
+2026/11/15 10:57:40 [client] open ack slot=6 sid=432
+2026/11/15 10:57:40 [client] open ack slot=7 sid=433
+2026/11/15 10:57:40 [client] open ack slot=8 sid=434
+2026/11/15 10:57:40 [client] open ack slot=15 sid=426
+2026/11/15 10:57:40 [client] open ack slot=11 sid=437
+2026/11/15 10:57:40 [client] open ack slot=10 sid=436
+2026/11/15 10:57:40 [client] pumpUp EOF/err stream=433 sent=2021 err=EOF
+2026/11/15 10:57:40 [client] pumpUp EOF/err stream=437 sent=2021 err=EOF
+2026/11/15 10:57:40 [client] pumpUp EOF/err stream=436 sent=1989 err=EOF
+2026/11/15 10:57:40 [client] open ack slot=12 sid=438
+2026/11/15 10:57:40 [client] open ack slot=13 sid=439
+2026/11/15 10:57:40 [client] open ack slot=15 sid=441
+2026/11/15 10:57:40 [client] open ack slot=9 sid=435
+2026/11/15 10:57:40 [client] pumpUp EOF/err stream=425 sent=1999 err=EOF
+2026/11/15 10:57:40 [client] open ack slot=14 sid=440
+2026/11/15 10:57:40 [client] open ack slot=10 sid=443
+2026/11/15 10:57:40 [client] open ack slot=2 sid=447
+2026/11/15 10:57:40 [client] open ack slot=7 sid=442
+2026/11/15 10:57:40 [client] open ack slot=4 sid=449
+2026/11/15 10:57:40 [client] open ack slot=6 sid=451
+2026/11/15 10:57:40 [client] stream 443 closeWriteLocal
+2026/11/15 10:57:40 [client] pumpUp EOF/err stream=444 sent=1962 err=read tcp 127.0.0.1:49888->127.0.0.1:63132: use of closed network connection
+2026/11/15 10:57:40 [client] open ack slot=7 sid=452
+2026/11/15 10:57:40 [client] stream 442 closeWriteLocal
+2026/11/15 10:57:40 [client] stream 449 closeWriteLocal
+2026/11/15 10:57:40 [client] stream 451 closeWriteLocal
+2026/11/15 10:57:40 [client] pumpUp EOF/err stream=443 sent=630 err=EOF
+2026/11/15 10:57:40 [client] pumpUp EOF/err stream=451 sent=623 err=EOF
+2026/11/15 10:57:40 [client] pumpUp EOF/err stream=442 sent=645 err=EOF
+2026/11/15 10:57:40 [client] pumpUp EOF/err stream=449 sent=629 err=EOF
+2026/11/15 10:57:41 [client] pumpUp EOF/err stream=435 sent=1989 err=EOF
+2026/11/15 10:57:41 [client] open ack slot=1 sid=446
+2026/11/15 10:57:41 [client] open ack slot=10 sid=454
+2026/11/15 10:57:41 [client] stream 454 closeWriteLocal
+2026/11/15 10:57:41 [client] pumpUp EOF/err stream=454 sent=630 err=EOF
+2026/11/15 10:57:41 [client] open ack slot=9 sid=455
+2026/11/15 10:57:41 [client] stream 446 closeWriteLocal
+2026/11/15 10:57:41 [client] pumpUp EOF/err stream=446 sent=629 err=EOF
+2026/11/15 10:57:41 [client] open ack slot=10 sid=456
+2026/11/15 10:57:41 [client] open ack slot=3 sid=306
+2026/11/15 10:57:41 [client] open ack slot=5 sid=450
+2026/11/15 10:57:41 [client] open ack slot=1 sid=458
+2026/11/15 10:57:41 [client] open ack slot=11 sid=457
+2026/11/15 10:57:41 [client] pumpUp EOF/err stream=413 sent=2746 err=EOF
+2026/11/15 10:57:41 [client] open ack slot=4 sid=459
+2026/11/15 10:57:41 [client] stream 450 closeWriteLocal
+2026/11/15 10:57:41 [client] pumpUp EOF/err stream=450 sent=2202 err=EOF
+2026/11/15 10:57:41 [client] pumpUp EOF/err stream=409 sent=1954 err=EOF
+2026/11/15 10:57:42 [client] pumpUp EOF/err stream=460 sent=1994 err=read tcp 127.0.0.1:49888->127.0.0.1:57388: use of closed network connection
+2026/11/15 10:57:42 [client] stream 358 closeWriteLocal
+2026/11/15 10:57:42 [client] open ack slot=4 sid=462
+2026/11/15 10:57:43 [client] open ack slot=3 sid=312
+2026/11/15 10:57:43 [client] open ack slot=3 sid=333
+2026/11/15 10:57:43 [client] open ack slot=3 sid=322
+2026/11/15 10:57:43 [client] pumpUp EOF/err stream=358 sent=3356 err=EOF
+2026/11/15 10:57:43 [client] open ack slot=5 sid=463
+2026/11/15 10:57:43 [client] open ack slot=3 sid=338
+2026/11/15 10:57:43 [client] open ack slot=3 sid=373
+2026/11/15 10:57:43 [client] open ack slot=3 sid=412
+2026/11/15 10:57:43 [client] open ack slot=3 sid=400
+2026/11/15 10:57:43 [client] open ack slot=3 sid=429
+2026/11/15 10:57:43 [client] open ack slot=3 sid=389
+2026/11/15 10:57:43 [client] stream 400 closeWriteLocal
+2026/11/15 10:57:43 [client] pumpUp EOF/err stream=400 sent=630 err=EOF
+2026/11/15 10:57:43 [client] open ack slot=3 sid=377
+2026/11/15 10:57:43 [client] open ack slot=3 sid=404
+2026/11/15 10:57:43 [client] open ack slot=3 sid=448
+2026/11/15 10:57:43 [client] stream 448 closeWriteLocal
+2026/11/15 10:57:43 [client] pumpUp EOF/err stream=448 sent=629 err=EOF
+2026/11/15 10:57:44 [client] open ack slot=3 sid=397
+2026/11/15 10:57:44 [client] stream 422 closeWriteLocal
+2026/11/15 10:57:44 [client] pumpUp EOF/err stream=422 sent=2810 err=EOF
+2026/11/15 10:57:45 [client] open ack slot=13 sid=465
+2026/11/15 10:57:45 [client] stream 395 closeWriteLocal
+2026/11/15 10:57:45 [client] pumpUp EOF/err stream=395 sent=2925 err=EOF
+2026/11/15 10:57:45 [client] stream 396 closeWriteLocal
+2026/11/15 10:57:45 [client] pumpUp EOF/err stream=396 sent=2775 err=EOF
+2026/11/15 10:57:46 [client] open ack slot=12 sid=466
+2026/11/15 10:57:46 [client] pumpUp EOF/err stream=342 sent=3370 err=EOF
+2026/11/15 10:57:46 [client] open ack slot=2 sid=467
+2026/11/15 10:57:46 [client] open ack slot=3 sid=464
+2026/11/15 10:57:46 [client] open ack slot=3 sid=469
+2026/11/15 10:57:46 [client] open ack slot=5 sid=470
+2026/11/15 10:57:47 [client] open ack slot=1 sid=468
+2026/11/15 10:57:47 [client] open ack slot=8 sid=473
+2026/11/15 10:57:47 [client] open ack slot=7 sid=472
+2026/11/15 10:57:47 [client] open ack slot=6 sid=471
+2026/11/15 10:57:47 [client] open ack slot=9 sid=474
+2026/11/15 10:57:47 [client] open ack slot=13 sid=478
+2026/11/15 10:57:47 [client] open ack slot=11 sid=476
+2026/11/15 10:57:47 [client] open ack slot=10 sid=475
+2026/11/15 10:57:47 [client] open ack slot=14 sid=479
+2026/11/15 10:57:47 [client] open ack slot=12 sid=477
+2026/11/15 10:57:47 [client] stream 470 closeWriteLocal
+2026/11/15 10:57:47 [client] pumpUp EOF/err stream=470 sent=3363 err=EOF
+2026/11/15 10:57:47 [client] stream 440 closeWriteLocal
+2026/11/15 10:57:47 [client] pumpUp EOF/err stream=440 sent=2686 err=EOF
+2026/11/15 10:57:47 [client] open ack slot=5 sid=480
+2026/11/15 10:57:47 [client] stream 388 closeWriteLocal
+2026/11/15 10:57:47 [client] pumpUp EOF/err stream=388 sent=12823 err=EOF
+2026/11/15 10:57:47 [client] open ack slot=15 sid=481
+2026/11/15 10:57:48 [client] open ack slot=12 sid=483
+2026/11/15 10:57:48 [client] stream 410 closeWriteLocal
+2026/11/15 10:57:48 [client] pumpUp EOF/err stream=410 sent=6784 err=EOF
+2026/11/15 10:57:48 [client] open ack slot=1 sid=485
+2026/11/15 10:57:48 [client] open ack slot=14 sid=482
+2026/11/15 10:57:48 [client] open ack slot=2 sid=486
+2026/11/15 10:57:48 [client] open ack slot=1 sid=487
+2026/11/15 10:57:48 [client] open ack slot=3 sid=488
+2026/11/15 10:57:48 [client] open ack slot=4 sid=489
+2026/11/15 10:57:49 [client] stream 418 closeWriteLocal
+2026/11/15 10:57:49 [client] pumpUp EOF/err stream=418 sent=2850 err=EOF
+2026/11/15 10:57:49 [client] pumpUp EOF/err stream=313 sent=19372 err=EOF
+2026/11/15 10:57:50 [client] open ack slot=0 sid=320
+2026/11/15 10:57:50 [client] open ack slot=0 sid=347
+2026/11/15 10:57:50 [client] open ack slot=0 sid=356
+2026/11/15 10:57:50 [client] open ack slot=0 sid=370
+2026/11/15 10:57:50 [client] open ack slot=0 sid=393
+2026/11/15 10:57:50 [client] open ack slot=0 sid=409
+2026/11/15 10:57:50 [client] stream 320 closeWriteLocal
+2026/11/15 10:57:50 [client] open ack slot=0 sid=425
+2026/11/15 10:57:50 [client] open ack slot=0 sid=445
+2026/11/15 10:57:50 [client] stream 347 closeWriteLocal
+2026/11/15 10:57:50 [client] open ack slot=0 sid=453
+2026/11/15 10:57:50 [client] open ack slot=0 sid=461
+2026/11/15 10:57:50 [client] stream 445 closeWriteLocal
+2026/11/15 10:57:50 [client] open ack slot=0 sid=484
+2026/11/15 10:57:50 [client] stream 393 closeWriteLocal
+2026/11/15 10:57:50 [client] pumpUp EOF/err stream=445 sent=629 err=EOF
+2026/11/15 10:57:50 [client] pumpUp EOF/err stream=320 sent=2059 err=read tcp 127.0.0.1:49888->127.0.0.1:51550: use of closed network connection
+2026/11/15 10:57:50 [client] pumpUp EOF/err stream=347 sent=2087 err=read tcp 127.0.0.1:49888->127.0.0.1:61963: use of closed network connection
+2026/11/15 10:57:50 [client] pumpUp EOF/err stream=393 sent=2736 err=read tcp 127.0.0.1:49888->127.0.0.1:63677: use of closed network connection
+2026/11/15 10:57:50 [client] stream 335 closeWriteLocal
+2026/11/15 10:57:51 [client] pumpUp EOF/err stream=408 sent=2804 err=EOF
+2026/11/15 10:57:51 [client] stream 415 closeWriteLocal
+2026/11/15 10:57:51 [client] stream 370 closeWriteLocal
+2026/11/15 10:57:51 [client] stream 385 closeWriteLocal
+2026/11/15 10:57:51 [client] pumpUp EOF/err stream=385 sent=11395 err=EOF
+2026/11/15 10:57:51 [client] pumpUp EOF/err stream=335 sent=2444 err=EOF
+2026/11/15 10:57:52 [client] pumpUp EOF/err stream=415 sent=3412 err=EOF
+2026/11/15 10:57:52 [client] pumpUp EOF/err stream=481 sent=2947 err=EOF
+2026/11/15 10:57:52 [client] pumpUp EOF/err stream=370 sent=2106 err=EOF
+2026/11/15 10:57:53 [client] pumpUp EOF/err stream=466 sent=2696 err=EOF
+2026/11/15 10:57:53 [client] stream 484 closeWriteLocal
+2026/11/15 10:57:54 [client] pumpUp EOF/err stream=484 sent=4872 err=EOF
+2026/11/15 10:57:57 [client] stream 317 closeWriteLocal
+2026/11/15 10:57:58 [client] stream 477 closeWriteLocal
+2026/11/15 10:57:58 [client] pumpUp EOF/err stream=477 sent=2940 err=EOF
+2026/11/15 10:57:58 [client] pumpUp EOF/err stream=317 sent=3827 err=EOF
+2026/11/15 10:57:59 [client] pumpUp EOF/err stream=483 sent=3442 err=EOF
+2026/11/15 10:58:00 [client] stream 355 closeWriteLocal
+2026/11/15 10:58:00 [client] pumpUp EOF/err stream=355 sent=3047 err=EOF
+2026/11/15 10:58:02 [client] open ack slot=0 sid=490
+2026/11/15 10:58:04 [client] stream 318 closeWriteLocal
+2026/11/15 10:58:05 [client] open ack slot=0 sid=493
+2026/11/15 10:58:05 [client] open ack slot=12 sid=492
+2026/11/15 10:58:05 [client] open ack slot=0 sid=491
+2026/11/15 10:58:05 [client] stream 401 closeWriteLocal
+2026/11/15 10:58:05 [client] stream 386 closeWriteLocal
+2026/11/15 10:58:05 [client] pumpUp EOF/err stream=318 sent=2864 err=EOF
+2026/11/15 10:58:06 [client] pumpUp EOF/err stream=386 sent=32666 err=EOF
+2026/11/15 10:58:06 [client] pumpUp EOF/err stream=401 sent=2260 err=EOF
+2026/11/15 10:58:06 [client] open ack slot=12 sid=494
+2026/11/15 10:58:07 [client] stream 387 closeWriteLocal
+2026/11/15 10:58:07 [client] pumpUp EOF/err stream=387 sent=32115 err=EOF
+2026/11/15 10:58:07 [client] open ack slot=12 sid=495
+2026/11/15 10:58:07 [client] open ack slot=13 sid=496
+2026/11/15 10:58:07 [client] open ack slot=6 sid=498
+2026/11/15 10:58:07 [client] open ack slot=6 sid=503
+2026/11/15 10:58:07 [client] open ack slot=13 sid=500
+2026/11/15 10:58:07 [client] open ack slot=12 sid=499
+2026/11/15 10:58:07 [client] open ack slot=12 sid=505
+2026/11/15 10:58:07 [client] open ack slot=9 sid=504
+2026/11/15 10:58:07 [client] open ack slot=0 sid=501
+2026/11/15 10:58:07 [client] open ack slot=0 sid=497
+2026/11/15 10:58:07 [client] open ack slot=5 sid=502
+2026/11/15 10:58:07 [client] open ack slot=13 sid=506
+2026/11/15 10:58:07 [client] open ack slot=14 sid=507
+2026/11/15 10:58:07 [client] open ack slot=15 sid=508
+2026/11/15 10:58:08 [client] stream 334 closeWriteLocal
+2026/11/15 10:58:08 [client] open ack slot=1 sid=510
+2026/11/15 10:58:08 [client] open ack slot=0 sid=509
+2026/11/15 10:58:08 [client] open ack slot=7 sid=514
+2026/11/15 10:58:08 [client] open ack slot=6 sid=513
+2026/11/15 10:58:08 [client] open ack slot=5 sid=512
+2026/11/15 10:58:08 [client] open ack slot=4 sid=511
+2026/11/15 10:58:08 [client] open ack slot=9 sid=516
+2026/11/15 10:58:08 [client] open ack slot=8 sid=515
+2026/11/15 10:58:08 [client] pumpUp EOF/err stream=472 sent=3051 err=EOF
+2026/11/15 10:58:08 [client] open ack slot=11 sid=518
+2026/11/15 10:58:08 [client] open ack slot=12 sid=519
+2026/11/15 10:58:08 [client] open ack slot=10 sid=517
+2026/11/15 10:58:08 [client] open ack slot=13 sid=520
+2026/11/15 10:58:08 [client] open ack slot=14 sid=521
+2026/11/15 10:58:08 [client] open ack slot=7 sid=522
+2026/11/15 10:58:08 [client] open ack slot=0 sid=524
+2026/11/15 10:58:08 [client] open ack slot=1 sid=525
+2026/11/15 10:58:08 [client] pumpUp EOF/err stream=424 sent=2063 err=EOF
+2026/11/15 10:58:08 [client] pumpUp EOF/err stream=333 sent=2007 err=EOF
+2026/11/15 10:58:09 [client] pumpUp EOF/err stream=334 sent=2064 err=EOF
+2026/11/15 10:58:09 [client] open ack slot=15 sid=523
+2026/11/15 10:58:09 [client] open ack slot=2 sid=526
+2026/11/15 10:58:09 [client] open ack slot=4 sid=528
+2026/11/15 10:58:09 [client] open ack slot=15 sid=529
+2026/11/15 10:58:09 [client] open ack slot=3 sid=527
+2026/11/15 10:58:09 [client] open ack slot=3 sid=530
+2026/11/15 10:58:09 [client] pumpUp EOF/err stream=506 sent=2007 err=EOF
+2026/11/15 10:58:09 [client] stream 519 closeWriteLocal
+2026/11/15 10:58:09 [client] open ack slot=4 sid=531
+2026/11/15 10:58:09 [client] pumpUp EOF/err stream=508 sent=2031 err=EOF
+2026/11/15 10:58:09 [client] pumpUp EOF/err stream=507 sent=2270 err=EOF
+2026/11/15 10:58:09 [client] open ack slot=5 sid=532
+2026/11/15 10:58:09 [client] open ack slot=6 sid=533
+2026/11/15 10:58:09 [client] pumpUp EOF/err stream=519 sent=2957 err=EOF
+2026/11/15 10:58:10 [client] open ack slot=14 sid=536
+2026/11/15 10:58:10 [client] open ack slot=13 sid=535
+2026/11/15 10:58:10 [client] pumpUp EOF/err stream=510 sent=2552 err=EOF
+2026/11/15 10:58:10 [client] open ack slot=7 sid=538
+2026/11/15 10:58:10 [client] open ack slot=15 sid=537
+2026/11/15 10:58:10 [client] open ack slot=12 sid=534
+2026/11/15 10:58:10 [client] pumpUp EOF/err stream=521 sent=2452 err=EOF
+2026/11/15 10:58:10 [client] open ack slot=8 sid=540
+2026/11/15 10:58:10 [client] open ack slot=14 sid=541
+2026/11/15 10:58:11 [client] open ack slot=9 sid=542
+2026/11/15 10:58:11 [client] stream 541 closeWriteLocal
+2026/11/15 10:58:11 [client] pumpUp EOF/err stream=541 sent=2840 err=EOF
+2026/11/15 10:58:11 [client] open ack slot=1 sid=539
+2026/11/15 10:58:11 [client] pumpUp EOF/err stream=544 sent=1962 err=read tcp 127.0.0.1:49888->127.0.0.1:63921: use of closed network connection
+2026/11/15 10:58:11 [client] pumpUp EOF/err stream=543 sent=1994 err=read tcp 127.0.0.1:49888->127.0.0.1:62085: use of closed network connection
+2026/11/15 10:58:11 [client] pumpUp EOF/err stream=368 sent=16259 err=EOF
+2026/11/15 10:58:11 [client] pumpUp EOF/err stream=375 sent=5505 err=EOF
+2026/11/15 10:58:11 [client] pumpUp EOF/err stream=509 sent=10273 err=EOF
+2026/11/15 10:58:11 [client] pumpUp EOF/err stream=494 sent=4721 err=EOF
+2026/11/15 10:58:11 [client] pumpUp EOF/err stream=522 sent=4495 err=EOF
+2026/11/15 10:58:11 [client] pumpUp EOF/err stream=517 sent=3002 err=EOF
+2026/11/15 10:58:11 [client] pumpUp EOF/err stream=503 sent=3141 err=EOF
+2026/11/15 10:58:11 [client] pumpUp EOF/err stream=525 sent=3221 err=EOF
+2026/11/15 10:58:11 [client] pumpUp EOF/err stream=372 sent=8400 err=EOF
+2026/11/15 10:58:11 [client] pumpUp EOF/err stream=331 sent=2040 err=EOF
+2026/11/15 10:58:11 [client] pumpUp EOF/err stream=512 sent=3090 err=EOF
+2026/11/15 10:58:11 [client] pumpUp EOF/err stream=518 sent=2346 err=EOF
+2026/11/15 10:58:11 [client] pumpUp EOF/err stream=356 sent=2086 err=EOF
+2026/11/15 10:58:11 [client] open ack slot=11 sid=545
+2026/11/15 10:58:11 [client] open ack slot=12 sid=546
+2026/11/15 10:58:11 [client] open ack slot=14 sid=547
+2026/11/15 10:58:11 [client] open ack slot=0 sid=548
+2026/11/15 10:58:11 [client] stream 499 closeWriteLocal
+2026/11/15 10:58:11 [client] pumpUp EOF/err stream=499 sent=3174 err=EOF
+2026/11/15 10:58:12 [client] open ack slot=13 sid=551
+2026/11/15 10:58:12 [client] open ack slot=10 sid=550
+2026/11/15 10:58:12 [client] open ack slot=12 sid=552
+2026/11/15 10:58:12 [client] open ack slot=7 sid=549
+2026/11/15 10:58:12 [client] open ack slot=14 sid=553
+2026/11/15 10:58:12 [client] pumpUp EOF/err stream=554 sent=1994 err=read tcp 127.0.0.1:49888->127.0.0.1:61281: use of closed network connection
+2026/11/15 10:58:12 [client] pumpUp EOF/err stream=555 sent=2026 err=read tcp 127.0.0.1:49888->127.0.0.1:61282: use of closed network connection
+2026/11/15 10:58:12 [client] pumpUp EOF/err stream=540 sent=2798 err=EOF
+2026/11/15 10:58:12 [client] stream 511 closeWriteLocal
+2026/11/15 10:58:12 [client] open ack slot=0 sid=556
+2026/11/15 10:58:13 [client] open ack slot=1 sid=557
+2026/11/15 10:58:13 [client] open ack slot=2 sid=558
+2026/11/15 10:58:13 [client] open ack slot=5 sid=559
+2026/11/15 10:58:13 [client] stream 536 closeWriteLocal
+2026/11/15 10:58:13 [client] pumpUp EOF/err stream=536 sent=3012 err=EOF
+2026/11/15 10:58:13 [client] open ack slot=7 sid=561
+2026/11/15 10:58:13 [client] pumpUp EOF/err stream=511 sent=11875 err=EOF
+2026/11/15 10:58:14 [client] open ack slot=6 sid=560
+2026/11/15 10:58:14 [client] open ack slot=14 sid=562
+2026/11/15 10:58:16 [client] stream 491 closeWriteLocal
+2026/11/15 10:58:16 [client] pumpUp EOF/err stream=491 sent=12085 err=EOF
+2026/11/15 10:58:17 [client] stream 535 closeWriteLocal
+2026/11/15 10:58:17 [client] pumpUp EOF/err stream=535 sent=2809 err=EOF
+2026/11/15 10:58:18 [client] stream 482 closeWriteLocal
+2026/11/15 10:58:18 [client] pumpUp EOF/err stream=482 sent=2628 err=EOF
+2026/11/15 10:58:18 [client] stream 520 closeWriteLocal
+2026/11/15 10:58:18 [client] pumpUp EOF/err stream=520 sent=3139 err=EOF
+2026/11/15 10:58:19 [client] pumpUp EOF/err stream=490 sent=4431 err=EOF
+2026/11/15 10:58:19 [client] stream 496 closeWriteLocal
+2026/11/15 10:58:19 [client] pumpUp EOF/err stream=496 sent=4409 err=EOF
+2026/11/15 10:58:19 [client] open ack slot=13 sid=563
+2026/11/15 10:58:19 [client] pumpUp EOF/err stream=564 sent=112 err=read tcp 127.0.0.1:49888->127.0.0.1:61133: use of closed network connection
+2026/11/15 10:58:19 [client] stream 563 closeWriteLocal
+2026/11/15 10:58:19 [client] pumpUp EOF/err stream=563 sent=111 err=EOF
+2026/11/15 10:58:19 [client] stream 560 closeWriteLocal
+2026/11/15 10:58:19 [client] pumpUp EOF/err stream=560 sent=3021 err=EOF
+2026/11/15 10:58:20 [client] stream 546 closeWriteLocal
+2026/11/15 10:58:20 [client] pumpUp EOF/err stream=565 sent=112 err=read tcp 127.0.0.1:49888->127.0.0.1:60834: use of closed network connection
+2026/11/15 10:58:21 [client] pumpUp EOF/err stream=532 sent=3228 err=EOF
+2026/11/15 10:58:21 [client] pumpUp EOF/err stream=546 sent=12618 err=read tcp 127.0.0.1:49888->127.0.0.1:61288: use of closed network connection
+2026/11/15 10:58:21 [client] stream 539 closeWriteLocal
+2026/11/15 10:58:21 [client] pumpUp EOF/err stream=539 sent=3171 err=EOF
+2026/11/15 10:58:21 [client] pumpUp EOF/err stream=551 sent=2886 err=EOF
+2026/11/15 10:58:21 [client] pumpUp EOF/err stream=351 sent=2799 err=EOF
+2026/11/15 10:58:22 [client] pumpUp EOF/err stream=439 sent=10733 err=EOF
+2026/11/15 10:58:23 [client] pumpUp EOF/err stream=492 sent=12466 err=EOF
+2026/11/15 10:58:24 [client] open ack slot=13 sid=566
+2026/11/15 10:58:24 [client] open ack slot=13 sid=567
+2026/11/15 10:58:24 [client] pumpUp EOF/err stream=558 sent=2978 err=EOF
+2026/11/15 10:58:25 [client] pumpUp EOF/err stream=559 sent=3054 err=EOF
+2026/11/15 10:58:25 [client] pumpUp EOF/err stream=513 sent=3946 err=EOF
+2026/11/15 10:58:25 [client] stream 549 closeWriteLocal
+2026/11/15 10:58:25 [client] pumpUp EOF/err stream=549 sent=5474 err=read tcp 127.0.0.1:49888->127.0.0.1:64706: use of closed network connection
+2026/11/15 10:58:26 [client] open ack slot=13 sid=568
+2026/11/15 10:58:27 [client] open ack slot=12 sid=569
+2026/11/15 10:58:29 [client] stream 332 closeWriteLocal
+2026/11/15 10:58:29 [client] pumpUp EOF/err stream=332 sent=2994 err=EOF
+2026/11/15 10:58:30 [client] stream 568 closeWriteLocal
+2026/11/15 10:58:30 [client] stream 569 closeWriteLocal
+2026/11/15 10:58:31 [client] pumpUp EOF/err stream=568 sent=3200 err=EOF
+2026/11/15 10:58:31 [client] stream 309 closeWriteLocal
+2026/11/15 10:58:31 [client] pumpUp EOF/err stream=309 sent=4193 err=EOF
+2026/11/15 10:58:31 [client] pumpUp EOF/err stream=349 sent=2928 err=EOF
+2026/11/15 10:58:31 [client] pumpUp EOF/err stream=569 sent=3925 err=EOF
+2026/11/15 10:58:31 [client] stream 310 closeWriteLocal
+2026/11/15 10:58:32 [client] pumpUp EOF/err stream=310 sent=2304 err=EOF
+2026/11/15 10:58:34 [client] stream 394 closeWriteLocal
+2026/11/15 10:58:34 [client] pumpUp EOF/err stream=394 sent=2870 err=EOF
+2026/11/15 10:58:35 [client] open ack slot=12 sid=570
+2026/11/15 10:58:35 [client] stream 570 closeWriteLocal
+2026/11/15 10:58:35 [client] pumpUp EOF/err stream=570 sent=630 err=EOF
+2026/11/15 10:58:38 [client] open ack slot=12 sid=571
+2026/11/15 10:58:39 [client] stream 411 closeWriteLocal
+2026/11/15 10:58:39 [client] pumpUp EOF/err stream=411 sent=2695 err=EOF
+2026/11/15 10:58:39 [client] open ack slot=13 sid=572
+2026/11/15 10:58:40 [client] stream 419 closeWriteLocal
+2026/11/15 10:58:40 [client] pumpUp EOF/err stream=419 sent=3008 err=EOF
+2026/11/15 10:58:40 [client] pumpUp EOF/err stream=421 sent=2769 err=EOF
+2026/11/15 10:58:40 [client] open ack slot=6 sid=574
+2026/11/15 10:58:40 [client] open ack slot=13 sid=576
+2026/11/15 10:58:40 [client] stream 574 closeWriteLocal
+2026/11/15 10:58:40 [client] pumpUp EOF/err stream=574 sent=629 err=EOF
+2026/11/15 10:58:40 [client] stream 576 closeWriteLocal
+2026/11/15 10:58:40 [client] pumpUp EOF/err stream=576 sent=629 err=EOF
+2026/11/15 10:58:40 [client] open ack slot=2 sid=578
+2026/11/15 10:58:40 [client] open ack slot=12 sid=575
+2026/11/15 10:58:40 [client] open ack slot=0 sid=577
+2026/11/15 10:58:40 [client] open ack slot=2 sid=573
+2026/11/15 10:58:40 [client] stream 578 closeWriteLocal
+2026/11/15 10:58:40 [client] stream 577 closeWriteLocal
+2026/11/15 10:58:40 [client] pumpUp EOF/err stream=578 sent=623 err=EOF
+2026/11/15 10:58:40 [client] stream 573 closeWriteLocal
+2026/11/15 10:58:40 [client] pumpUp EOF/err stream=577 sent=645 err=EOF
+2026/11/15 10:58:40 [client] pumpUp EOF/err stream=573 sent=630 err=EOF
+2026/11/15 10:58:40 [client] stream 575 closeWriteLocal
+2026/11/15 10:58:40 [client] pumpUp EOF/err stream=575 sent=629 err=EOF
+2026/11/15 10:58:41 [client] open ack slot=4 sid=579
+2026/11/15 10:58:41 [client] stream 537 closeWriteLocal
+2026/11/15 10:58:41 [client] open ack slot=2 sid=580
+2026/11/15 10:58:41 [client] stream 579 closeWriteLocal
+2026/11/15 10:58:41 [client] stream 580 closeWriteLocal
+2026/11/15 10:58:41 [client] pumpUp EOF/err stream=579 sent=629 err=EOF
+2026/11/15 10:58:41 [client] pumpUp EOF/err stream=580 sent=630 err=EOF
+2026/11/15 10:58:41 [client] pumpUp EOF/err stream=553 sent=2940 err=EOF
+2026/11/15 10:58:41 [client] pumpUp EOF/err stream=426 sent=2879 err=EOF
+2026/11/15 10:58:42 [client] pumpUp EOF/err stream=537 sent=3874 err=EOF
+2026/11/15 10:58:42 [client] pumpUp EOF/err stream=571 sent=15900 err=EOF
+2026/11/15 10:58:42 [client] pumpUp EOF/err stream=572 sent=2961 err=EOF
+2026/11/15 10:58:42 [client] open ack slot=12 sid=581
+2026/11/15 10:58:42 [client] open ack slot=2 sid=583
+2026/11/15 10:58:42 [client] open ack slot=15 sid=582
+2026/11/15 10:58:42 [client] pumpUp EOF/err stream=456 sent=2979 err=EOF
+2026/11/15 10:58:44 [client] open ack slot=6 sid=586
+2026/11/15 10:58:44 [client] open ack slot=12 sid=584
+2026/11/15 10:58:44 [client] open ack slot=13 sid=585
+2026/11/15 10:58:44 [client] open ack slot=12 sid=588
+2026/11/15 10:58:44 [client] open ack slot=10 sid=587
+2026/11/15 10:58:44 [client] open ack slot=13 sid=589
+2026/11/15 10:58:44 [client] pumpUp EOF/err stream=557 sent=2877 err=EOF
+2026/11/15 10:58:44 [client] open ack slot=14 sid=590
+2026/11/15 10:58:44 [client] open ack slot=15 sid=591
+2026/11/15 10:58:44 [client] open ack slot=0 sid=592
+2026/11/15 10:58:45 [client] open ack slot=1 sid=593
+2026/11/15 10:58:45 [client] open ack slot=8 sid=598
+2026/11/15 10:58:45 [client] open ack slot=5 sid=596
+2026/11/15 10:58:45 [client] open ack slot=2 sid=594
+2026/11/15 10:58:45 [client] open ack slot=4 sid=595
+2026/11/15 10:58:45 [client] pumpUp EOF/err stream=603 sent=1930 err=read tcp 127.0.0.1:49888->127.0.0.1:52936: use of closed network connection
+2026/11/15 10:58:45 [client] open ack slot=6 sid=597
+2026/11/15 10:58:45 [client] open ack slot=13 sid=601
+2026/11/15 10:58:45 [client] open ack slot=10 sid=599
+2026/11/15 10:58:45 [client] open ack slot=12 sid=600
+2026/11/15 10:58:45 [client] pumpUp EOF/err stream=604 sent=1930 err=read tcp 127.0.0.1:49888->127.0.0.1:62889: use of closed network connection
+2026/11/15 10:58:45 [client] open ack slot=5 sid=609
+2026/11/15 10:58:45 [client] open ack slot=4 sid=608
+2026/11/15 10:58:45 [client] open ack slot=2 sid=607
+2026/11/15 10:58:45 [client] open ack slot=1 sid=606
+2026/11/15 10:58:45 [client] open ack slot=0 sid=605
+2026/11/15 10:58:45 [client] stream 600 closeWriteLocal
+2026/11/15 10:58:45 [client] pumpUp EOF/err stream=600 sent=2840 err=EOF
+2026/11/15 10:58:45 [client] open ack slot=12 sid=610
+2026/11/15 10:58:45 [client] open ack slot=15 sid=611
+2026/11/15 10:58:46 [client] open ack slot=14 sid=602
+2026/11/15 10:58:46 [client] open ack slot=6 sid=612
+2026/11/15 10:58:46 [client] pumpUp EOF/err stream=613 sent=1930 err=read tcp 127.0.0.1:49888->127.0.0.1:53295: use of closed network connection
+2026/11/15 10:58:46 [client] stream 602 closeWriteLocal
+2026/11/15 10:58:46 [client] open ack slot=8 sid=614
+2026/11/15 10:58:46 [client] pumpUp EOF/err stream=602 sent=2974 err=read tcp 127.0.0.1:49888->127.0.0.1:55991: use of closed network connection
+2026/11/15 10:58:46 [client] pumpUp EOF/err stream=615 sent=1994 err=read tcp 127.0.0.1:49888->127.0.0.1:54159: use of closed network connection
+2026/11/15 10:58:46 [client] open ack slot=7 sid=616
+2026/11/15 10:58:46 [client] open ack slot=12 sid=618
+2026/11/15 10:58:46 [client] open ack slot=11 sid=617
+2026/11/15 10:58:46 [client] pumpUp EOF/err stream=618 sent=2025 err=EOF
+2026/11/15 10:58:46 [client] stream 412 closeWriteLocal
+2026/11/15 10:58:46 [client] pumpUp EOF/err stream=412 sent=3124 err=EOF
+2026/11/15 10:58:46 [client] stream 404 closeWriteLocal
+2026/11/15 10:58:46 [client] pumpUp EOF/err stream=404 sent=2840 err=EOF
+2026/11/15 10:58:47 [client] open ack slot=3 sid=619
+2026/11/15 10:58:47 [client] open ack slot=14 sid=625
+2026/11/15 10:58:47 [client] open ack slot=10 sid=622
+2026/11/15 10:58:47 [client] open ack slot=12 sid=623
+2026/11/15 10:58:47 [client] open ack slot=3 sid=621
+2026/11/15 10:58:47 [client] open ack slot=13 sid=624
+2026/11/15 10:58:47 [client] open ack slot=14 sid=620
+2026/11/15 10:58:47 [client] open ack slot=15 sid=626
+2026/11/15 10:58:47 [client] open ack slot=0 sid=627
+2026/11/15 10:58:47 [client] open ack slot=2 sid=629
+2026/11/15 10:58:47 [client] open ack slot=3 sid=630
+2026/11/15 10:58:48 [client] stream 480 closeWriteLocal
+2026/11/15 10:58:48 [client] pumpUp EOF/err stream=480 sent=2829 err=EOF
+2026/11/15 10:58:48 [client] stream 479 closeWriteLocal
+2026/11/15 10:58:48 [client] pumpUp EOF/err stream=479 sent=2830 err=EOF
+2026/11/15 10:58:48 [client] open ack slot=5 sid=631
+2026/11/15 10:58:48 [client] open ack slot=4 sid=632
+2026/11/15 10:58:48 [client] open ack slot=14 sid=633
+2026/11/15 10:58:48 [client] open ack slot=5 sid=634
+2026/11/15 10:58:48 [client] open ack slot=1 sid=628
+2026/11/15 10:58:48 [client] stream 584 closeWriteLocal
+2026/11/15 10:58:48 [client] stream 585 closeWriteLocal
+2026/11/15 10:58:48 [client] pumpUp EOF/err stream=584 sent=4833 err=EOF
+2026/11/15 10:58:48 [client] pumpUp EOF/err stream=585 sent=4768 err=EOF
+2026/11/15 10:58:48 [client] open ack slot=6 sid=635
+2026/11/15 10:58:49 [client] open ack slot=7 sid=636
+2026/11/15 10:58:49 [client] pumpUp EOF/err stream=619 sent=3307 err=EOF
+2026/11/15 10:58:49 [client] pumpUp EOF/err stream=592 sent=2027 err=EOF
+2026/11/15 10:58:49 [client] pumpUp EOF/err stream=617 sent=8894 err=EOF
+2026/11/15 10:58:49 [client] pumpUp EOF/err stream=475 sent=2881 err=EOF
+2026/11/15 10:58:49 [client] pumpUp EOF/err stream=550 sent=3770 err=EOF
+2026/11/15 10:58:49 [client] pumpUp EOF/err stream=588 sent=2520 err=EOF
+2026/11/15 10:58:49 [client] pumpUp EOF/err stream=591 sent=2027 err=EOF
+2026/11/15 10:58:49 [client] pumpUp EOF/err stream=595 sent=3002 err=EOF
+2026/11/15 10:58:49 [client] pumpUp EOF/err stream=599 sent=3778 err=EOF
+2026/11/15 10:58:49 [client] pumpUp EOF/err stream=590 sent=33306 err=EOF
+2026/11/15 10:58:49 [client] pumpUp EOF/err stream=606 sent=2886 err=EOF
+2026/11/15 10:58:49 [client] pumpUp EOF/err stream=589 sent=3109 err=EOF
+2026/11/15 10:58:49 [client] pumpUp EOF/err stream=596 sent=3221 err=EOF
+2026/11/15 10:58:49 [client] open ack slot=12 sid=637
+2026/11/15 10:58:49 [client] stream 587 closeWriteLocal
+2026/11/15 10:58:49 [client] pumpUp EOF/err stream=587 sent=3142 err=EOF
+2026/11/15 10:58:49 [client] open ack slot=10 sid=639
+2026/11/15 10:58:50 [client] open ack slot=13 sid=641
+2026/11/15 10:58:50 [client] open ack slot=10 sid=638
+2026/11/15 10:58:50 [client] open ack slot=10 sid=640
+2026/11/15 10:58:50 [client] open ack slot=10 sid=642
+2026/11/15 10:58:50 [client] open ack slot=11 sid=643
+2026/11/15 10:58:50 [client] open ack slot=12 sid=644
+2026/11/15 10:58:50 [client] open ack slot=13 sid=645
+2026/11/15 10:58:50 [client] stream 453 closeWriteLocal
+2026/11/15 10:58:50 [client] pumpUp EOF/err stream=453 sent=2909 err=EOF
+2026/11/15 10:58:50 [client] open ack slot=14 sid=646
+2026/11/15 10:58:51 [client] stream 594 closeWriteLocal
+2026/11/15 10:58:51 [client] pumpUp EOF/err stream=594 sent=3365 err=EOF
+2026/11/15 10:58:51 [client] open ack slot=0 sid=647
+2026/11/15 10:58:52 [client] stream 485 closeWriteLocal
+2026/11/15 10:58:52 [client] pumpUp EOF/err stream=485 sent=2965 err=EOF
+2026/11/15 10:58:52 [client] pumpUp EOF/err stream=641 sent=1962 err=EOF
+2026/11/15 10:58:52 [client] pumpUp EOF/err stream=643 sent=2026 err=EOF
+2026/11/15 10:58:52 [client] pumpUp EOF/err stream=640 sent=1930 err=EOF
+2026/11/15 10:58:52 [client] pumpUp EOF/err stream=642 sent=1962 err=EOF
+2026/11/15 10:58:52 [client] pumpUp EOF/err stream=644 sent=1994 err=EOF
+2026/11/15 10:58:52 [client] stream 636 closeWriteLocal
+2026/11/15 10:58:52 [client] open ack slot=10 sid=648
+2026/11/15 10:58:53 [client] pumpUp EOF/err stream=636 sent=6890 err=EOF
+2026/11/15 10:58:54 [client] stream 581 closeWriteLocal
+2026/11/15 10:58:54 [client] pumpUp EOF/err stream=581 sent=12149 err=EOF
+2026/11/15 10:58:55 [client] stream 593 closeWriteLocal
+2026/11/15 10:58:55 [client] pumpUp EOF/err stream=593 sent=3107 err=EOF
+2026/11/15 10:58:55 [client] stream 601 closeWriteLocal
+2026/11/15 10:58:55 [client] pumpUp EOF/err stream=601 sent=3075 err=EOF
+2026/11/15 10:58:55 [client] pumpUp EOF/err stream=632 sent=5698 err=EOF
+2026/11/15 10:58:55 [client] stream 586 closeWriteLocal
+2026/11/15 10:58:55 [client] stream 597 closeWriteLocal
+2026/11/15 10:58:55 [client] pumpUp EOF/err stream=597 sent=2841 err=EOF
+2026/11/15 10:58:55 [client] pumpUp EOF/err stream=586 sent=4344 err=EOF
+2026/11/15 10:58:56 [client] pumpUp EOF/err stream=598 sent=3200 err=EOF
+2026/11/15 10:58:56 [client] pumpUp EOF/err stream=608 sent=2882 err=EOF
+2026/11/15 10:58:56 [client] pumpUp EOF/err stream=612 sent=2773 err=EOF
+2026/11/15 10:58:56 [client] pumpUp EOF/err stream=605 sent=3022 err=EOF
+2026/11/15 10:58:59 [client] stream 648 closeWriteLocal
+2026/11/15 10:58:59 [client] pumpUp EOF/err stream=582 sent=7596 err=EOF
+2026/11/15 10:59:00 [client] pumpUp EOF/err stream=583 sent=12498 err=EOF
+2026/11/15 10:59:00 [client] pumpUp EOF/err stream=648 sent=7892 err=EOF
+2026/11/15 10:59:02 [client] open ack slot=4 sid=650
+2026/11/15 10:59:02 [client] open ack slot=1 sid=649
+2026/11/15 10:59:06 [client] stream 650 closeWriteLocal
+2026/11/15 10:59:06 [client] stream 649 closeWriteLocal
+2026/11/15 10:59:07 [client] pumpUp EOF/err stream=650 sent=3195 err=EOF
+2026/11/15 10:59:07 [client] pumpUp EOF/err stream=649 sent=3291 err=EOF
+2026/11/15 10:59:07 [client] stream 638 closeWriteLocal
+2026/11/15 10:59:07 [client] pumpUp EOF/err stream=638 sent=18618 err=EOF
+2026/11/15 10:59:07 [client] open ack slot=1 sid=651
+2026/11/15 10:59:07 [client] open ack slot=10 sid=652
+2026/11/15 10:59:07 [client] open ack slot=4 sid=653
+2026/11/15 10:59:11 [client] stream 652 closeWriteLocal
+2026/11/15 10:59:11 [client] stream 653 closeWriteLocal
+2026/11/15 10:59:12 [client] pumpUp EOF/err stream=652 sent=3222 err=EOF
+2026/11/15 10:59:12 [client] pumpUp EOF/err stream=653 sent=3158 err=EOF
+2026/11/15 10:59:14 [client] open ack slot=10 sid=654
+2026/11/15 10:59:14 [client] pumpUp EOF/err stream=607 sent=2940 err=EOF
+2026/11/15 10:59:16 [client] pumpUp EOF/err stream=609 sent=2813 err=EOF
+2026/11/15 10:59:17 [client] open ack slot=2 sid=655
+2026/11/15 10:59:18 [client] open ack slot=6 sid=657
+2026/11/15 10:59:18 [client] open ack slot=4 sid=656
+2026/11/15 10:59:18 [client] pumpUp EOF/err stream=651 sent=3587 err=EOF
+2026/11/15 10:59:19 [client] open ack slot=1 sid=658
+2026/11/15 10:59:19 [client] open ack slot=12 sid=660
+2026/11/15 10:59:19 [client] open ack slot=13 sid=661
+2026/11/15 10:59:19 [client] open ack slot=0 sid=663
+2026/11/15 10:59:19 [client] open ack slot=15 sid=662
+2026/11/15 10:59:20 [client] open ack slot=10 sid=659
+2026/11/15 10:59:20 [client] open ack slot=1 sid=664
+2026/11/15 10:59:20 [client] pumpUp EOF/err stream=657 sent=1957 err=EOF
+2026/11/15 10:59:20 [client] open ack slot=6 sid=665
+2026/11/15 10:59:21 [client] open ack slot=2 sid=666
+2026/11/15 10:59:21 [client] open ack slot=5 sid=668
+2026/11/15 10:59:21 [client] stream 628 closeWriteLocal
+2026/11/15 10:59:21 [client] open ack slot=4 sid=667
+2026/11/15 10:59:21 [client] pumpUp EOF/err stream=628 sent=31555 err=EOF
+2026/11/15 10:59:22 [client] stream 647 closeWriteLocal
+2026/11/15 10:59:22 [client] open ack slot=1 sid=669
+2026/11/15 10:59:22 [client] open ack slot=6 sid=670
+2026/11/15 10:59:22 [client] open ack slot=8 sid=671
+2026/11/15 10:59:22 [client] open ack slot=10 sid=672
+2026/11/15 10:59:22 [client] open ack slot=11 sid=673
+2026/11/15 10:59:22 [client] open ack slot=13 sid=675
+2026/11/15 10:59:22 [client] open ack slot=12 sid=674
+2026/11/15 10:59:23 [client] pumpUp EOF/err stream=647 sent=2260 err=EOF
+2026/11/15 10:59:23 [client] open ack slot=15 sid=676
+2026/11/15 10:59:23 [client] open ack slot=0 sid=677
+2026/11/15 10:59:23 [client] open ack slot=0 sid=678
+2026/11/15 10:59:23 [client] stream 360 closeWriteLocal
+2026/11/15 10:59:23 [client] pumpUp EOF/err stream=360 sent=3256 err=EOF
+2026/11/15 10:59:23 [client] open ack slot=1 sid=679
+2026/11/15 10:59:24 [client] open ack slot=2 sid=681
+2026/11/15 10:59:24 [client] open ack slot=7 sid=680
+2026/11/15 10:59:24 [client] open ack slot=3 sid=682
+2026/11/15 10:59:24 [client] open ack slot=5 sid=684
+2026/11/15 10:59:24 [client] open ack slot=4 sid=683
+2026/11/15 10:59:24 [client] open ack slot=6 sid=685
+2026/11/15 10:59:24 [client] open ack slot=9 sid=688
+2026/11/15 10:59:24 [client] open ack slot=11 sid=690
+2026/11/15 10:59:24 [client] open ack slot=13 sid=692
+2026/11/15 10:59:24 [client] open ack slot=10 sid=689
+2026/11/15 10:59:24 [client] open ack slot=7 sid=686
+2026/11/15 10:59:24 [client] open ack slot=12 sid=691
+2026/11/15 10:59:24 [client] open ack slot=8 sid=687
+2026/11/15 10:59:25 [client] open ack slot=15 sid=694
+2026/11/15 10:59:25 [client] open ack slot=0 sid=695
+2026/11/15 10:59:25 [client] open ack slot=1 sid=696
+2026/11/15 10:59:25 [client] pumpUp EOF/err stream=680 sent=2938 err=EOF
+2026/11/15 10:59:25 [client] pumpUp EOF/err stream=672 sent=3079 err=EOF
+2026/11/15 10:59:25 [client] pumpUp EOF/err stream=682 sent=3133 err=EOF
+2026/11/15 10:59:25 [client] pumpUp EOF/err stream=677 sent=3173 err=EOF
+2026/11/15 10:59:25 [client] pumpUp EOF/err stream=676 sent=3176 err=EOF
+2026/11/15 10:59:25 [client] pumpUp EOF/err stream=637 sent=4019 err=EOF
+2026/11/15 10:59:25 [client] pumpUp EOF/err stream=671 sent=2520 err=EOF
+2026/11/15 10:59:25 [client] pumpUp EOF/err stream=674 sent=4107 err=EOF
+2026/11/15 10:59:25 [client] pumpUp EOF/err stream=675 sent=3723 err=EOF
+2026/11/15 10:59:25 [client] pumpUp EOF/err stream=639 sent=5504 err=EOF
+2026/11/15 10:59:25 [client] pumpUp EOF/err stream=673 sent=3210 err=EOF
+2026/11/15 10:59:25 [client] pumpUp EOF/err stream=658 sent=6343 err=EOF
+2026/11/15 10:59:25 [client] pumpUp EOF/err stream=645 sent=11275 err=EOF
+2026/11/15 10:59:26 [client] open ack slot=14 sid=693
+2026/11/15 10:59:26 [client] pumpUp EOF/err stream=669 sent=3110 err=EOF
+2026/11/15 10:59:26 [client] pumpUp EOF/err stream=688 sent=1989 err=EOF
+2026/11/15 10:59:27 [client] open ack slot=12 sid=698
+2026/11/15 10:59:28 [client] open ack slot=10 sid=697
+2026/11/15 10:59:28 [client] open ack slot=13 sid=699
+2026/11/15 10:59:28 [client] open ack slot=1 sid=700
+2026/11/15 10:59:28 [client] open ack slot=3 sid=701
+2026/11/15 10:59:29 [client] open ack slot=7 sid=702
+2026/11/15 10:59:29 [client] open ack slot=8 sid=703
+2026/11/15 10:59:29 [client] open ack slot=9 sid=704
+2026/11/15 10:59:30 [client] open ack slot=10 sid=705
+2026/11/15 10:59:30 [client] open ack slot=12 sid=707
+2026/11/15 10:59:31 [client] stream 352 closeWriteLocal
+2026/11/15 10:59:31 [client] pumpUp EOF/err stream=352 sent=2744 err=EOF
+2026/11/15 10:59:31 [client] open ack slot=11 sid=706
+2026/11/15 10:59:31 [client] stream 374 closeWriteLocal
+2026/11/15 10:59:31 [client] pumpUp EOF/err stream=374 sent=8552 err=EOF
+2026/11/15 10:59:31 [client] pumpUp EOF/err stream=345 sent=2770 err=EOF
+2026/11/15 10:59:32 [client] stream 660 closeWriteLocal
+2026/11/15 10:59:32 [client] pumpUp EOF/err stream=660 sent=12085 err=EOF
+2026/11/15 10:59:32 [client] stream 702 closeWriteLocal
+2026/11/15 10:59:32 [client] open ack slot=6 sid=708
+2026/11/15 10:59:32 [client] open ack slot=9 sid=709
+2026/11/15 10:59:33 [client] stream 704 closeWriteLocal
+2026/11/15 10:59:33 [client] pumpUp EOF/err stream=702 sent=4362 err=EOF
+2026/11/15 10:59:33 [client] open ack slot=11 sid=710
+2026/11/15 10:59:33 [client] open ack slot=7 sid=711
+2026/11/15 10:59:34 [client] pumpUp EOF/err stream=704 sent=8953 err=EOF
+2026/11/15 10:59:34 [client] stream 670 closeWriteLocal
+2026/11/15 10:59:34 [client] pumpUp EOF/err stream=670 sent=4746 err=EOF
+2026/11/15 10:59:34 [client] stream 681 closeWriteLocal
+2026/11/15 10:59:34 [client] pumpUp EOF/err stream=681 sent=3043 err=EOF
+2026/11/15 10:59:34 [client] stream 698 closeWriteLocal
+2026/11/15 10:59:34 [client] pumpUp EOF/err stream=698 sent=2873 err=EOF
+2026/11/15 10:59:35 [client] open ack slot=12 sid=712
+2026/11/15 10:59:35 [client] pumpUp EOF/err stream=667 sent=4504 err=EOF
+2026/11/15 10:59:35 [client] open ack slot=2 sid=713
+2026/11/15 10:59:36 [client] stream 417 closeWriteLocal
+2026/11/15 10:59:36 [client] pumpUp EOF/err stream=417 sent=2827 err=EOF
+2026/11/15 10:59:36 [client] pumpUp EOF/err stream=714 sent=1962 err=read tcp 127.0.0.1:49888->127.0.0.1:53522: use of closed network connection
+2026/11/15 10:59:36 [client] open ack slot=4 sid=715
+2026/11/15 10:59:36 [client] pumpUp EOF/err stream=716 sent=1994 err=read tcp 127.0.0.1:49888->127.0.0.1:55023: use of closed network connection
+2026/11/15 10:59:36 [client] stream 715 closeWriteLocal
+2026/11/15 10:59:36 [client] pumpUp EOF/err stream=715 sent=630 err=EOF
+2026/11/15 10:59:37 [client] stream 709 closeWriteLocal
+2026/11/15 10:59:37 [client] pumpUp EOF/err stream=717 sent=1994 err=read tcp 127.0.0.1:49888->127.0.0.1:51356: use of closed network connection
+2026/11/15 10:59:37 [client] pumpUp EOF/err stream=713 sent=3037 err=EOF
+2026/11/15 10:59:38 [client] pumpUp EOF/err stream=659 sent=7565 err=EOF
+2026/11/15 10:59:38 [client] pumpUp EOF/err stream=718 sent=2026 err=read tcp 127.0.0.1:49888->127.0.0.1:61049: use of closed network connection
+2026/11/15 10:59:38 [client] pumpUp EOF/err stream=709 sent=6717 err=EOF
+2026/11/15 10:59:38 [client] stream 452 spread to 2 slots (sid=452, sent=134569)
+2026/11/15 10:59:38 [client] open ack slot=2 sid=719
+2026/11/15 10:59:38 [client] pumpUp EOF/err stream=695 sent=6331 err=EOF
+2026/11/15 10:59:39 [client] pumpUp EOF/err stream=661 sent=12498 err=EOF
+2026/11/15 10:59:39 [client] open ack slot=4 sid=720
+2026/11/15 10:59:39 [client] open ack slot=13 sid=721
+2026/11/15 10:59:39 [client] stream 685 closeWriteLocal
+2026/11/15 10:59:39 [client] pumpUp EOF/err stream=685 sent=3253 err=EOF
+2026/11/15 10:59:39 [client] pumpUp EOF/err stream=697 sent=3197 err=EOF
+2026/11/15 10:59:39 [client] pumpUp EOF/err stream=707 sent=2790 err=EOF
+2026/11/15 10:59:39 [client] stream 710 closeWriteLocal
+2026/11/15 10:59:39 [client] pumpUp EOF/err stream=710 sent=3077 err=EOF
+2026/11/15 10:59:39 [client] open ack slot=0 sid=722
+2026/11/15 10:59:39 [client] stream 703 closeWriteLocal
+2026/11/15 10:59:39 [client] pumpUp EOF/err stream=703 sent=2904 err=EOF
+2026/11/15 10:59:40 [client] open ack slot=6 sid=723
+2026/11/15 10:59:40 [client] open ack slot=8 sid=724
+2026/11/15 10:59:40 [client] pumpUp EOF/err stream=311 sent=55329 err=EOF
+2026/11/15 10:59:40 [client] open ack slot=10 sid=725
+2026/11/15 10:59:40 [client] open ack slot=12 sid=726
+2026/11/15 10:59:40 [client] stream 432 closeWriteLocal
+2026/11/15 10:59:40 [client] pumpUp EOF/err stream=432 sent=2793 err=EOF
+2026/11/15 10:59:40 [client] open ack slot=10 sid=730
+2026/11/15 10:59:40 [client] open ack slot=11 sid=731
+2026/11/15 10:59:40 [client] stream 731 closeWriteLocal
+2026/11/15 10:59:40 [client] pumpUp EOF/err stream=731 sent=623 err=EOF
+2026/11/15 10:59:40 [client] stream 730 closeWriteLocal
+2026/11/15 10:59:40 [client] stream 725 closeWriteLocal
+2026/11/15 10:59:40 [client] pumpUp EOF/err stream=730 sent=645 err=EOF
+2026/11/15 10:59:40 [client] pumpUp EOF/err stream=725 sent=630 err=EOF
+2026/11/15 10:59:40 [client] stream 726 closeWriteLocal
+2026/11/15 10:59:40 [client] pumpUp EOF/err stream=726 sent=629 err=EOF
+2026/11/15 10:59:40 [client] open ack slot=9 sid=729
+2026/11/15 10:59:40 [client] stream 729 closeWriteLocal
+2026/11/15 10:59:40 [client] pumpUp EOF/err stream=729 sent=629 err=EOF
+2026/11/15 10:59:41 [client] open ack slot=6 sid=727
+2026/11/15 10:59:41 [client] open ack slot=8 sid=728
+2026/11/15 10:59:41 [client] stream 728 closeWriteLocal
+2026/11/15 10:59:41 [client] pumpUp EOF/err stream=728 sent=629 err=EOF
+2026/11/15 10:59:41 [client] open ack slot=10 sid=732
+2026/11/15 10:59:41 [client] stream 732 closeWriteLocal
+2026/11/15 10:59:41 [client] pumpUp EOF/err stream=732 sent=630 err=EOF
+2026/11/15 10:59:41 [client] pumpUp EOF/err stream=679 sent=3993 err=EOF
+2026/11/15 10:59:41 [client] stream 727 closeWriteLocal
+2026/11/15 10:59:41 [client] pumpUp EOF/err stream=727 sent=629 err=EOF
+2026/11/15 10:59:42 [client] open ack slot=6 sid=733
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=691 sent=5317 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=459 sent=4671 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=447 sent=4760 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=683 sent=19856 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=701 sent=3778 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=693 sent=2243 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=687 sent=2088 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=711 sent=2282 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=706 sent=3045 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=696 sent=3121 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=721 sent=2057 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=720 sent=2249 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=705 sent=2343 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=633 sent=3834 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=377 sent=10829 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=38 sent=33589 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=40 sent=53609 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=29 sent=28577 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=25 sent=53108 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=364 sent=22080 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=455 sent=2829 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=441 sent=3153 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=371 sent=5224 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=403 sent=16169 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=524 sent=30959 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=689 sent=2869 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=34 sent=86072 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=622 sent=2900 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=547 sent=3342 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=664 sent=3680 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=723 sent=2978 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=363 sent=5524 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=30 sent=71391 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=724 sent=3086 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=36 sent=32036 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=405 sent=3096 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=471 sent=3117 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=464 sent=6471 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=722 sent=2876 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=105 sent=5566 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=501 sent=3704 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=474 sent=2943 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=478 sent=3135 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=476 sent=2771 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=469 sent=2851 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=668 sent=3339 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=516 sent=6489 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=719 sent=3257 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=528 sent=4276 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=646 sent=2798 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=515 sent=3650 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=434 sent=20930 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=629 sent=2699 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=523 sent=3216 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=610 sent=3953 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=500 sent=14625 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=505 sent=3194 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=495 sent=2832 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=379 sent=3995 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=373 sent=9812 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=465 sent=7312 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=376 sent=3111 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=461 sent=8311 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=429 sent=5896 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=427 sent=7820 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=369 sent=4134 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=414 sent=3065 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=489 sent=2745 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=423 sent=2701 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=666 sent=4115 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=502 sent=4180 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=407 sent=2962 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=463 sent=3388 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=378 sent=14014 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=383 sent=3156 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=350 sent=3057 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=353 sent=3740 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=538 sent=3373 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=626 sent=4494 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=627 sent=2801 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=656 sent=3432 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=556 sent=3889 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=694 sent=2870 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=533 sent=3932 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=562 sent=4054 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=566 sent=3638 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=708 sent=2877 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=611 sent=5595 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=534 sent=5307 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=428 sent=3976 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=561 sent=3406 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=416 sent=2892 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=663 sent=2743 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=498 sent=3896 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=567 sent=3112 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=341 sent=40901 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=530 sent=3543 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=497 sent=4005 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=635 sent=2775 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=630 sent=2792 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=634 sent=2899 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=473 sent=2999 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=354 sent=3695 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=329 sent=39440 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=529 sent=3628 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=438 sent=6229 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=662 sent=3235 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=620 sent=2771 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=504 sent=3811 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=514 sent=8248 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=623 sent=3227 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=678 sent=2699 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=431 sent=2870 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=365 sent=8303 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=548 sent=3809 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=357 sent=41615 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=430 sent=2974 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=391 sent=3943 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=624 sent=2833 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=614 sent=23145 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=616 sent=3549 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=330 sent=23879 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=346 sent=4125 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=381 sent=16331 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=344 sent=3709 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=361 sent=7660 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=468 sent=12208 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=343 sent=3472 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=665 sent=2727 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=462 sent=4958 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=621 sent=3066 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=337 sent=11812 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=631 sent=3002 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=493 sent=48806 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=545 sent=3692 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=686 sent=2826 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=406 sent=4274 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=457 sent=3948 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=487 sent=2741 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=392 sent=3083 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=220 sent=46478 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=531 sent=3500 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=458 sent=3500 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=542 sent=3585 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=526 sent=4269 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=700 sent=3078 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=690 sent=2641 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=625 sent=2821 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=402 sent=52259 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=486 sent=2880 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=420 sent=2839 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=692 sent=2767 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=527 sent=3166 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=684 sent=3256 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=699 sent=2659 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=712 sent=3075 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=488 sent=2807 err=EOF
+2026/11/15 10:59:42 [client] pumpUp EOF/err stream=552 sent=3584 err=EOF
+2026/11/15 10:59:42 [client] open ack slot=12 sid=734
+2026/11/15 10:59:43 [client] open ack slot=4 sid=736
+2026/11/15 10:59:43 [client] open ack slot=10 sid=735
+2026/11/15 10:59:44 [client] open ack slot=0 sid=737
+2026/11/15 10:59:45 [client] stream 452 spread to 3 slots (sid=452, sent=265397)
+2026/11/15 10:59:46 [client] open ack slot=1 sid=738
+2026/11/15 10:59:46 [client] pumpUp EOF/err stream=736 sent=7644 err=EOF
+2026/11/15 10:59:46 [client] pumpUp EOF/err stream=738 sent=8112 err=EOF
+2026/11/15 10:59:47 [client] open ack slot=4 sid=739
+2026/11/15 10:59:49 [client] pumpUp EOF/err stream=739 sent=6020 err=read tcp 127.0.0.1:49888->127.0.0.1:53253: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 10:59:49 [client] open ack slot=5 sid=741
+2026/11/15 10:59:49 [client] pumpUp EOF/err stream=741 sent=6261 err=EOF
+2026/11/15 10:59:49 [client] open ack slot=8 sid=742
+2026/11/15 10:59:49 [client] open ack slot=11 sid=744
+2026/11/15 10:59:50 [client] open ack slot=13 sid=746
+2026/11/15 10:59:51 [client] open ack slot=1 sid=740
+2026/11/15 10:59:52 [client] open ack slot=14 sid=747
+2026/11/15 10:59:52 [client] open ack slot=4 sid=743
+2026/11/15 10:59:54 [client] open ack slot=15 sid=748
+2026/11/15 10:59:55 [client] stream 452 spread to 4 slots (sid=452, sent=393351)
+2026/11/15 10:59:56 [client] open ack slot=5 sid=745
+2026/11/15 11:00:18 [client] open ack slot=1 sid=749
+2026/11/15 11:00:23 [client] pumpUp EOF/err stream=742 sent=2721 err=EOF
+2026/11/15 11:00:24 [client] open ack slot=3 sid=751
+2026/11/15 11:00:24 [client] open ack slot=4 sid=752
+2026/11/15 11:00:24 [client] open ack slot=8 sid=750
+2026/11/15 11:00:37 [client] open ack slot=5 sid=753
+2026/11/15 11:00:37 [client] stream 753 closeWriteLocal
+2026/11/15 11:00:37 [client] pumpUp EOF/err stream=753 sent=630 err=EOF
+2026/11/15 11:00:40 [client] open ack slot=7 sid=756
+2026/11/15 11:00:40 [client] open ack slot=9 sid=758
+2026/11/15 11:00:40 [client] open ack slot=12 sid=760
+2026/11/15 11:00:40 [client] open ack slot=11 sid=759
+2026/11/15 11:00:40 [client] open ack slot=8 sid=757
+2026/11/15 11:00:40 [client] open ack slot=13 sid=761
+2026/11/15 11:00:40 [client] stream 758 closeWriteLocal
+2026/11/15 11:00:40 [client] pumpUp EOF/err stream=758 sent=630 err=EOF
+2026/11/15 11:00:40 [client] stream 757 closeWriteLocal
+2026/11/15 11:00:40 [client] pumpUp EOF/err stream=757 sent=645 err=EOF
+2026/11/15 11:00:40 [client] stream 756 closeWriteLocal
+2026/11/15 11:00:40 [client] pumpUp EOF/err stream=756 sent=629 err=EOF
+2026/11/15 11:00:40 [client] stream 760 closeWriteLocal
+2026/11/15 11:00:40 [client] pumpUp EOF/err stream=760 sent=629 err=EOF
+2026/11/15 11:00:40 [client] open ack slot=6 sid=755
+2026/11/15 11:00:40 [client] stream 761 closeWriteLocal
+2026/11/15 11:00:40 [client] pumpUp EOF/err stream=761 sent=623 err=EOF
+2026/11/15 11:00:40 [client] open ack slot=15 sid=763
+2026/11/15 11:00:40 [client] stream 763 closeWriteLocal
+2026/11/15 11:00:40 [client] stream 755 closeWriteLocal
+2026/11/15 11:00:40 [client] pumpUp EOF/err stream=764 sent=148 err=read tcp 127.0.0.1:49888->127.0.0.1:61469: use of closed network connection
+2026/11/15 11:00:40 [client] pumpUp EOF/err stream=755 sent=629 err=EOF
+2026/11/15 11:00:40 [client] pumpUp EOF/err stream=763 sent=147 err=EOF
+2026/11/15 11:00:41 [client] open ack slot=14 sid=762
+2026/11/15 11:00:41 [client] open ack slot=5 sid=754
+2026/11/15 11:00:41 [client] open ack slot=1 sid=765
+2026/11/15 11:00:41 [client] stream 765 closeWriteLocal
+2026/11/15 11:00:41 [client] pumpUp EOF/err stream=765 sent=630 err=EOF
+2026/11/15 11:00:41 [client] stream 762 closeWriteLocal
+2026/11/15 11:00:41 [client] pumpUp EOF/err stream=762 sent=629 err=EOF
+2026/11/15 11:00:41 [client] stream 754 closeWriteLocal
+2026/11/15 11:00:41 [client] pumpUp EOF/err stream=754 sent=2202 err=EOF
+2026/11/15 11:00:41 [client] open ack slot=6 sid=766
+2026/11/15 11:00:42 [client] pumpUp EOF/err stream=767 sent=148 err=read tcp 127.0.0.1:49888->127.0.0.1:60819: use of closed network connection
+2026/11/15 11:00:42 [client] open ack slot=5 sid=768
+2026/11/15 11:00:42 [client] open ack slot=8 sid=770
+2026/11/15 11:00:42 [client] open ack slot=7 sid=769
+2026/11/15 11:00:42 [client] open ack slot=9 sid=771
+2026/11/15 11:00:42 [client] open ack slot=14 sid=774
+2026/11/15 11:00:42 [client] open ack slot=12 sid=772
+2026/11/15 11:00:42 [client] open ack slot=13 sid=773
+2026/11/15 11:00:42 [client] open ack slot=15 sid=775
+2026/11/15 11:00:44 [client] open ack slot=0 sid=776
+2026/11/15 11:00:44 [client] open ack slot=1 sid=777
+2026/11/15 11:00:44 [client] open ack slot=3 sid=779
+2026/11/15 11:00:44 [client] open ack slot=10 sid=786
+2026/11/15 11:00:44 [client] open ack slot=5 sid=781
+2026/11/15 11:00:44 [client] open ack slot=9 sid=785
+2026/11/15 11:00:44 [client] open ack slot=7 sid=783
+2026/11/15 11:00:44 [client] open ack slot=2 sid=778
+2026/11/15 11:00:44 [client] open ack slot=4 sid=780
+2026/11/15 11:00:44 [client] open ack slot=6 sid=782
+2026/11/15 11:00:44 [client] open ack slot=8 sid=784
+2026/11/15 11:00:44 [client] open ack slot=11 sid=787
+2026/11/15 11:00:44 [client] open ack slot=12 sid=788
+2026/11/15 11:00:45 [client] open ack slot=14 sid=790
+2026/11/15 11:00:45 [client] open ack slot=15 sid=791
+2026/11/15 11:00:46 [client] open ack slot=0 sid=792
+2026/11/15 11:00:46 [client] open ack slot=1 sid=793
+2026/11/15 11:00:46 [client] open ack slot=13 sid=789
+2026/11/15 11:00:46 [client] open ack slot=2 sid=794
+2026/11/15 11:00:46 [client] open ack slot=3 sid=795
+2026/11/15 11:00:46 [client] open ack slot=4 sid=796
+2026/11/15 11:00:46 [client] open ack slot=5 sid=797
+2026/11/15 11:00:47 [client] open ack slot=6 sid=798
+2026/11/15 11:00:47 [client] stream 740 closeWriteLocal
+2026/11/15 11:00:47 [client] open ack slot=7 sid=799
+2026/11/15 11:00:48 [client] pumpUp EOF/err stream=740 sent=2005 err=EOF
+2026/11/15 11:00:48 [client] stream 734 closeWriteLocal
+2026/11/15 11:00:49 [client] pumpUp EOF/err stream=734 sent=4801 err=EOF
+2026/11/15 11:00:50 [client] stream 745 closeWriteLocal
+2026/11/15 11:00:50 [client] stream 797 closeWriteLocal
+2026/11/15 11:00:50 [client] pumpUp EOF/err stream=797 sent=3190 err=EOF
+2026/11/15 11:00:51 [client] pumpUp EOF/err stream=745 sent=2312 err=EOF
+2026/11/15 11:00:58 [client] stream 794 closeWriteLocal
+2026/11/15 11:00:59 [client] pumpUp EOF/err stream=794 sent=3390 err=EOF
+2026/11/15 11:01:00 [client] stream 779 closeWriteLocal
+2026/11/15 11:01:01 [client] pumpUp EOF/err stream=779 sent=2022 err=EOF
+2026/11/15 11:01:02 [client] pumpUp EOF/err stream=793 sent=3335 err=EOF
+2026/11/15 11:01:02 [client] pumpUp EOF/err stream=790 sent=3986 err=EOF
+2026/11/15 11:01:03 [client] pumpUp EOF/err stream=795 sent=4174 err=EOF
+2026/11/15 11:01:03 [client] stream 778 closeWriteLocal
+2026/11/15 11:01:03 [client] stream 777 closeWriteLocal
+2026/11/15 11:01:04 [client] stream 787 closeWriteLocal
+2026/11/15 11:01:04 [client] pumpUp EOF/err stream=778 sent=2104 err=EOF
+2026/11/15 11:01:04 [client] pumpUp EOF/err stream=777 sent=2031 err=EOF
+2026/11/15 11:01:05 [client] pumpUp EOF/err stream=787 sent=2053 err=EOF
+2026/11/15 11:01:14 [client] stream 781 closeWriteLocal
+2026/11/15 11:01:15 [client] pumpUp EOF/err stream=781 sent=2002 err=EOF
+2026/11/15 11:01:15 [client] open ack slot=1 sid=800
+2026/11/15 11:01:20 [client] stream 782 closeWriteLocal
+2026/11/15 11:01:21 [client] pumpUp EOF/err stream=782 sent=2031 err=EOF
+2026/11/15 11:01:24 [client] open ack slot=5 sid=801
+2026/11/15 11:01:38 [client] open ack slot=1 sid=802
+2026/11/15 11:01:38 [client] stream 802 closeWriteLocal
+2026/11/15 11:01:38 [client] pumpUp EOF/err stream=802 sent=630 err=EOF
+2026/11/15 11:01:40 [client] open ack slot=1 sid=803
+2026/11/15 11:01:40 [client] open ack slot=3 sid=805
+2026/11/15 11:01:40 [client] open ack slot=12 sid=808
+2026/11/15 11:01:40 [client] open ack slot=14 sid=809
+2026/11/15 11:01:40 [client] stream 803 closeWriteLocal
+2026/11/15 11:01:40 [client] pumpUp EOF/err stream=803 sent=630 err=EOF
+2026/11/15 11:01:40 [client] stream 809 closeWriteLocal
+2026/11/15 11:01:40 [client] pumpUp EOF/err stream=809 sent=623 err=EOF
+2026/11/15 11:01:40 [client] stream 805 closeWriteLocal
+2026/11/15 11:01:40 [client] stream 808 closeWriteLocal
+2026/11/15 11:01:40 [client] pumpUp EOF/err stream=808 sent=629 err=EOF
+2026/11/15 11:01:40 [client] pumpUp EOF/err stream=805 sent=645 err=EOF
+2026/11/15 11:01:40 [client] open ack slot=5 sid=806
+2026/11/15 11:01:40 [client] open ack slot=11 sid=807
+2026/11/15 11:01:40 [client] stream 807 closeWriteLocal
+2026/11/15 11:01:40 [client] pumpUp EOF/err stream=807 sent=629 err=EOF
+2026/11/15 11:01:41 [client] open ack slot=2 sid=804
+2026/11/15 11:01:41 [client] open ack slot=1 sid=810
+2026/11/15 11:01:41 [client] stream 810 closeWriteLocal
+2026/11/15 11:01:41 [client] pumpUp EOF/err stream=810 sent=630 err=EOF
+2026/11/15 11:01:41 [client] stream 804 closeWriteLocal
+2026/11/15 11:01:41 [client] pumpUp EOF/err stream=804 sent=629 err=EOF
+2026/11/15 11:01:41 [client] stream 806 closeWriteLocal
+2026/11/15 11:01:41 [client] pumpUp EOF/err stream=806 sent=629 err=EOF
+2026/11/15 11:01:45 [client] pumpUp EOF/err stream=780 sent=1984 err=EOF
+2026/11/15 11:01:46 [client] stream 791 closeWriteLocal
+2026/11/15 11:01:46 [client] pumpUp EOF/err stream=791 sent=4297 err=EOF
+2026/11/15 11:01:47 [client] stream 796 closeWriteLocal
+2026/11/15 11:01:48 [client] pumpUp EOF/err stream=796 sent=3113 err=EOF
+2026/11/15 11:01:49 [client] pumpUp EOF/err stream=785 sent=1983 err=EOF
+2026/11/15 11:01:49 [client] pumpUp EOF/err stream=784 sent=2020 err=EOF
+2026/11/15 11:01:49 [client] pumpUp EOF/err stream=783 sent=1990 err=EOF
+2026/11/15 11:01:51 [client] stream 744 closeWriteLocal
+2026/11/15 11:01:52 [client] pumpUp EOF/err stream=744 sent=7473 err=EOF
+2026/11/15 11:02:16 [client] stream 800 closeWriteLocal
+2026/11/15 11:02:17 [client] pumpUp EOF/err stream=800 sent=4669 err=EOF
+2026/11/15 11:02:30 [client] open ack slot=1 sid=811
+2026/11/15 11:02:34 [client] open ack slot=11 sid=812
+2026/11/15 11:02:37 [client] pumpUp EOF/err stream=811 sent=2703 err=EOF
+2026/11/15 11:02:39 [client] open ack slot=1 sid=813
+2026/11/15 11:02:39 [client] stream 813 closeWriteLocal
+2026/11/15 11:02:39 [client] pumpUp EOF/err stream=813 sent=630 err=EOF
+2026/11/15 11:02:40 [client] open ack slot=1 sid=814
+2026/11/15 11:02:40 [client] open ack slot=3 sid=817
+2026/11/15 11:02:40 [client] open ack slot=4 sid=818
+2026/11/15 11:02:40 [client] open ack slot=2 sid=816
+2026/11/15 11:02:40 [client] open ack slot=5 sid=819
+2026/11/15 11:02:40 [client] stream 816 closeWriteLocal
+2026/11/15 11:02:40 [client] stream 818 closeWriteLocal
+2026/11/15 11:02:40 [client] pumpUp EOF/err stream=816 sent=645 err=EOF
+2026/11/15 11:02:40 [client] pumpUp EOF/err stream=818 sent=623 err=EOF
+2026/11/15 11:02:40 [client] stream 814 closeWriteLocal
+2026/11/15 11:02:40 [client] pumpUp EOF/err stream=814 sent=629 err=EOF
+2026/11/15 11:02:40 [client] stream 817 closeWriteLocal
+2026/11/15 11:02:40 [client] pumpUp EOF/err stream=817 sent=630 err=EOF
+2026/11/15 11:02:40 [client] stream 819 closeWriteLocal
+2026/11/15 11:02:40 [client] pumpUp EOF/err stream=819 sent=629 err=EOF
+2026/11/15 11:02:40 [client] open ack slot=8 sid=820
+2026/11/15 11:02:40 [client] stream 820 closeWriteLocal
+2026/11/15 11:02:41 [client] pumpUp EOF/err stream=820 sent=629 err=EOF
+2026/11/15 11:02:41 [client] open ack slot=1 sid=815
+2026/11/15 11:02:41 [client] open ack slot=1 sid=821
+2026/11/15 11:02:41 [client] stream 821 closeWriteLocal
+2026/11/15 11:02:41 [client] pumpUp EOF/err stream=821 sent=630 err=EOF
+2026/11/15 11:02:41 [client] stream 815 closeWriteLocal
+2026/11/15 11:02:41 [client] pumpUp EOF/err stream=815 sent=629 err=EOF
+2026/11/15 11:03:33 [client] open ack slot=1 sid=822
+2026/11/15 11:03:33 [client] open ack slot=1 sid=823
+2026/11/15 11:03:33 [client] open ack slot=2 sid=824
+2026/11/15 11:03:33 [client] open ack slot=3 sid=825
+2026/11/15 11:03:40 [client] open ack slot=4 sid=826
+2026/11/15 11:03:40 [client] open ack slot=14 sid=832
+2026/11/15 11:03:40 [client] open ack slot=15 sid=833
+2026/11/15 11:03:40 [client] open ack slot=5 sid=827
+2026/11/15 11:03:40 [client] stream 826 closeWriteLocal
+2026/11/15 11:03:40 [client] open ack slot=8 sid=828
+2026/11/15 11:03:40 [client] open ack slot=12 sid=831
+2026/11/15 11:03:40 [client] pumpUp EOF/err stream=826 sent=629 err=EOF
+2026/11/15 11:03:40 [client] stream 827 closeWriteLocal
+2026/11/15 11:03:40 [client] pumpUp EOF/err stream=827 sent=630 err=EOF
+2026/11/15 11:03:40 [client] stream 832 closeWriteLocal
+2026/11/15 11:03:40 [client] pumpUp EOF/err stream=832 sent=629 err=EOF
+2026/11/15 11:03:40 [client] stream 833 closeWriteLocal
+2026/11/15 11:03:40 [client] pumpUp EOF/err stream=833 sent=623 err=EOF
+2026/11/15 11:03:40 [client] stream 831 closeWriteLocal
+2026/11/15 11:03:40 [client] pumpUp EOF/err stream=831 sent=645 err=EOF
+2026/11/15 11:03:41 [client] open ack slot=9 sid=829
+2026/11/15 11:03:41 [client] open ack slot=4 sid=834
+2026/11/15 11:03:41 [client] stream 834 closeWriteLocal
+2026/11/15 11:03:41 [client] pumpUp EOF/err stream=834 sent=630 err=EOF
+2026/11/15 11:03:41 [client] open ack slot=11 sid=830
+2026/11/15 11:03:41 [client] stream 829 closeWriteLocal
+2026/11/15 11:03:41 [client] stream 830 closeWriteLocal
+2026/11/15 11:03:41 [client] pumpUp EOF/err stream=829 sent=629 err=EOF
+2026/11/15 11:03:41 [client] pumpUp EOF/err stream=830 sent=629 err=EOF
+2026/11/15 11:03:41 [client] stream 828 closeWriteLocal
+2026/11/15 11:03:41 [client] pumpUp EOF/err stream=828 sent=630 err=EOF
+2026/11/15 11:03:43 [client] pumpUp EOF/err stream=733 sent=6044 err=EOF
+2026/11/15 11:03:44 [client] pumpUp EOF/err stream=825 sent=3322 err=EOF
+2026/11/15 11:03:47 [client] open ack slot=3 sid=835
+2026/11/15 11:03:47 [client] open ack slot=4 sid=836
+2026/11/15 11:03:47 [client] open ack slot=6 sid=838
+2026/11/15 11:03:47 [client] open ack slot=5 sid=837
+2026/11/15 11:03:47 [client] open ack slot=8 sid=839
+2026/11/15 11:03:48 [client] open ack slot=9 sid=840
+2026/11/15 11:03:48 [client] open ack slot=11 sid=841
+2026/11/15 11:03:50 [client] stream 837 closeWriteLocal
+2026/11/15 11:03:50 [client] pumpUp EOF/err stream=837 sent=3305 err=EOF
+2026/11/15 11:03:51 [client] pumpUp EOF/err stream=655 sent=4558 err=EOF
+2026/11/15 11:03:53 [client] pumpUp EOF/err stream=654 sent=7410 err=EOF
+2026/11/15 11:03:53 [client] pumpUp EOF/err stream=743 sent=3308 err=EOF
+2026/11/15 11:03:56 [client] pumpUp EOF/err stream=748 sent=5890 err=EOF
+2026/11/15 11:03:59 [client] stream 839 closeWriteLocal
+2026/11/15 11:04:00 [client] pumpUp EOF/err stream=839 sent=3390 err=EOF
+2026/11/15 11:04:01 [client] open ack slot=15 sid=842
+2026/11/15 11:04:04 [client] pumpUp EOF/err stream=838 sent=3640 err=EOF
+2026/11/15 11:04:04 [client] pumpUp EOF/err stream=835 sent=4206 err=EOF
+2026/11/15 11:04:05 [client] pumpUp EOF/err stream=840 sent=4178 err=EOF
+2026/11/15 11:04:16 [client] stream 824 closeWriteLocal
+2026/11/15 11:04:17 [client] pumpUp EOF/err stream=824 sent=6910 err=EOF
+2026/11/15 11:04:19 [client] pumpUp EOF/err stream=749 sent=3300 err=EOF
+2026/11/15 11:04:25 [client] pumpUp EOF/err stream=751 sent=18061 err=EOF
+2026/11/15 11:04:33 [client] stream 746 spread to 2 slots (sid=746, sent=131631)
+2026/11/15 11:04:40 [client] open ack slot=1 sid=844
+2026/11/15 11:04:40 [client] open ack slot=5 sid=848
+2026/11/15 11:04:40 [client] open ack slot=8 sid=850
+2026/11/15 11:04:40 [client] open ack slot=3 sid=846
+2026/11/15 11:04:40 [client] open ack slot=2 sid=845
+2026/11/15 11:04:40 [client] open ack slot=4 sid=847
+2026/11/15 11:04:40 [client] stream 850 closeWriteLocal
+2026/11/15 11:04:40 [client] stream 845 closeWriteLocal
+2026/11/15 11:04:40 [client] stream 847 closeWriteLocal
+2026/11/15 11:04:40 [client] pumpUp EOF/err stream=850 sent=623 err=EOF
+2026/11/15 11:04:40 [client] pumpUp EOF/err stream=845 sent=630 err=EOF
+2026/11/15 11:04:40 [client] pumpUp EOF/err stream=847 sent=645 err=EOF
+2026/11/15 11:04:40 [client] stream 846 closeWriteLocal
+2026/11/15 11:04:40 [client] pumpUp EOF/err stream=846 sent=629 err=EOF
+2026/11/15 11:04:40 [client] stream 848 closeWriteLocal
+2026/11/15 11:04:40 [client] stream 844 closeWriteLocal
+2026/11/15 11:04:40 [client] pumpUp EOF/err stream=844 sent=630 err=EOF
+2026/11/15 11:04:40 [client] pumpUp EOF/err stream=848 sent=629 err=EOF
+2026/11/15 11:04:40 [client] open ack slot=6 sid=849
+2026/11/15 11:04:41 [client] stream 849 closeWriteLocal
+2026/11/15 11:04:41 [client] pumpUp EOF/err stream=849 sent=629 err=EOF
+2026/11/15 11:04:41 [client] open ack slot=3 sid=843
+2026/11/15 11:04:41 [client] open ack slot=1 sid=851
+2026/11/15 11:04:41 [client] stream 851 closeWriteLocal
+2026/11/15 11:04:41 [client] pumpUp EOF/err stream=851 sent=630 err=EOF
+2026/11/15 11:04:41 [client] stream 843 closeWriteLocal
+2026/11/15 11:04:41 [client] pumpUp EOF/err stream=843 sent=629 err=EOF
+2026/11/15 11:04:47 [client] stream 836 closeWriteLocal
+2026/11/15 11:04:47 [client] pumpUp EOF/err stream=836 sent=4400 err=EOF
+2026/11/15 11:04:48 [client] stream 841 closeWriteLocal
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=786 sent=16678 err=read tcp 127.0.0.1:49888->127.0.0.1:58797: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=788 sent=3420 err=read tcp 127.0.0.1:49888->127.0.0.1:50706: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=775 sent=9013 err=read tcp 127.0.0.1:49888->127.0.0.1:58222: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=769 sent=19800 err=read tcp 127.0.0.1:49888->127.0.0.1:55952: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=774 sent=14571 err=read tcp 127.0.0.1:49888->127.0.0.1:56341: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=452 sent=575764 err=read tcp 127.0.0.1:49888->127.0.0.1:57687: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=467 sent=8874 err=read tcp 127.0.0.1:49888->127.0.0.1:54815: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=792 sent=4707 err=read tcp 127.0.0.1:49888->127.0.0.1:52546: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=798 sent=3851 err=read tcp 127.0.0.1:49888->127.0.0.1:55448: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=771 sent=10638 err=read tcp 127.0.0.1:49888->127.0.0.1:51489: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=801 sent=2861 err=read tcp 127.0.0.1:49888->127.0.0.1:50327: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=789 sent=3260 err=read tcp 127.0.0.1:49888->127.0.0.1:52622: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=747 sent=4022 err=read tcp 127.0.0.1:49888->127.0.0.1:49578: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=735 sent=10522 err=read tcp 127.0.0.1:49888->127.0.0.1:57975: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=766 sent=6417 err=read tcp 127.0.0.1:49888->127.0.0.1:58902: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=770 sent=9428 err=read tcp 127.0.0.1:49888->127.0.0.1:56942: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=812 sent=2794 err=read tcp 127.0.0.1:49888->127.0.0.1:54206: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=752 sent=10880 err=read tcp 127.0.0.1:49888->127.0.0.1:53872: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=768 sent=3096 err=read tcp 127.0.0.1:49888->127.0.0.1:50938: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=773 sent=10302 err=read tcp 127.0.0.1:49888->127.0.0.1:52205: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=841 sent=3332 err=read tcp 127.0.0.1:49888->127.0.0.1:65345: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=822 sent=3326 err=read tcp 127.0.0.1:49888->127.0.0.1:52550: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=776 sent=5160 err=read tcp 127.0.0.1:49888->127.0.0.1:49798: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=772 sent=9618 err=read tcp 127.0.0.1:49888->127.0.0.1:51157: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=799 sent=2957 err=read tcp 127.0.0.1:49888->127.0.0.1:63669: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=823 sent=4960 err=read tcp 127.0.0.1:49888->127.0.0.1:52158: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=746 sent=131631 err=read tcp 127.0.0.1:49888->127.0.0.1:56315: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=737 sent=13848 err=read tcp 127.0.0.1:49888->127.0.0.1:49757: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=759 sent=6506 err=read tcp 127.0.0.1:49888->127.0.0.1:51350: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=842 sent=1277 err=read tcp 127.0.0.1:49888->127.0.0.1:65378: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:49 [client] pumpUp EOF/err stream=750 sent=3625 err=read tcp 127.0.0.1:49888->127.0.0.1:54499: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:04:50 [client] open ack slot=0 sid=852
+2026/11/15 11:04:52 [client] pumpUp EOF/err stream=852 sent=977 err=EOF
+2026/11/15 11:06:37 [client] slot 6 session ended: EOF (retry in 1s)
+2026/11/15 11:06:37 [client] slot 15 session ended: EOF (retry in 1s)
+2026/11/15 11:06:37 [client] slot 11 session ended: EOF (retry in 1s)
+2026/11/15 11:06:37 [client] slot 9 session ended: EOF (retry in 1s)
+2026/11/15 11:06:37 [client] slot 2 session ended: EOF (retry in 1s)
+2026/11/15 11:06:37 [client] slot 14 session ended: EOF (retry in 1s)
+2026/11/15 11:06:37 [client] slot 13 session ended: EOF (retry in 1s)
+2026/11/15 11:06:37 [client] slot 12 session ended: EOF (retry in 1s)
+2026/11/15 11:06:37 [client] slot 7 session ended: EOF (retry in 1s)
+2026/11/15 11:06:37 [client] slot 3 session ended: EOF (retry in 1s)
+2026/11/15 11:06:37 [client] slot 8 session ended: EOF (retry in 1s)
+2026/11/15 11:06:37 [client] slot 0 session ended: EOF (retry in 1s)
+2026/11/15 11:06:37 [client] slot 4 session ended: EOF (retry in 1s)
+2026/11/15 11:06:37 [client] slot 1 session ended: EOF (retry in 1s)
+2026/11/15 11:06:37 [client] slot 10 session ended: EOF (retry in 1s)
+2026/11/15 11:06:38 [client] slot 5 session ended: EOF (retry in 1s)
+2026/11/15 11:06:39 [client] session established slot=3 (gen=2, reopen streams=0)
+2026/11/15 11:06:39 [client] session established slot=12 (gen=2, reopen streams=0)
+2026/11/15 11:06:39 [client] session established slot=4 (gen=2, reopen streams=0)
+2026/11/15 11:06:39 [client] session established slot=9 (gen=2, reopen streams=0)
+2026/11/15 11:06:39 [client] session established slot=10 (gen=2, reopen streams=0)
+2026/11/15 11:06:39 [client] session established slot=2 (gen=2, reopen streams=0)
+2026/11/15 11:06:39 [client] session established slot=15 (gen=2, reopen streams=0)
+2026/11/15 11:06:39 [client] session established slot=6 (gen=2, reopen streams=0)
+2026/11/15 11:06:39 [client] session established slot=1 (gen=2, reopen streams=0)
+2026/11/15 11:06:39 [client] session established slot=13 (gen=2, reopen streams=0)
+2026/11/15 11:06:39 [client] session established slot=7 (gen=2, reopen streams=0)
+2026/11/15 11:06:39 [client] session established slot=14 (gen=2, reopen streams=0)
+2026/11/15 11:06:39 [client] session established slot=8 (gen=2, reopen streams=0)
+2026/11/15 11:06:39 [client] session established slot=11 (gen=2, reopen streams=0)
+2026/11/15 11:06:39 [client] session established slot=0 (gen=2, reopen streams=0)
+2026/11/15 11:06:39 [client] session established slot=5 (gen=2, reopen streams=0)

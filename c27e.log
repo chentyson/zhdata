@@ -1,0 +1,677 @@
+2026/11/15 11:19:41 [client] socks5 listening on 127.0.0.1:49888 -> C498.uwintech.com:49888,C498.uwintech.com:49889,C498.uwintech.com:49890,C498.uwintech.com:49891,C498.uwintech.com:49892,C498.uwintech.com:49893,C498.uwintech.com:49894,C498.uwintech.com:49895,C498.uwintech.com:49896,C498.uwintech.com:49897,C498.uwintech.com:49898,C498.uwintech.com:49899,C498.uwintech.com:49900,C498.uwintech.com:49901,C498.uwintech.com:49902,C498.uwintech.com:49903,C498.uwintech.com:49904,C498.uwintech.com:49905,C498.uwintech.com:49906,C498.uwintech.com:49907,C498.uwintech.com:49908,C498.uwintech.com:49909,C498.uwintech.com:49910,C498.uwintech.com:49911,C498.uwintech.com:49912,C498.uwintech.com:49913,C498.uwintech.com:49914,C498.uwintech.com:49915,C498.uwintech.com:49916,C498.uwintech.com:49917,C498.uwintech.com:49918,C498.uwintech.com:49919
+2026/11/15 11:19:41 [client] session established slot=1 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=18 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=22 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=10 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=0 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=21 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=9 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=11 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=5 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=2 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=19 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=6 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=16 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=20 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=8 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=31 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=3 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=24 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=27 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=30 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=26 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=17 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=29 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=25 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=4 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=15 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=7 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=23 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=28 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=13 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=14 (gen=1, reopen streams=0)
+2026/11/15 11:19:41 [client] session established slot=12 (gen=1, reopen streams=0)
+2026/11/15 11:20:00 [client] open ack slot=2 sid=3
+2026/11/15 11:20:00 [client] open ack slot=0 sid=1
+2026/11/15 11:20:00 [client] open ack slot=3 sid=4
+2026/11/15 11:20:00 [client] open ack slot=1 sid=2
+2026/11/15 11:20:01 [client] stream 1 spread to 2 slots (sid=1, sent=131200)
+2026/11/15 11:20:01 [client] stream 2 spread to 2 slots (sid=2, sent=131200)
+2026/11/15 11:20:01 [client] stream 3 spread to 2 slots (sid=3, sent=131200)
+2026/11/15 11:20:01 [client] stream 4 spread to 2 slots (sid=4, sent=131200)
+2026/11/15 11:20:01 [client] stream 1 spread to 3 slots (sid=1, sent=262272)
+2026/11/15 11:20:01 [client] stream 4 spread to 3 slots (sid=4, sent=262272)
+2026/11/15 11:20:01 [client] stream 2 spread to 3 slots (sid=2, sent=262272)
+2026/11/15 11:20:01 [client] stream 3 spread to 3 slots (sid=3, sent=262272)
+2026/11/15 11:20:01 [client] stream 1 spread to 4 slots (sid=1, sent=393344)
+2026/11/15 11:20:01 [client] stream 2 spread to 4 slots (sid=2, sent=393344)
+2026/11/15 11:20:01 [client] stream 3 spread to 4 slots (sid=3, sent=393344)
+2026/11/15 11:20:01 [client] stream 4 spread to 4 slots (sid=4, sent=393344)
+2026/11/15 11:20:01 [client] stream 1 spread to 5 slots (sid=1, sent=524416)
+2026/11/15 11:20:01 [client] stream 2 spread to 5 slots (sid=2, sent=524416)
+2026/11/15 11:20:01 [client] stream 3 spread to 5 slots (sid=3, sent=524416)
+2026/11/15 11:20:01 [client] stream 4 spread to 5 slots (sid=4, sent=524416)
+2026/11/15 11:20:01 [client] stream 1 spread to 6 slots (sid=1, sent=655488)
+2026/11/15 11:20:01 [client] stream 3 spread to 6 slots (sid=3, sent=655488)
+2026/11/15 11:20:01 [client] stream 2 spread to 6 slots (sid=2, sent=655488)
+2026/11/15 11:20:01 [client] stream 4 spread to 6 slots (sid=4, sent=655488)
+2026/11/15 11:20:01 [client] stream 2 spread to 7 slots (sid=2, sent=786560)
+2026/11/15 11:20:01 [client] stream 1 spread to 7 slots (sid=1, sent=786560)
+2026/11/15 11:20:01 [client] stream 4 spread to 7 slots (sid=4, sent=786560)
+2026/11/15 11:20:01 [client] stream 3 spread to 7 slots (sid=3, sent=786560)
+2026/11/15 11:20:01 [client] stream 4 spread to 8 slots (sid=4, sent=917632)
+2026/11/15 11:20:01 [client] stream 2 spread to 8 slots (sid=2, sent=917632)
+2026/11/15 11:20:01 [client] stream 3 spread to 8 slots (sid=3, sent=917632)
+2026/11/15 11:20:01 [client] stream 1 spread to 8 slots (sid=1, sent=917632)
+2026/11/15 11:20:06 [client] stream 3 closeWriteLocal
+2026/11/15 11:20:06 [client] stream 2 closeWriteLocal
+2026/11/15 11:20:06 [client] stream 4 closeWriteLocal
+2026/11/15 11:20:07 [client] stream 1 closeWriteLocal
+2026/11/15 11:20:07 [client] open ack slot=2 sid=7
+2026/11/15 11:20:07 [client] open ack slot=1 sid=6
+2026/11/15 11:20:07 [client] open ack slot=0 sid=5
+2026/11/15 11:20:07 [client] open ack slot=3 sid=8
+2026/11/15 11:20:08 [client] stream 5 spread to 2 slots (sid=5, sent=131200)
+2026/11/15 11:20:08 [client] stream 5 spread to 3 slots (sid=5, sent=262272)
+2026/11/15 11:20:08 [client] stream 6 spread to 2 slots (sid=6, sent=131200)
+2026/11/15 11:20:08 [client] stream 8 spread to 2 slots (sid=8, sent=131200)
+2026/11/15 11:20:08 [client] stream 7 spread to 2 slots (sid=7, sent=131200)
+2026/11/15 11:20:08 [client] stream 5 spread to 4 slots (sid=5, sent=393344)
+2026/11/15 11:20:08 [client] stream 5 spread to 5 slots (sid=5, sent=524416)
+2026/11/15 11:20:08 [client] stream 7 spread to 3 slots (sid=7, sent=262272)
+2026/11/15 11:20:08 [client] stream 8 spread to 3 slots (sid=8, sent=262272)
+2026/11/15 11:20:08 [client] stream 5 spread to 6 slots (sid=5, sent=655488)
+2026/11/15 11:20:08 [client] stream 5 spread to 7 slots (sid=5, sent=786560)
+2026/11/15 11:20:08 [client] stream 6 spread to 3 slots (sid=6, sent=262272)
+2026/11/15 11:20:08 [client] stream 8 spread to 4 slots (sid=8, sent=393344)
+2026/11/15 11:20:08 [client] stream 7 spread to 4 slots (sid=7, sent=393344)
+2026/11/15 11:20:08 [client] stream 5 spread to 8 slots (sid=5, sent=917632)
+2026/11/15 11:20:08 [client] stream 8 spread to 5 slots (sid=8, sent=524416)
+2026/11/15 11:20:08 [client] stream 6 spread to 4 slots (sid=6, sent=393344)
+2026/11/15 11:20:08 [client] stream 7 spread to 5 slots (sid=7, sent=524416)
+2026/11/15 11:20:08 [client] stream 6 spread to 5 slots (sid=6, sent=524416)
+2026/11/15 11:20:08 [client] stream 8 spread to 6 slots (sid=8, sent=655488)
+2026/11/15 11:20:08 [client] stream 7 spread to 6 slots (sid=7, sent=655488)
+2026/11/15 11:20:08 [client] stream 6 spread to 6 slots (sid=6, sent=655488)
+2026/11/15 11:20:08 [client] stream 7 spread to 7 slots (sid=7, sent=786560)
+2026/11/15 11:20:08 [client] stream 8 spread to 7 slots (sid=8, sent=786560)
+2026/11/15 11:20:08 [client] stream 6 spread to 7 slots (sid=6, sent=786560)
+2026/11/15 11:20:08 [client] stream 8 spread to 8 slots (sid=8, sent=917632)
+2026/11/15 11:20:08 [client] stream 6 spread to 8 slots (sid=6, sent=917632)
+2026/11/15 11:20:08 [client] stream 7 spread to 8 slots (sid=7, sent=917632)
+2026/11/15 11:20:13 [client] stream 8 closeWriteLocal
+2026/11/15 11:20:13 [client] stream 7 closeWriteLocal
+2026/11/15 11:20:13 [client] stream 5 closeWriteLocal
+2026/11/15 11:20:13 [client] stream 6 closeWriteLocal
+2026/11/15 11:22:12 [client] open ack slot=0 sid=9
+2026/11/15 11:22:15 [client] open ack slot=0 sid=10
+2026/11/15 11:22:19 [client] open ack slot=1 sid=11
+2026/11/15 11:22:24 [client] open ack slot=2 sid=12
+2026/11/15 11:22:24 [client] open ack slot=3 sid=13
+2026/11/15 11:22:27 [client] open ack slot=5 sid=15
+2026/11/15 11:22:27 [client] open ack slot=4 sid=14
+2026/11/15 11:22:27 [client] open ack slot=6 sid=16
+2026/11/15 11:22:27 [client] open ack slot=10 sid=20
+2026/11/15 11:22:27 [client] open ack slot=14 sid=24
+2026/11/15 11:22:27 [client] open ack slot=13 sid=23
+2026/11/15 11:22:27 [client] open ack slot=11 sid=21
+2026/11/15 11:22:27 [client] open ack slot=15 sid=25
+2026/11/15 11:22:27 [client] open ack slot=12 sid=22
+2026/11/15 11:22:27 [client] open ack slot=8 sid=18
+2026/11/15 11:22:27 [client] open ack slot=7 sid=17
+2026/11/15 11:22:27 [client] open ack slot=9 sid=19
+2026/11/15 11:22:27 [client] open ack slot=16 sid=26
+2026/11/15 11:22:27 [client] open ack slot=17 sid=27
+2026/11/15 11:22:27 [client] open ack slot=20 sid=30
+2026/11/15 11:22:27 [client] open ack slot=18 sid=28
+2026/11/15 11:22:27 [client] open ack slot=23 sid=33
+2026/11/15 11:22:27 [client] open ack slot=21 sid=31
+2026/11/15 11:22:27 [client] open ack slot=19 sid=29
+2026/11/15 11:22:27 [client] open ack slot=22 sid=32
+2026/11/15 11:22:28 [client] open ack slot=24 sid=34
+2026/11/15 11:22:28 [client] open ack slot=25 sid=35
+2026/11/15 11:22:28 [client] open ack slot=26 sid=36
+2026/11/15 11:22:28 [client] open ack slot=27 sid=37
+2026/11/15 11:22:28 [client] open ack slot=28 sid=38
+2026/11/15 11:22:29 [client] open ack slot=29 sid=39
+2026/11/15 11:22:29 [client] open ack slot=30 sid=40
+2026/11/15 11:22:29 [client] open ack slot=31 sid=41
+2026/11/15 11:22:29 [client] open ack slot=1 sid=43
+2026/11/15 11:22:29 [client] open ack slot=7 sid=49
+2026/11/15 11:22:29 [client] open ack slot=9 sid=51
+2026/11/15 11:22:29 [client] open ack slot=6 sid=48
+2026/11/15 11:22:29 [client] open ack slot=5 sid=47
+2026/11/15 11:22:29 [client] open ack slot=2 sid=44
+2026/11/15 11:22:29 [client] open ack slot=8 sid=50
+2026/11/15 11:22:29 [client] open ack slot=3 sid=45
+2026/11/15 11:22:29 [client] open ack slot=0 sid=42
+2026/11/15 11:22:29 [client] open ack slot=4 sid=46
+2026/11/15 11:22:29 [client] open ack slot=11 sid=53
+2026/11/15 11:22:29 [client] open ack slot=12 sid=54
+2026/11/15 11:22:29 [client] open ack slot=10 sid=52
+2026/11/15 11:22:29 [client] open ack slot=14 sid=56
+2026/11/15 11:22:29 [client] open ack slot=15 sid=57
+2026/11/15 11:22:29 [client] open ack slot=13 sid=55
+2026/11/15 11:22:29 [client] open ack slot=17 sid=59
+2026/11/15 11:22:29 [client] open ack slot=16 sid=58
+2026/11/15 11:22:29 [client] open ack slot=19 sid=61
+2026/11/15 11:22:29 [client] open ack slot=18 sid=60
+2026/11/15 11:22:30 [client] open ack slot=21 sid=63
+2026/11/15 11:22:30 [client] open ack slot=26 sid=68
+2026/11/15 11:22:30 [client] open ack slot=25 sid=67
+2026/11/15 11:22:30 [client] open ack slot=20 sid=62
+2026/11/15 11:22:30 [client] open ack slot=22 sid=64
+2026/11/15 11:22:30 [client] open ack slot=23 sid=65
+2026/11/15 11:22:30 [client] open ack slot=27 sid=69
+2026/11/15 11:22:30 [client] open ack slot=24 sid=66
+2026/11/15 11:22:30 [client] open ack slot=29 sid=71
+2026/11/15 11:22:30 [client] open ack slot=30 sid=72
+2026/11/15 11:22:30 [client] open ack slot=31 sid=73
+2026/11/15 11:22:30 [client] open ack slot=28 sid=70
+2026/11/15 11:22:30 [client] open ack slot=0 sid=74
+2026/11/15 11:22:30 [client] open ack slot=3 sid=77
+2026/11/15 11:22:30 [client] open ack slot=1 sid=75
+2026/11/15 11:22:30 [client] open ack slot=4 sid=78
+2026/11/15 11:22:30 [client] open ack slot=2 sid=76
+2026/11/15 11:22:30 [client] open ack slot=12 sid=86
+2026/11/15 11:22:30 [client] open ack slot=6 sid=80
+2026/11/15 11:22:30 [client] open ack slot=9 sid=83
+2026/11/15 11:22:30 [client] open ack slot=5 sid=79
+2026/11/15 11:22:30 [client] open ack slot=7 sid=81
+2026/11/15 11:22:30 [client] open ack slot=13 sid=87
+2026/11/15 11:22:30 [client] stream 31 closeWriteLocal
+2026/11/15 11:22:30 [client] open ack slot=11 sid=85
+2026/11/15 11:22:30 [client] open ack slot=10 sid=84
+2026/11/15 11:22:30 [client] open ack slot=8 sid=82
+2026/11/15 11:22:30 [client] open ack slot=14 sid=88
+2026/11/15 11:22:30 [client] open ack slot=15 sid=89
+2026/11/15 11:22:30 [client] open ack slot=16 sid=90
+2026/11/15 11:22:31 [client] stream 30 closeWriteLocal
+2026/11/15 11:22:31 [client] stream 29 closeWriteLocal
+2026/11/15 11:22:31 [client] open ack slot=17 sid=91
+2026/11/15 11:22:31 [client] open ack slot=18 sid=92
+2026/11/15 11:22:31 [client] open ack slot=20 sid=94
+2026/11/15 11:22:31 [client] open ack slot=19 sid=93
+2026/11/15 11:22:31 [client] open ack slot=21 sid=95
+2026/11/15 11:22:31 [client] stream 36 closeWriteLocal
+2026/11/15 11:22:31 [client] open ack slot=26 sid=97
+2026/11/15 11:22:32 [client] open ack slot=22 sid=96
+2026/11/15 11:22:32 [client] open ack slot=19 sid=99
+2026/11/15 11:22:32 [client] open ack slot=21 sid=100
+2026/11/15 11:22:32 [client] open ack slot=18 sid=98
+2026/11/15 11:22:32 [client] open ack slot=19 sid=101
+2026/11/15 11:22:32 [client] open ack slot=20 sid=103
+2026/11/15 11:22:32 [client] open ack slot=31 sid=102
+2026/11/15 11:22:32 [client] open ack slot=24 sid=105
+2026/11/15 11:22:32 [client] open ack slot=25 sid=106
+2026/11/15 11:22:32 [client] open ack slot=23 sid=104
+2026/11/15 11:22:33 [client] open ack slot=28 sid=109
+2026/11/15 11:22:33 [client] open ack slot=26 sid=107
+2026/11/15 11:22:33 [client] open ack slot=27 sid=108
+2026/11/15 11:22:33 [client] open ack slot=29 sid=110
+2026/11/15 11:22:34 [client] stream 91 closeWriteLocal
+2026/11/15 11:22:34 [client] open ack slot=18 sid=111
+2026/11/15 11:22:34 [client] stream 72 closeWriteLocal
+2026/11/15 11:22:34 [client] stream 93 closeWriteLocal
+2026/11/15 11:22:34 [client] open ack slot=21 sid=112
+2026/11/15 11:22:34 [client] open ack slot=30 sid=113
+2026/11/15 11:22:35 [client] open ack slot=31 sid=114
+2026/11/15 11:22:35 [client] open ack slot=0 sid=115
+2026/11/15 11:22:35 [client] open ack slot=2 sid=117
+2026/11/15 11:22:36 [client] open ack slot=17 sid=118
+2026/11/15 11:22:36 [client] open ack slot=19 sid=119
+2026/11/15 11:22:36 [client] open ack slot=30 sid=120
+2026/11/15 11:22:37 [client] open ack slot=1 sid=116
+2026/11/15 11:22:37 [client] open ack slot=3 sid=121
+2026/11/15 11:22:37 [client] open ack slot=4 sid=122
+2026/11/15 11:22:37 [client] open ack slot=6 sid=124
+2026/11/15 11:22:37 [client] open ack slot=8 sid=126
+2026/11/15 11:22:37 [client] open ack slot=7 sid=125
+2026/11/15 11:22:38 [client] open ack slot=5 sid=123
+2026/11/15 11:22:38 [client] stream 22 closeWriteLocal
+2026/11/15 11:22:38 [client] open ack slot=12 sid=127
+2026/11/15 11:22:38 [client] open ack slot=14 sid=128
+2026/11/15 11:22:39 [client] open ack slot=9 sid=129
+2026/11/15 11:22:41 [client] open ack slot=10 sid=130
+2026/11/15 11:22:41 [client] open ack slot=12 sid=132
+2026/11/15 11:22:41 [client] open ack slot=15 sid=135
+2026/11/15 11:22:41 [client] stream 32 closeWriteLocal
+2026/11/15 11:22:41 [client] open ack slot=16 sid=136
+2026/11/15 11:22:41 [client] open ack slot=11 sid=131
+2026/11/15 11:22:41 [client] open ack slot=18 sid=138
+2026/11/15 11:22:41 [client] stream 138 closeWriteLocal
+2026/11/15 11:22:41 [client] stream 135 closeWriteLocal
+2026/11/15 11:22:41 [client] stream 132 closeWriteLocal
+2026/11/15 11:22:41 [client] stream 130 closeWriteLocal
+2026/11/15 11:22:41 [client] open ack slot=13 sid=133
+2026/11/15 11:22:41 [client] stream 133 closeWriteLocal
+2026/11/15 11:22:41 [client] stream 136 closeWriteLocal
+2026/11/15 11:22:42 [client] stream 111 closeWriteLocal
+2026/11/15 11:22:42 [client] stream 131 closeWriteLocal
+2026/11/15 11:22:42 [client] open ack slot=22 sid=140
+2026/11/15 11:22:43 [client] open ack slot=17 sid=137
+2026/11/15 11:22:44 [client] open ack slot=14 sid=134
+2026/11/15 11:22:46 [client] open ack slot=10 sid=141
+2026/11/15 11:22:48 [client] pumpUp err stream=116 sent=3567 err=read tcp 127.0.0.1:49888->127.0.0.1:57378: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:22:48 [client] pumpUp err stream=118 sent=3654 err=read tcp 127.0.0.1:49888->127.0.0.1:49898: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:22:48 [client] pumpUp err stream=129 sent=3528 err=read tcp 127.0.0.1:49888->127.0.0.1:61830: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:22:48 [client] pumpUp err stream=124 sent=3560 err=read tcp 127.0.0.1:49888->127.0.0.1:63918: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:22:48 [client] pumpUp err stream=117 sent=3592 err=read tcp 127.0.0.1:49888->127.0.0.1:56344: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:22:48 [client] pumpUp err stream=122 sent=2812 err=read tcp 127.0.0.1:49888->127.0.0.1:52074: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:22:48 [client] pumpUp err stream=103 sent=3721 err=read tcp 127.0.0.1:49888->127.0.0.1:53881: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:22:48 [client] pumpUp err stream=105 sent=3567 err=read tcp 127.0.0.1:49888->127.0.0.1:59757: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:22:48 [client] pumpUp err stream=120 sent=4226 err=read tcp 127.0.0.1:49888->127.0.0.1:49900: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:22:48 [client] stream 102 closeWriteLocal
+2026/11/15 11:22:48 [client] open ack slot=19 sid=139
+2026/11/15 11:22:49 [client] stream 112 closeWriteLocal
+2026/11/15 11:22:49 [client] open ack slot=18 sid=146
+2026/11/15 11:22:49 [client] open ack slot=13 sid=144
+2026/11/15 11:22:49 [client] open ack slot=31 sid=142
+2026/11/15 11:22:49 [client] stream 139 closeWriteLocal
+2026/11/15 11:22:49 [client] stream 113 closeWriteLocal
+2026/11/15 11:22:50 [client] open ack slot=23 sid=149
+2026/11/15 11:22:50 [client] stream 149 spread to 2 slots (sid=149, sent=142288)
+2026/11/15 11:22:50 [client] stream 149 spread to 3 slots (sid=149, sent=273360)
+2026/11/15 11:22:50 [client] stream 149 spread to 4 slots (sid=149, sent=403066)
+2026/11/15 11:22:50 [client] stream 149 spread to 5 slots (sid=149, sent=527582)
+2026/11/15 11:22:50 [client] stream 149 spread to 6 slots (sid=149, sent=659264)
+2026/11/15 11:22:50 [client] stream 149 spread to 7 slots (sid=149, sent=790336)
+2026/11/15 11:22:50 [client] stream 149 spread to 8 slots (sid=149, sent=921408)
+2026/11/15 11:22:50 [client] stream 146 spread to 2 slots (sid=146, sent=136837)
+2026/11/15 11:22:50 [client] stream 146 spread to 3 slots (sid=146, sent=268085)
+2026/11/15 11:22:50 [client] stream 146 spread to 4 slots (sid=146, sent=399333)
+2026/11/15 11:22:50 [client] stream 146 spread to 5 slots (sid=146, sent=530581)
+2026/11/15 11:22:50 [client] stream 146 spread to 6 slots (sid=146, sent=661829)
+2026/11/15 11:22:50 [client] stream 146 spread to 7 slots (sid=146, sent=793077)
+2026/11/15 11:22:50 [client] stream 146 spread to 8 slots (sid=146, sent=924325)
+2026/11/15 11:22:50 [client] stream 144 spread to 2 slots (sid=144, sent=145146)
+2026/11/15 11:22:50 [client] stream 144 spread to 3 slots (sid=144, sent=276218)
+2026/11/15 11:22:50 [client] stream 144 spread to 4 slots (sid=144, sent=407290)
+2026/11/15 11:22:50 [client] stream 144 spread to 5 slots (sid=144, sent=538362)
+2026/11/15 11:22:50 [client] stream 144 spread to 6 slots (sid=144, sent=669434)
+2026/11/15 11:22:50 [client] stream 144 spread to 7 slots (sid=144, sent=792936)
+2026/11/15 11:22:50 [client] stream 144 spread to 8 slots (sid=144, sent=924008)
+2026/11/15 11:22:50 [client] pumpUp err stream=113 sent=4154 err=read tcp 127.0.0.1:49888->127.0.0.1:50818: use of closed network connection
+2026/11/15 11:22:51 [client] open ack slot=14 sid=145
+2026/11/15 11:22:51 [client] stream 145 spread to 2 slots (sid=145, sent=134250)
+2026/11/15 11:22:51 [client] stream 145 spread to 3 slots (sid=145, sent=265322)
+2026/11/15 11:22:51 [client] stream 145 spread to 4 slots (sid=145, sent=404828)
+2026/11/15 11:22:51 [client] stream 145 spread to 5 slots (sid=145, sent=535900)
+2026/11/15 11:22:51 [client] stream 145 spread to 6 slots (sid=145, sent=666972)
+2026/11/15 11:22:51 [client] stream 145 spread to 7 slots (sid=145, sent=798044)
+2026/11/15 11:22:51 [client] stream 145 spread to 8 slots (sid=145, sent=929116)
+2026/11/15 11:22:51 [client] open ack slot=21 sid=153
+2026/11/15 11:22:51 [client] open ack slot=9 sid=143
+2026/11/15 11:22:52 [client] open ack slot=13 sid=152
+2026/11/15 11:22:53 [client] open ack slot=30 sid=151
+2026/11/15 11:22:54 [client] open ack slot=20 sid=147
+2026/11/15 11:22:56 [client] stream 152 closeWriteLocal
+2026/11/15 11:22:58 [client] open ack slot=4 sid=154
+2026/11/15 11:22:58 [client] stream 146 closeWriteLocal
+2026/11/15 11:22:58 [client] stream 147 spread to 2 slots (sid=147, sent=134011)
+2026/11/15 11:22:58 [client] stream 147 spread to 3 slots (sid=147, sent=265083)
+2026/11/15 11:22:58 [client] stream 147 spread to 4 slots (sid=147, sent=396155)
+2026/11/15 11:22:58 [client] stream 147 spread to 5 slots (sid=147, sent=527227)
+2026/11/15 11:22:58 [client] stream 147 spread to 6 slots (sid=147, sent=658299)
+2026/11/15 11:22:58 [client] stream 147 spread to 7 slots (sid=147, sent=789371)
+2026/11/15 11:22:58 [client] stream 147 spread to 8 slots (sid=147, sent=920443)
+2026/11/15 11:22:59 [client] open ack slot=19 sid=148
+2026/11/15 11:22:59 [client] open ack slot=24 sid=150
+2026/11/15 11:23:01 [client] stream 153 closeWriteLocal
+2026/11/15 11:23:01 [client] stream 95 closeWriteLocal
+2026/11/15 11:23:02 [client] stream 149 closeWriteLocal
+2026/11/15 11:23:02 [client] stream 144 closeWriteLocal
+2026/11/15 11:23:05 [client] stream 107 closeWriteLocal
+2026/11/15 11:23:05 [client] stream 127 closeWriteLocal
+2026/11/15 11:23:05 [client] stream 142 closeWriteLocal
+2026/11/15 11:23:05 [client] stream 145 closeWriteLocal
+2026/11/15 11:23:08 [client] stream 143 closeWriteLocal
+2026/11/15 11:23:11 [client] open ack slot=21 sid=155
+2026/11/15 11:23:11 [client] open ack slot=31 sid=156
+2026/11/15 11:23:11 [client] open ack slot=2 sid=157
+2026/11/15 11:23:11 [client] open ack slot=18 sid=163
+2026/11/15 11:23:11 [client] open ack slot=23 sid=166
+2026/11/15 11:23:11 [client] open ack slot=13 sid=161
+2026/11/15 11:23:11 [client] open ack slot=12 sid=160
+2026/11/15 11:23:11 [client] open ack slot=20 sid=164
+2026/11/15 11:23:11 [client] open ack slot=21 sid=165
+2026/11/15 11:23:11 [client] open ack slot=14 sid=162
+2026/11/15 11:23:11 [client] open ack slot=4 sid=158
+2026/11/15 11:23:11 [client] open ack slot=9 sid=159
+2026/11/15 11:23:11 [client] open ack slot=25 sid=167
+2026/11/15 11:23:12 [client] open ack slot=26 sid=168
+2026/11/15 11:23:12 [client] open ack slot=27 sid=169
+2026/11/15 11:23:13 [client] open ack slot=28 sid=170
+2026/11/15 11:23:13 [client] open ack slot=29 sid=171
+2026/11/15 11:23:14 [client] open ack slot=26 sid=172
+2026/11/15 11:23:14 [client] open ack slot=2 sid=178
+2026/11/15 11:23:14 [client] open ack slot=27 sid=173
+2026/11/15 11:23:14 [client] open ack slot=1 sid=177
+2026/11/15 11:23:14 [client] open ack slot=6 sid=181
+2026/11/15 11:23:14 [client] open ack slot=4 sid=179
+2026/11/15 11:23:14 [client] open ack slot=5 sid=180
+2026/11/15 11:23:14 [client] open ack slot=31 sid=175
+2026/11/15 11:23:14 [client] open ack slot=30 sid=174
+2026/11/15 11:23:14 [client] open ack slot=9 sid=182
+2026/11/15 11:23:14 [client] open ack slot=14 sid=187
+2026/11/15 11:23:14 [client] open ack slot=13 sid=186
+2026/11/15 11:23:14 [client] open ack slot=10 sid=183
+2026/11/15 11:23:14 [client] open ack slot=15 sid=188
+2026/11/15 11:23:14 [client] open ack slot=11 sid=184
+2026/11/15 11:23:14 [client] open ack slot=0 sid=176
+2026/11/15 11:23:14 [client] open ack slot=12 sid=185
+2026/11/15 11:23:14 [client] stream 163 closeWriteLocal
+2026/11/15 11:23:14 [client] stream 166 closeWriteLocal
+2026/11/15 11:23:14 [client] stream 161 closeWriteLocal
+2026/11/15 11:23:14 [client] stream 160 closeWriteLocal
+2026/11/15 11:23:14 [client] stream 151 closeWriteLocal
+2026/11/15 11:23:14 [client] stream 165 closeWriteLocal
+2026/11/15 11:23:15 [client] open ack slot=19 sid=193
+2026/11/15 11:23:15 [client] open ack slot=18 sid=192
+2026/11/15 11:23:15 [client] open ack slot=22 sid=196
+2026/11/15 11:23:15 [client] open ack slot=24 sid=198
+2026/11/15 11:23:15 [client] open ack slot=29 sid=203
+2026/11/15 11:23:15 [client] open ack slot=2 sid=208
+2026/11/15 11:23:15 [client] open ack slot=31 sid=205
+2026/11/15 11:23:15 [client] open ack slot=7 sid=213
+2026/11/15 11:23:15 [client] open ack slot=25 sid=199
+2026/11/15 11:23:15 [client] open ack slot=1 sid=207
+2026/11/15 11:23:15 [client] open ack slot=27 sid=201
+2026/11/15 11:23:15 [client] open ack slot=26 sid=200
+2026/11/15 11:23:15 [client] open ack slot=4 sid=210
+2026/11/15 11:23:15 [client] open ack slot=10 sid=216
+2026/11/15 11:23:15 [client] open ack slot=23 sid=197
+2026/11/15 11:23:15 [client] pumpUp err stream=221 sent=1930 err=read tcp 127.0.0.1:49888->127.0.0.1:56937: use of closed network connection
+2026/11/15 11:23:15 [client] open ack slot=30 sid=204
+2026/11/15 11:23:15 [client] open ack slot=5 sid=211
+2026/11/15 11:23:15 [client] open ack slot=14 sid=220
+2026/11/15 11:23:15 [client] open ack slot=24 sid=230
+2026/11/15 11:23:15 [client] open ack slot=6 sid=212
+2026/11/15 11:23:15 [client] open ack slot=9 sid=215
+2026/11/15 11:23:15 [client] open ack slot=21 sid=195
+2026/11/15 11:23:15 [client] open ack slot=13 sid=189
+2026/11/15 11:23:15 [client] open ack slot=22 sid=228
+2026/11/15 11:23:15 [client] open ack slot=28 sid=234
+2026/11/15 11:23:15 [client] open ack slot=25 sid=231
+2026/11/15 11:23:15 [client] open ack slot=13 sid=219
+2026/11/15 11:23:15 [client] open ack slot=27 sid=233
+2026/11/15 11:23:15 [client] open ack slot=23 sid=229
+2026/11/15 11:23:15 [client] open ack slot=21 sid=227
+2026/11/15 11:23:15 [client] open ack slot=12 sid=218
+2026/11/15 11:23:15 [client] open ack slot=0 sid=206
+2026/11/15 11:23:15 [client] open ack slot=3 sid=209
+2026/11/15 11:23:15 [client] open ack slot=28 sid=202
+2026/11/15 11:23:15 [client] open ack slot=8 sid=214
+2026/11/15 11:23:15 [client] open ack slot=11 sid=217
+2026/11/15 11:23:15 [client] open ack slot=18 sid=224
+2026/11/15 11:23:15 [client] open ack slot=29 sid=236
+2026/11/15 11:23:15 [client] open ack slot=15 sid=235
+2026/11/15 11:23:15 [client] open ack slot=1 sid=240
+2026/11/15 11:23:15 [client] open ack slot=31 sid=238
+2026/11/15 11:23:15 [client] open ack slot=26 sid=232
+2026/11/15 11:23:15 [client] open ack slot=16 sid=222
+2026/11/15 11:23:15 [client] open ack slot=19 sid=225
+2026/11/15 11:23:15 [client] stream 172 closeWriteLocal
+2026/11/15 11:23:15 [client] open ack slot=16 sid=190
+2026/11/15 11:23:15 [client] open ack slot=30 sid=237
+2026/11/15 11:23:15 [client] open ack slot=20 sid=194
+2026/11/15 11:23:15 [client] open ack slot=20 sid=226
+2026/11/15 11:23:15 [client] open ack slot=2 sid=241
+2026/11/15 11:23:15 [client] open ack slot=3 sid=242
+2026/11/15 11:23:15 [client] stream 218 closeWriteLocal
+2026/11/15 11:23:15 [client] open ack slot=0 sid=239
+2026/11/15 11:23:15 [client] open ack slot=26 sid=244
+2026/11/15 11:23:15 [client] pumpUp err stream=245 sent=2026 err=read tcp 127.0.0.1:49888->127.0.0.1:58777: use of closed network connection
+2026/11/15 11:23:15 [client] open ack slot=4 sid=246
+2026/11/15 11:23:15 [client] open ack slot=12 sid=243
+2026/11/15 11:23:16 [client] open ack slot=5 sid=247
+2026/11/15 11:23:16 [client] pumpUp err stream=248 sent=1962 err=read tcp 127.0.0.1:49888->127.0.0.1:61366: use of closed network connection
+2026/11/15 11:23:16 [client] open ack slot=17 sid=191
+2026/11/15 11:23:16 [client] open ack slot=30 sid=249
+2026/11/15 11:23:17 [client] pumpUp err stream=250 sent=2026 err=read tcp 127.0.0.1:49888->127.0.0.1:57904: use of closed network connection
+2026/11/15 11:23:17 [client] open ack slot=17 sid=223
+2026/11/15 11:23:17 [client] open ack slot=11 sid=251
+2026/11/15 11:23:19 [client] open ack slot=12 sid=252
+2026/11/15 11:23:19 [client] stream 194 closeWriteLocal
+2026/11/15 11:23:19 [client] stream 246 closeWriteLocal
+2026/11/15 11:23:20 [client] stream 181 closeWriteLocal
+2026/11/15 11:23:22 [client] stream 214 closeWriteLocal
+2026/11/15 11:23:23 [client] stream 251 closeWriteLocal
+2026/11/15 11:23:23 [client] stream 252 closeWriteLocal
+2026/11/15 11:23:24 [client] open ack slot=6 sid=253
+2026/11/15 11:23:25 [client] open ack slot=11 sid=254
+2026/11/15 11:23:25 [client] open ack slot=12 sid=255
+2026/11/15 11:23:25 [client] stream 203 closeWriteLocal
+2026/11/15 11:23:25 [client] stream 216 closeWriteLocal
+2026/11/15 11:23:28 [client] stream 254 closeWriteLocal
+2026/11/15 11:23:29 [client] stream 204 closeWriteLocal
+2026/11/15 11:23:30 [client] open ack slot=30 sid=256
+2026/11/15 11:23:30 [client] open ack slot=4 sid=257
+2026/11/15 11:23:33 [client] stream 255 closeWriteLocal
+2026/11/15 11:23:34 [client] stream 188 closeWriteLocal
+2026/11/15 11:23:34 [client] open ack slot=4 sid=258
+2026/11/15 11:23:34 [client] open ack slot=4 sid=259
+2026/11/15 11:23:38 [client] stream 258 closeWriteLocal
+2026/11/15 11:23:38 [client] stream 126 closeWriteLocal
+2026/11/15 11:23:38 [client] stream 125 closeWriteLocal
+2026/11/15 11:23:40 [client] stream 121 closeWriteLocal
+2026/11/15 11:23:40 [client] open ack slot=11 sid=266
+2026/11/15 11:23:40 [client] open ack slot=30 sid=261
+2026/11/15 11:23:40 [client] stream 266 closeWriteLocal
+2026/11/15 11:23:40 [client] open ack slot=4 sid=260
+2026/11/15 11:23:40 [client] open ack slot=7 sid=264
+2026/11/15 11:23:40 [client] stream 261 closeWriteLocal
+2026/11/15 11:23:40 [client] stream 260 closeWriteLocal
+2026/11/15 11:23:40 [client] stream 264 closeWriteLocal
+2026/11/15 11:23:40 [client] open ack slot=4 sid=263
+2026/11/15 11:23:40 [client] open ack slot=12 sid=267
+2026/11/15 11:23:40 [client] open ack slot=8 sid=265
+2026/11/15 11:23:41 [client] stream 263 closeWriteLocal
+2026/11/15 11:23:41 [client] stream 267 closeWriteLocal
+2026/11/15 11:23:41 [client] open ack slot=2 sid=262
+2026/11/15 11:23:41 [client] stream 265 closeWriteLocal
+2026/11/15 11:23:41 [client] stream 262 closeWriteLocal
+2026/11/15 11:23:42 [client] stream 167 closeWriteLocal
+2026/11/15 11:23:46 [client] stream 215 closeWriteLocal
+2026/11/15 11:23:46 [client] stream 87 closeWriteLocal
+2026/11/15 11:23:46 [client] stream 83 closeWriteLocal
+2026/11/15 11:23:48 [client] open ack slot=4 sid=268
+2026/11/15 11:23:48 [client] open ack slot=9 sid=269
+2026/11/15 11:23:48 [client] open ack slot=13 sid=270
+2026/11/15 11:23:50 [client] open ack slot=21 sid=271
+2026/11/15 11:23:50 [client] stream 150 closeWriteLocal
+2026/11/15 11:23:50 [client] open ack slot=2 sid=273
+2026/11/15 11:23:50 [client] open ack slot=4 sid=274
+2026/11/15 11:23:50 [client] open ack slot=30 sid=272
+2026/11/15 11:23:51 [client] stream 69 closeWriteLocal
+2026/11/15 11:23:51 [client] open ack slot=7 sid=275
+2026/11/15 11:23:51 [client] open ack slot=8 sid=276
+2026/11/15 11:23:52 [client] stream 148 closeWriteLocal
+2026/11/15 11:23:52 [client] open ack slot=9 sid=277
+2026/11/15 11:23:53 [client] open ack slot=11 sid=278
+2026/11/15 11:23:53 [client] stream 259 closeWriteLocal
+2026/11/15 11:23:53 [client] stream 272 closeWriteLocal
+2026/11/15 11:23:53 [client] stream 274 closeWriteLocal
+2026/11/15 11:23:53 [client] stream 273 closeWriteLocal
+2026/11/15 11:23:55 [client] stream 277 closeWriteLocal
+2026/11/15 11:23:56 [client] open ack slot=4 sid=279
+2026/11/15 11:23:56 [client] stream 278 closeWriteLocal
+2026/11/15 11:23:59 [client] stream 183 closeWriteLocal
+2026/11/15 11:23:59 [client] pumpUp err stream=280 sent=112 err=read tcp 127.0.0.1:49888->127.0.0.1:58310: use of closed network connection
+2026/11/15 11:23:59 [client] open ack slot=2 sid=281
+2026/11/15 11:23:59 [client] stream 281 closeWriteLocal
+2026/11/15 11:23:59 [client] stream 279 closeWriteLocal
+2026/11/15 11:24:00 [client] pumpUp err stream=282 sent=112 err=read tcp 127.0.0.1:49888->127.0.0.1:65494: use of closed network connection
+2026/11/15 11:24:00 [client] open ack slot=4 sid=283
+2026/11/15 11:24:04 [client] stream 283 closeWriteLocal
+2026/11/15 11:24:05 [client] stream 202 closeWriteLocal
+2026/11/15 11:24:06 [client] open ack slot=4 sid=284
+2026/11/15 11:24:06 [client] stream 243 closeWriteLocal
+2026/11/15 11:24:09 [client] stream 284 closeWriteLocal
+2026/11/15 11:24:10 [client] open ack slot=4 sid=285
+2026/11/15 11:24:11 [client] open ack slot=9 sid=286
+2026/11/15 11:24:11 [client] stream 162 closeWriteLocal
+2026/11/15 11:24:13 [client] stream 285 closeWriteLocal
+2026/11/15 11:24:14 [client] stream 50 closeWriteLocal
+2026/11/15 11:24:14 [client] stream 58 closeWriteLocal
+2026/11/15 11:24:15 [client] stream 208 closeWriteLocal
+2026/11/15 11:24:15 [client] stream 201 closeWriteLocal
+2026/11/15 11:24:15 [client] stream 207 closeWriteLocal
+2026/11/15 11:24:15 [client] stream 198 closeWriteLocal
+2026/11/15 11:24:15 [client] stream 209 closeWriteLocal
+2026/11/15 11:24:15 [client] stream 211 closeWriteLocal
+2026/11/15 11:24:19 [client] stream 177 closeWriteLocal
+2026/11/15 11:24:24 [client] open ack slot=4 sid=288
+2026/11/15 11:24:24 [client] open ack slot=2 sid=287
+2026/11/15 11:24:25 [client] stream 224 closeWriteLocal
+2026/11/15 11:24:26 [client] open ack slot=30 sid=292
+2026/11/15 11:24:26 [client] open ack slot=13 sid=290
+2026/11/15 11:24:26 [client] open ack slot=12 sid=289
+2026/11/15 11:24:26 [client] open ack slot=27 sid=291
+2026/11/15 11:24:26 [client] open ack slot=0 sid=293
+2026/11/15 11:24:26 [client] open ack slot=1 sid=294
+2026/11/15 11:24:26 [client] open ack slot=2 sid=295
+2026/11/15 11:24:26 [client] open ack slot=3 sid=296
+2026/11/15 11:24:26 [client] open ack slot=4 sid=297
+2026/11/15 11:24:26 [client] open ack slot=5 sid=298
+2026/11/15 11:24:27 [client] open ack slot=9 sid=300
+2026/11/15 11:24:27 [client] open ack slot=8 sid=299
+2026/11/15 11:24:28 [client] open ack slot=10 sid=301
+2026/11/15 11:24:29 [client] stream 296 closeWriteLocal
+2026/11/15 11:24:29 [client] stream 295 closeWriteLocal
+2026/11/15 11:24:29 [client] pumpUp err stream=295 sent=5266 err=read tcp 127.0.0.1:49888->127.0.0.1:56753: use of closed network connection
+2026/11/15 11:24:30 [client] stream 228 closeWriteLocal
+2026/11/15 11:24:31 [client] stream 222 closeWriteLocal
+2026/11/15 11:24:31 [client] open ack slot=2 sid=302
+2026/11/15 11:24:31 [client] open ack slot=3 sid=303
+2026/11/15 11:24:31 [client] stream 301 closeWriteLocal
+2026/11/15 11:24:31 [client] stream 294 closeWriteLocal
+2026/11/15 11:24:31 [client] open ack slot=16 sid=304
+2026/11/15 11:24:31 [client] open ack slot=11 sid=305
+2026/11/15 11:24:34 [client] stream 303 closeWriteLocal
+2026/11/15 11:24:38 [client] stream 298 closeWriteLocal
+2026/11/15 11:24:40 [client] open ack slot=5 sid=308
+2026/11/15 11:24:40 [client] open ack slot=10 sid=309
+2026/11/15 11:24:40 [client] open ack slot=1 sid=306
+2026/11/15 11:24:40 [client] open ack slot=3 sid=307
+2026/11/15 11:24:40 [client] stream 308 closeWriteLocal
+2026/11/15 11:24:40 [client] stream 307 closeWriteLocal
+2026/11/15 11:24:40 [client] stream 309 closeWriteLocal
+2026/11/15 11:24:40 [client] open ack slot=12 sid=310
+2026/11/15 11:24:40 [client] open ack slot=14 sid=312
+2026/11/15 11:24:40 [client] open ack slot=15 sid=313
+2026/11/15 11:24:40 [client] stream 313 closeWriteLocal
+2026/11/15 11:24:40 [client] stream 310 closeWriteLocal
+2026/11/15 11:24:41 [client] stream 312 closeWriteLocal
+2026/11/15 11:24:41 [client] open ack slot=13 sid=311
+2026/11/15 11:24:41 [client] stream 311 closeWriteLocal
+2026/11/15 11:24:41 [client] stream 306 closeWriteLocal
+2026/11/15 11:24:44 [client] stream 304 closeWriteLocal
+2026/11/15 11:24:49 [client] stream 305 closeWriteLocal
+2026/11/15 11:24:59 [client] open ack slot=16 sid=314
+2026/11/15 11:24:59 [client] pumpUp err stream=175 sent=8498 err=read tcp 127.0.0.1:49888->127.0.0.1:50932: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=11 sent=28591 err=read tcp 127.0.0.1:49888->127.0.0.1:63532: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=89 sent=59490 err=read tcp 127.0.0.1:49888->127.0.0.1:65008: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=76 sent=3072 err=read tcp 127.0.0.1:49888->127.0.0.1:62905: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=176 sent=3361 err=read tcp 127.0.0.1:49888->127.0.0.1:62751: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=10 sent=14270 err=read tcp 127.0.0.1:49888->127.0.0.1:53932: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=15 sent=67200 err=read tcp 127.0.0.1:49888->127.0.0.1:60077: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=13 sent=3148 err=read tcp 127.0.0.1:49888->127.0.0.1:63534: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=141 sent=4639 err=read tcp 127.0.0.1:49888->127.0.0.1:53198: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=25 sent=21433 err=read tcp 127.0.0.1:49888->127.0.0.1:50237: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=75 sent=34554 err=read tcp 127.0.0.1:49888->127.0.0.1:52546: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=37 sent=55133 err=read tcp 127.0.0.1:49888->127.0.0.1:54921: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=17 sent=20946 err=read tcp 127.0.0.1:49888->127.0.0.1:59135: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=16 sent=42893 err=read tcp 127.0.0.1:49888->127.0.0.1:59134: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=38 sent=40283 err=read tcp 127.0.0.1:49888->127.0.0.1:55572: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=18 sent=59232 err=read tcp 127.0.0.1:49888->127.0.0.1:63536: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=314 sent=2250 err=read tcp 127.0.0.1:49888->127.0.0.1:62873: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=21 sent=50927 err=read tcp 127.0.0.1:49888->127.0.0.1:60867: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=191 sent=5884 err=read tcp 127.0.0.1:49888->127.0.0.1:64633: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=23 sent=4122 err=read tcp 127.0.0.1:49888->127.0.0.1:65516: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=24 sent=39121 err=read tcp 127.0.0.1:49888->127.0.0.1:51049: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=26 sent=5714 err=read tcp 127.0.0.1:49888->127.0.0.1:58205: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=27 sent=26152 err=read tcp 127.0.0.1:49888->127.0.0.1:57932: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=28 sent=44959 err=read tcp 127.0.0.1:49888->127.0.0.1:65291: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=171 sent=3443 err=read tcp 127.0.0.1:49888->127.0.0.1:52699: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=170 sent=3653 err=read tcp 127.0.0.1:49888->127.0.0.1:59846: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=33 sent=21308 err=read tcp 127.0.0.1:49888->127.0.0.1:54629: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=34 sent=5096 err=read tcp 127.0.0.1:49888->127.0.0.1:61077: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=35 sent=49811 err=read tcp 127.0.0.1:49888->127.0.0.1:56811: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=40 sent=40883 err=read tcp 127.0.0.1:49888->127.0.0.1:60243: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=289 sent=3590 err=read tcp 127.0.0.1:49888->127.0.0.1:63137: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=39 sent=6778 err=read tcp 127.0.0.1:49888->127.0.0.1:57532: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=41 sent=17796 err=read tcp 127.0.0.1:49888->127.0.0.1:60481: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=47 sent=3090 err=read tcp 127.0.0.1:49888->127.0.0.1:63563: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=293 sent=2716 err=read tcp 127.0.0.1:49888->127.0.0.1:53207: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=219 sent=2760 err=read tcp 127.0.0.1:49888->127.0.0.1:57738: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=159 sent=39823 err=read tcp 127.0.0.1:49888->127.0.0.1:52390: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=49 sent=5173 err=read tcp 127.0.0.1:49888->127.0.0.1:49778: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=51 sent=11691 err=read tcp 127.0.0.1:49888->127.0.0.1:49781: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=52 sent=11593 err=read tcp 127.0.0.1:49888->127.0.0.1:52312: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=53 sent=5485 err=read tcp 127.0.0.1:49888->127.0.0.1:56538: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=54 sent=3177 err=read tcp 127.0.0.1:49888->127.0.0.1:56520: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=56 sent=3368 err=read tcp 127.0.0.1:49888->127.0.0.1:55842: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=57 sent=5282 err=read tcp 127.0.0.1:49888->127.0.0.1:51500: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=59 sent=25377 err=read tcp 127.0.0.1:49888->127.0.0.1:64281: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=97 sent=4218 err=read tcp 127.0.0.1:49888->127.0.0.1:54812: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=62 sent=9245 err=read tcp 127.0.0.1:49888->127.0.0.1:53954: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=63 sent=19596 err=read tcp 127.0.0.1:49888->127.0.0.1:58228: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=64 sent=15786 err=read tcp 127.0.0.1:49888->127.0.0.1:58229: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=65 sent=13892 err=read tcp 127.0.0.1:49888->127.0.0.1:61988: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=66 sent=11155 err=read tcp 127.0.0.1:49888->127.0.0.1:61989: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=67 sent=44267 err=read tcp 127.0.0.1:49888->127.0.0.1:60784: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=68 sent=8750 err=read tcp 127.0.0.1:49888->127.0.0.1:51304: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=70 sent=4610 err=read tcp 127.0.0.1:49888->127.0.0.1:51150: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=71 sent=4249 err=read tcp 127.0.0.1:49888->127.0.0.1:63540: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=74 sent=17998 err=read tcp 127.0.0.1:49888->127.0.0.1:52545: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=77 sent=3065 err=read tcp 127.0.0.1:49888->127.0.0.1:64250: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=78 sent=3794 err=read tcp 127.0.0.1:49888->127.0.0.1:64251: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=79 sent=2840 err=read tcp 127.0.0.1:49888->127.0.0.1:61937: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=80 sent=3772 err=read tcp 127.0.0.1:49888->127.0.0.1:61938: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=81 sent=2803 err=read tcp 127.0.0.1:49888->127.0.0.1:61939: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=82 sent=2999 err=read tcp 127.0.0.1:49888->127.0.0.1:61940: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=84 sent=3120 err=read tcp 127.0.0.1:49888->127.0.0.1:59236: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=85 sent=3159 err=read tcp 127.0.0.1:49888->127.0.0.1:55951: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=86 sent=3114 err=read tcp 127.0.0.1:49888->127.0.0.1:61794: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=90 sent=3477 err=read tcp 127.0.0.1:49888->127.0.0.1:62993: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=92 sent=19316 err=read tcp 127.0.0.1:49888->127.0.0.1:55418: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=94 sent=3699 err=read tcp 127.0.0.1:49888->127.0.0.1:60787: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=96 sent=16627 err=read tcp 127.0.0.1:49888->127.0.0.1:53339: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=256 sent=3817 err=read tcp 127.0.0.1:49888->127.0.0.1:60862: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=164 sent=5060 err=read tcp 127.0.0.1:49888->127.0.0.1:61467: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=99 sent=3546 err=read tcp 127.0.0.1:49888->127.0.0.1:57663: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=101 sent=3529 err=read tcp 127.0.0.1:49888->127.0.0.1:60450: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=275 sent=3209 err=read tcp 127.0.0.1:49888->127.0.0.1:57535: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=299 sent=4315 err=read tcp 127.0.0.1:49888->127.0.0.1:58716: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=276 sent=2594 err=read tcp 127.0.0.1:49888->127.0.0.1:57162: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=290 sent=2941 err=read tcp 127.0.0.1:49888->127.0.0.1:65286: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=178 sent=4809 err=read tcp 127.0.0.1:49888->127.0.0.1:61667: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=140 sent=7798 err=read tcp 127.0.0.1:49888->127.0.0.1:64479: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=155 sent=3277 err=read tcp 127.0.0.1:49888->127.0.0.1:59032: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=137 sent=4856 err=read tcp 127.0.0.1:49888->127.0.0.1:64156: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=192 sent=3139 err=read tcp 127.0.0.1:49888->127.0.0.1:50173: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=193 sent=3258 err=read tcp 127.0.0.1:49888->127.0.0.1:58139: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=196 sent=3674 err=read tcp 127.0.0.1:49888->127.0.0.1:59695: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=197 sent=2907 err=read tcp 127.0.0.1:49888->127.0.0.1:64707: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=199 sent=3109 err=read tcp 127.0.0.1:49888->127.0.0.1:55691: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=200 sent=3147 err=read tcp 127.0.0.1:49888->127.0.0.1:55692: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=300 sent=3135 err=read tcp 127.0.0.1:49888->127.0.0.1:51353: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=205 sent=3365 err=read tcp 127.0.0.1:49888->127.0.0.1:56305: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=253 sent=3167 err=read tcp 127.0.0.1:49888->127.0.0.1:50946: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=302 sent=1990 err=read tcp 127.0.0.1:49888->127.0.0.1:55596: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=48 sent=3474 err=read tcp 127.0.0.1:49888->127.0.0.1:62803: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=244 sent=3016 err=read tcp 127.0.0.1:49888->127.0.0.1:64505: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=220 sent=3111 err=read tcp 127.0.0.1:49888->127.0.0.1:57739: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=223 sent=3070 err=read tcp 127.0.0.1:49888->127.0.0.1:52237: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=286 sent=3082 err=read tcp 127.0.0.1:49888->127.0.0.1:61631: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=226 sent=3028 err=read tcp 127.0.0.1:49888->127.0.0.1:57764: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=230 sent=3111 err=read tcp 127.0.0.1:49888->127.0.0.1:56424: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=233 sent=3054 err=read tcp 127.0.0.1:49888->127.0.0.1:61164: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=268 sent=23920 err=read tcp 127.0.0.1:49888->127.0.0.1:64635: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=271 sent=3517 err=read tcp 127.0.0.1:49888->127.0.0.1:58388: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=240 sent=3544 err=read tcp 127.0.0.1:49888->127.0.0.1:49891: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=242 sent=4764 err=read tcp 127.0.0.1:49888->127.0.0.1:53918: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=292 sent=10353 err=read tcp 127.0.0.1:49888->127.0.0.1:63335: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:24:59 [client] pumpUp err stream=297 sent=3073 err=read tcp 127.0.0.1:49888->127.0.0.1:50061: wsarecv: An existing connection was forcibly closed by the remote host.
+2026/11/15 11:25:00 [client] open ack slot=0 sid=315

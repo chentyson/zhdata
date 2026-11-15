@@ -1,0 +1,23 @@
+2026/11/15 09:55:30 [client] socks5 listening on 127.0.0.1:49888 -> C498.uwintech.com:49888,C498.uwintech.com:49889,C498.uwintech.com:49890,C498.uwintech.com:49891,C498.uwintech.com:49892,C498.uwintech.com:49893,C498.uwintech.com:49894,C498.uwintech.com:49895,C498.uwintech.com:49896,C498.uwintech.com:49897,C498.uwintech.com:49898,C498.uwintech.com:49899,C498.uwintech.com:49900,C498.uwintech.com:49901,C498.uwintech.com:49902,C498.uwintech.com:49903
+2026/11/15 09:55:30 [client] session established slot=8 (gen=1, reopen streams=0)
+2026/11/15 09:55:30 [client] session established slot=6 (gen=1, reopen streams=0)
+2026/11/15 09:55:30 [client] session established slot=13 (gen=1, reopen streams=0)
+2026/11/15 09:55:30 [client] session established slot=11 (gen=1, reopen streams=0)
+2026/11/15 09:55:30 [client] session established slot=15 (gen=1, reopen streams=0)
+2026/11/15 09:55:30 [client] session established slot=12 (gen=1, reopen streams=0)
+2026/11/15 09:55:30 [client] session established slot=0 (gen=1, reopen streams=0)
+2026/11/15 09:55:30 [client] session established slot=4 (gen=1, reopen streams=0)
+2026/11/15 09:55:30 [client] session established slot=5 (gen=1, reopen streams=0)
+2026/11/15 09:55:30 [client] session established slot=14 (gen=1, reopen streams=0)
+2026/11/15 09:55:30 [client] session established slot=3 (gen=1, reopen streams=0)
+2026/11/15 09:55:30 [client] session established slot=10 (gen=1, reopen streams=0)
+2026/11/15 09:55:30 [client] session established slot=9 (gen=1, reopen streams=0)
+2026/11/15 09:55:30 [client] session established slot=2 (gen=1, reopen streams=0)
+2026/11/15 09:55:30 [client] session established slot=1 (gen=1, reopen streams=0)
+2026/11/15 09:55:30 [client] session established slot=7 (gen=1, reopen streams=0)
+2026/11/15 09:55:36 [client] open ack slot=0 sid=1
+2026/11/15 09:55:37 [client] stream 1 spread to 2 slots (sid=1, sent=131200)
+2026/11/15 09:55:37 [client] stream 1 spread to 3 slots (sid=1, sent=262272)
+2026/11/15 09:55:37 [client] stream 1 spread to 4 slots (sid=1, sent=393344)
+2026/11/15 09:56:33 [client] stream 1 closeWriteLocal
+2026/11/15 09:56:33 [client] pumpUp EOF/err stream=1 sent=52428928 err=EOF
