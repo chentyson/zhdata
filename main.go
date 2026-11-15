@@ -22,7 +22,7 @@ func main() {
 	decoy := flag.String("decoy", "", "optional host:port to splice non-protocol HTTP-looking traffic (server)")
 	verbose := flag.Bool("v", false, "verbose logging")
 	conns := flag.Int("conns", 1, "parallel tunnel sessions 1-64 (client; independent slots/buckets)")
-	spread := flag.Int("spread", 1, "max lanes one bulk upload stream may fan across (client; default 1 = disabled: per-flow spreading needs server-side reorder and collapses on lossy lines. Keep 1 unless retransmission is added)")
+	spread := flag.Int("spread", 8, "max lanes one bulk upload stream may fan across (client; v0.11 retransmit makes fan-out safe; auto-capped to conns/live-bulk-streams, set 1 to disable)")
 	train := flag.Int("train", 0, "seconds between per-session idle training frames; 0 = off (v0.8 experiment: keep ISP shaping buckets warm)")
 	showVer := flag.Bool("version", false, "print version")
 	flag.Parse()

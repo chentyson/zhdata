@@ -32,8 +32,8 @@ const (
 	maxPayload = 16 * 1024
 	smallFrame = 1400 // DATA frames up to this size get priority
 
-	handshakeLen = 48 // 16B salt + 32B encrypted magic block
-	magic        = "zhv3"
+	handshakeLen = 48     // 16B salt + 32B encrypted magic block
+	magic        = "zhv4" // v0.11: tAck payload semantics changed (count|deliveredPrefix)
 )
 
 var (

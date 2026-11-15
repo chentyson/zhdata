@@ -23,24 +23,31 @@ const (
 	maxStreams         = 1024
 	maxReorderBytes    = 16 * 1024 * 1024 // v0.8.1: per-stream reassembly window. 8MB parked constantly on desynced lines (harsh-hour TCP shaping skews lanes -> silent park storms -> tunnel hits 0 while raw keeps ~5M); 16MB absorbs skew; bound = active bulk streams x 16MB.
 	gapSkip            = 4096             // tolerate lost frames after owner-session death
-	gapWaitTO          = 15 * time.Second // park a fast lane this long waiting for a slow lane's gap
+	holeTimeout        = 12 * time.Second // v0.11: reset a stream whose reorder hole is not filled by retransmission
 	spreadThreshold    = 128 * 1024       // client: attach one more session per N bytes sent
-	// v0.10: static large credit window (1.5MB per lane). The old out-AIMD
-	// (8..96) self-limited to ~24 frames: the client refills to cap right after
-	// every tAck, so out stays ~= cap, the grow branch (out*2 <= cap) almost
-	// never fires while the shrink branch occasionally does -> each lane was
-	// clocked to ~2.5Mbps on a 200ms path. That is why 16 spread lanes were
-	// needed to reach 50M, and why the server reorder buffer then parked and
-	// collapsed. With per-flow spreading disabled (spread=1) there is nothing
-	// to reorder, so a large constant window is safe and the lane becomes
-	// TCP-limited again. INVARIANT: laneCapMin >= ackEvery.
-	laneCapInit  = 96
-	laneCapMin   = 96
-	laneCapMax   = 96
-	ackEvery     = 8               // v0.5: tAck every N frames per lane
-	trainEvery   = 2 * time.Second // v0.8 (EXPERIMENT, off by default via -train 0): per-session training padding (sid=0, server discards) to keep shaper buckets warm. Did not show benefit on this link; costs uplink.
-	trainPayload = 16 * 1024       // v0.8: frame size
-	trainFrames  = 1               // v0.8: frames per session per tick
+	// v0.11 (route A): uploads use a byte-based sliding window over the server's
+	// *delivered* sequence (tAck carries rx.next-1), and a per-stream retransmit
+	// buffer. The old per-lane frame-count credit is gone: it could not express
+	// "delivered", so a stalled lane left an unfillable hole that only the 16MB
+	// reorder window bounded. Now:
+	//   - a frame leaves the client window only when the server has it in order
+	//     (deliveredSeq), so the reorder buffer is bounded by streamWindowBytes;
+	//   - the front (hole) frame is fast-retransmitted after holeResendTO and
+	//     frames queued on a dead session are re-sent over the surviving lanes
+	//     (the server dedupes by seq). A live-but-slow lane is NOT migrated;
+	//   - spread is safe again, so few-connection apps can still fill many
+	//     per-flow shaping buckets.
+	streamWindowBytes = 2 << 20                // per-stream unacked ceiling (server reorder <=2MB; smaller window = faster hole recovery)
+	globalWindowBytes = 64 << 20               // client-wide unacked ceiling across all upload streams
+	holeResendTO      = 400 * time.Millisecond // front frame still undelivered -> fast-retransmit it (a hole blocks ALL delivery)
+	holeResendBurst   = 4                      // frames resent per fast hole-retransmit sweep
+	laneRateInit      = 50.0                   // frames/s seed for an unmeasured lane (~6.5Mbps at 16KB frames)
+	laneRateMin       = 0.5                    // floor used for completion-time scoring
+	ackEvery          = 8                      // tAck at least every N frames per lane
+	ackMinInterval    = 10 * time.Millisecond  // ...or sooner when delivered progress needs to be reported
+	trainEvery        = 2 * time.Second        // v0.8 (EXPERIMENT, off by default): per-session training padding
+	trainPayload      = 16 * 1024              // v0.8: frame size
+	trainFrames       = 1                      // v0.8: frames per session per tick
 )
 
 func deadline(d time.Duration) time.Time { return time.Now().Add(d) }
@@ -109,6 +116,20 @@ func (s *session) sendData(f Frame) {
 	select {
 	case s.loQ <- f:
 	case <-s.done:
+	}
+}
+
+// trySendData is the non-blocking variant used by the v0.11 upload path: the
+// per-stream sender polls lanes and must never block on a full queue (a slow
+// lane is skipped and its frames are retransmitted elsewhere if it stalls).
+func (s *session) trySendData(f Frame) bool {
+	select {
+	case s.loQ <- f:
+		return true
+	case <-s.done:
+		return false
+	default:
+		return false
 	}
 }
 

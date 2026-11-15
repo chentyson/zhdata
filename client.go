@@ -39,14 +39,15 @@ type clientApp struct {
 	cfg      clientConfig
 	listener net.Listener
 
-	mu      sync.Mutex
-	conns   []*cConn
-	servers []string            // dial targets; slot i dials servers[i % len(servers)]
-	streams map[uint32]*cStream // all live streams
-	sidSeq  uint16              // sid allocator, unique per uuid across sessions
-	bulk    int                 // live streams transferring bulk upload; drives the auto spread budget
-	lanes   int                 // total spread lanes attached across all streams; hard cap = cfg.conns (never oversubscribe the slot pool)
-	rr      uint32              // rotating cursor for home-slot selection (spreads streams over all slots)
+	mu            sync.Mutex
+	conns         []*cConn
+	servers       []string            // dial targets; slot i dials servers[i % len(servers)]
+	streams       map[uint32]*cStream // all live streams
+	sidSeq        uint16              // sid allocator, unique per uuid across sessions
+	bulk          int                 // live streams transferring bulk upload; drives the auto spread budget
+	lanes         int                 // total spread lanes attached across all streams; hard cap = cfg.conns (never oversubscribe the slot pool)
+	rr            uint32              // rotating cursor for home-slot selection (spreads streams over all slots)
+	inflightBytes int64               // v0.11: bytes enqueued to sessions but not yet DELIVERED by the server, all upload streams (cap globalWindowBytes)
 
 	stopCh  chan struct{}
 	stopped atomic.Bool
@@ -78,27 +79,62 @@ type cStream struct {
 	addr  []byte
 	port  uint16
 
-	rr       int               // (kept for diagnostics; lane choice is credit-based)
-	bulk     bool              // stream has exceeded the bulk threshold (counts toward spread budget)
-	attached int               // spread lanes beyond home held by this stream (counts toward global lane cap)
-	laneSent map[*cConn]uint32 // frames sent per attached lane (app.mu)
-	laneAck  map[*cConn]uint32 // frames confirmed per lane via tAck (app.mu)
-	laneCap  map[*cConn]int    // per-lane in-flight credit, AIMD (app.mu)
-	rq       chan []byte       // remote -> local queue
-	done     chan struct{}
-	doneOne  sync.Once
+	bulk     bool // stream has exceeded the bulk threshold (counts toward spread budget)
+	attached int  // spread lanes beyond home held by this stream (counts toward global lane cap)
+
+	// v0.11 (route A) upload send window; all fields guarded by app.mu.
+	// A frame stays in sentq until the server reports it DELIVERED (tAck's
+	// second word = rx.next-1), so the server reassembler can never be fed
+	// more than streamWindowBytes out of order. Frames on a lane that stops
+	// acking are retransmitted over the other lanes; the server dedupes by seq.
+	sentq         []*sentFrame      // pending frames, ascending seq
+	ackedSeq      uint32            // server delivered prefix (last in-order frame)
+	inflightBytes int64             // bytes in sentq
+	frontSince    time.Time         // when sentq[0] became the front (fast hole-retransmit timer)
+	laneAck       map[*cConn]uint32 // per-lane arrival counter (liveness)
+	laneBytes     map[*cConn]int64  // pending bytes currently assigned to a lane
+	// v0.11 pacing: in-order delivery of ONE app stream over N lanes can only
+	// advance as fast as the lane carrying the next sequence number, so a
+	// naive round-robin caps a stream at N x slowest-lane rate. Assign each
+	// frame to the lane with the earliest estimated completion (pending/rate);
+	// slow lanes then receive proportionally fewer frames and the stream rate
+	// becomes ~sum(lane rates) instead of N x min(lane rates).
+	laneRate map[*cConn]float64   // EWMA of delivered frames/s per lane
+	laneCnt  map[*cConn]uint32    // last arrival count used for the rate EWMA
+	laneT    map[*cConn]time.Time // last rate sample time
+
+	rq      chan []byte // remote -> local queue
+	done    chan struct{}
+	doneOne sync.Once
+
+	resendCount atomic.Int64 // diagnostics: frames retransmitted on another lane
 }
 
-// ensureLaneLocked initializes per-lane credit state for an attached slot.
+// sentFrame is one upload DATA frame kept for retransmission until delivered.
+type sentFrame struct {
+	seq     uint32
+	payload []byte // includes the 4B seq prefix; retransmitted verbatim
+	lane    *cConn // lane it is currently assigned to; nil once released
+}
+
+// ensureLaneLocked initializes per-lane bookkeeping for an attached slot.
 // Caller must hold app.mu.
 func (s *cStream) ensureLaneLocked(cn *cConn) {
-	if s.laneSent == nil {
-		s.laneSent = map[*cConn]uint32{}
+	if s.laneAck == nil {
 		s.laneAck = map[*cConn]uint32{}
-		s.laneCap = map[*cConn]int{}
+		s.laneBytes = map[*cConn]int64{}
+		s.laneRate = map[*cConn]float64{}
+		s.laneCnt = map[*cConn]uint32{}
+		s.laneT = map[*cConn]time.Time{}
 	}
-	if _, ok := s.laneCap[cn]; !ok {
-		s.laneCap[cn] = laneCapInit
+	if _, ok := s.laneAck[cn]; !ok {
+		s.laneAck[cn] = 0
+		s.laneCnt[cn] = 0
+		s.laneT[cn] = time.Now()
+		s.laneRate[cn] = laneRateInit
+	}
+	if _, ok := s.laneBytes[cn]; !ok {
+		s.laneBytes[cn] = 0
 	}
 }
 
@@ -142,6 +178,7 @@ func newClientApp(cfg clientConfig) (*clientApp, error) {
 		})
 	}
 	go a.acceptLoop()
+	go a.stallSweepLoop()
 	for _, cn := range a.conns {
 		go cn.sessionLoop()
 	}
@@ -380,18 +417,49 @@ func (cn *cConn) sessionLoop() {
 			continue
 		}
 		a.mu.Lock()
+		// Frames queued on the previous (dead) connection of this lane are gone;
+		// collect them before the lane looks alive again, then re-send over the
+		// surviving lanes (the server dedupes by seq).
+		type laneLost struct {
+			s      *cStream
+			frames []*sentFrame
+		}
+		var lost []laneLost
+		for _, s := range cn.members {
+			if s.home == cn || s.laneBytes[cn] <= 0 {
+				continue
+			}
+			var frs []*sentFrame
+			for _, fr := range s.sentq {
+				if fr.lane == cn {
+					frs = append(frs, fr)
+				}
+			}
+			if len(frs) > 0 {
+				lost = append(lost, laneLost{s: s, frames: frs})
+			}
+		}
 		cn.sess = sess
 		cn.gen++
 		cn.sessMap = map[uint16]*cStream{}
 		for _, s := range cn.members {
 			s.ensureLaneLocked(cn)
-			s.laneSent[cn] = 0 // fresh session: server lane counters restart too
+			// Fresh session: the server restarts this lane's arrival counter and
+			// the old rate estimate says nothing about the new TCP connection.
 			s.laneAck[cn] = 0
+			s.laneCnt[cn] = 0
+			s.laneT[cn] = time.Now()
+			s.laneRate[cn] = laneRateInit
 			cn.openStreamLocked(s)
 		}
 		gen := cn.gen
 		nstreams := len(cn.members)
 		a.mu.Unlock()
+		for _, l := range lost {
+			for _, fr := range l.frames {
+				l.s.resendFrame(fr)
+			}
+		}
 		backoff = time.Second
 		if a.cfg.conns == 1 {
 			log.Printf("[client] session established (gen=%d, reopen streams=%d)", gen, nstreams)
@@ -509,11 +577,13 @@ func (cn *cConn) dispatch(gen uint64, f *Frame) {
 		}
 	case tAck:
 		if s != nil && len(f.Payload) >= 4 {
-			var bufN uint32
+			var delivered uint32
 			if len(f.Payload) >= 8 {
-				bufN = binary.BigEndian.Uint32(f.Payload[4:])
+				// v0.11: second word is the server's delivered prefix (rx.next-1),
+				// not the old reorder-pressure byte count.
+				delivered = binary.BigEndian.Uint32(f.Payload[4:])
 			}
-			s.applyAck(cn, binary.BigEndian.Uint32(f.Payload), bufN)
+			s.applyAck(cn, binary.BigEndian.Uint32(f.Payload), delivered)
 		}
 	}
 }
@@ -525,6 +595,21 @@ func (s *cStream) teardown() {
 		close(s.done)
 		s.local.Close()
 		s.app.mu.Lock()
+		// Release the upload window accounting held by pending frames.
+		for _, fr := range s.sentq {
+			n := int64(len(fr.payload))
+			s.inflightBytes -= n
+			if fr.lane != nil {
+				s.laneBytes[fr.lane] -= n
+			}
+			fr.lane = nil
+		}
+		s.app.inflightBytes -= s.inflightBytes
+		if s.app.inflightBytes < 0 {
+			s.app.inflightBytes = 0
+		}
+		s.sentq = nil
+		s.inflightBytes = 0
 		if s.bulk {
 			s.bulk = false
 			if s.app.bulk > 0 {
@@ -561,82 +646,357 @@ func (s *cStream) closeWriteLocal() {
 }
 
 // dbgLog prints per-stream upload pacing state (ZHD_DEBUG2=1): bytes/frames
-// actually pushed into lanes, average frame size, and every attached lane's
-// credit window (cap) and outstanding (out). This is what separates "app is
-// slow" from "credit clock limits the lane" in the field.
+// pushed into lanes, average frame size, delivered prefix, window usage, and
+// every lane's pending bytes / ack counter / measured delivery rate.
 func (s *cStream) dbgLog(sent, frames int64, t0 time.Time) {
 	s.app.mu.Lock()
 	var b strings.Builder
 	for _, cn := range s.conns {
-		out := int(s.laneSent[cn]) - int(s.laneAck[cn])
-		fmt.Fprintf(&b, " s%d:cap%d/out%d", cn.idx, s.laneCap[cn], out)
+		fmt.Fprintf(&b, " s%d:pend%dB/ack%d/r%.0f", cn.idx, s.laneBytes[cn], s.laneAck[cn], s.laneRate[cn])
 	}
 	lanes := len(s.conns)
+	inflight, acked := s.inflightBytes, s.ackedSeq
 	s.app.mu.Unlock()
 	avg := int64(0)
 	if frames > 0 {
 		avg = sent / frames
 	}
-	log.Printf("[dbg] sid=%d sent=%d frames=%d avg=%dB lanes=%d el=%s%s",
-		s.sid, sent, frames, avg, lanes, time.Since(t0).Round(time.Second), b.String())
+	log.Printf("[dbg] sid=%d sent=%d frames=%d avg=%dB lanes=%d inflight=%dB ackedSeq=%d el=%s%s",
+		s.sid, sent, frames, avg, lanes, inflight, acked, time.Since(t0).Round(time.Second), b.String())
 }
 
-// pickLane chooses the attached lane with the most credit
-// (laneCap - in-flight frames) and takes one frame of credit atomically.
-// Returns (nil, true) when live lanes exist but all are saturated (caller
-// should wait: pull pacing, slow lanes naturally take fewer frames), and
-// (nil, false) when no attached lane has a live session (reconnect window).
-// Caller must NOT hold app.mu.
-func (s *cStream) pickLane() (*cConn, bool) {
-	s.app.mu.Lock()
-	defer s.app.mu.Unlock()
+// pickLaneSendLocked picks the live lane whose backlog will drain first:
+// score = (pending frames + 1) / measured lane rate. Slow lanes get
+// proportionally fewer frames, so an in-order multi-lane stream advances at
+// ~sum(lane rates) instead of N x min(lane rate) (the round-robin trap: every
+// N-th frame sits on the slowest lane and blocks delivery of the rest).
+// Returns (nil, true) when lanes exist but none is usable yet.
+// Caller must hold app.mu.
+func (s *cStream) pickLaneSendLocked() (*cConn, bool) {
 	var best *cConn
-	bestCredit := int64(0)
+	bestETA := float64(1 << 62)
 	live := false
+	now := time.Now()
+	const frameBytes = 12 * 1024 // rough average; only the ratio matters
 	for _, cn := range s.conns {
 		if cn.sess == nil || cn.currentSidLocked(s) == 0 {
 			continue
 		}
 		live = true
-		out := int64(s.laneSent[cn]) - int64(s.laneAck[cn])
-		credit := int64(s.laneCap[cn]) - out
-		if credit > bestCredit {
-			best, bestCredit = cn, credit
+		r := s.laneRate[cn]
+		// A lane that has not delivered anything for a while is treated as
+		// slow regardless of its last measurement: an unmeasured stalled lane
+		// must not keep the seed weight and attract frames into a hole.
+		if now.Sub(s.laneT[cn]) > 400*time.Millisecond {
+			r = laneRateMin
 		}
-	}
-	if best != nil {
-		s.laneSent[best]++
+		if r < laneRateMin {
+			r = laneRateMin
+		}
+		pending := float64(s.laneBytes[cn]) / frameBytes
+		eta := (pending + 1) / r
+		if eta < bestETA {
+			best, bestETA = cn, eta
+		}
 	}
 	return best, live
 }
 
-// applyAck records a lane's delivered-frame count and adapts its credit
-// window (v0.5 semantics, restored as the stable baseline): drained fast ->
-// grow, backing up -> shrink toward the lane's own bandwidth-delay product.
-// v0.7's reorder-pressure (bufN) variant is kept on the wire (tAck 8B) but
-// ignored here; it oscillated on this link (deep dips / stall cycles).
-func (s *cStream) applyAck(cn *cConn, n uint32, bufN uint32) {
-	_ = bufN
+// applyAck records a lane's arrival counter and delivery rate, and the server's
+// delivered-seq prefix. Frames with seq <= delivered are released from the
+// window; this is the reliable-delivery signal that makes fan-out safe.
+func (s *cStream) applyAck(cn *cConn, count, delivered uint32) {
 	s.app.mu.Lock()
 	defer s.app.mu.Unlock()
-	if n > s.laneAck[cn] {
-		s.laneAck[cn] = n
-	}
-	out := int64(s.laneSent[cn]) - int64(s.laneAck[cn])
-	cn2 := s.laneCap[cn]
-	switch {
-	case out*4 >= int64(cn2)*3:
-		cn2 = cn2 * 3 / 4
-		if cn2 < laneCapMin {
-			cn2 = laneCapMin
+	if count > s.laneAck[cn] {
+		now := time.Now()
+		dt := now.Sub(s.laneT[cn]).Seconds()
+		delta := int(count) - int(s.laneCnt[cn])
+		s.laneT[cn] = now // keep "last progress" fresh even for short gaps
+		if dt >= 0.02 && delta > 0 {
+			r := float64(delta) / dt
+			old := s.laneRate[cn]
+			if old <= 0 {
+				old = r
+			}
+			// EWMA: react within a few acks but do not chase single bursts.
+			s.laneRate[cn] = 0.6*old + 0.4*r
 		}
-	case out*2 <= int64(cn2):
-		cn2 *= 2
-		if cn2 > laneCapMax {
-			cn2 = laneCapMax
+		if delta > 0 {
+			s.laneCnt[cn] = count
+		}
+		s.laneAck[cn] = count
+	}
+	if delivered > s.ackedSeq {
+		s.ackedSeq = delivered
+		s.releaseDeliveredLocked()
+	}
+}
+
+// releaseDeliveredLocked frees every queued frame the server has delivered in
+// order. Caller holds app.mu.
+func (s *cStream) releaseDeliveredLocked() {
+	released := false
+	for len(s.sentq) > 0 && s.sentq[0].seq <= s.ackedSeq {
+		fr := s.sentq[0]
+		s.sentq[0] = nil
+		s.sentq = s.sentq[1:]
+		n := int64(len(fr.payload))
+		s.inflightBytes -= n
+		if fr.lane != nil {
+			s.laneBytes[fr.lane] -= n
+			fr.lane = nil
+		}
+		s.app.inflightBytes -= n
+		if s.app.inflightBytes < 0 {
+			s.app.inflightBytes = 0
+		}
+		released = true
+	}
+	if released && len(s.sentq) > 0 {
+		s.frontSince = time.Now() // a new front frame starts the hole timer
+	}
+}
+
+// sendFrame enqueues one seq-tagged DATA frame, respecting the per-stream and
+// global unacked windows (server-delivered feedback). It blocks (with short
+// polls) while the window is full, which is the true end-to-end backpressure.
+// Returns false if the stream was torn down meanwhile.
+func (s *cStream) sendFrame(seq uint32, payload []byte) bool {
+	n := int64(len(payload))
+	fr := &sentFrame{seq: seq, payload: payload}
+	for {
+		s.app.mu.Lock()
+		over := s.inflightBytes+n > streamWindowBytes || s.app.inflightBytes+n > globalWindowBytes
+		if over {
+			s.app.mu.Unlock()
+			select {
+			case <-s.done:
+				return false
+			case <-time.After(2 * time.Millisecond):
+			}
+			continue
+		}
+		cn, live := s.pickLaneSendLocked()
+		if cn == nil {
+			s.app.mu.Unlock()
+			if !live {
+				if !s.waitOpenAny() {
+					return false
+				}
+			} else {
+				if !sleepSelect(s.done, time.Millisecond) {
+					return false
+				}
+			}
+			continue
+		}
+		// Reserve the window slot before enqueueing so accounting is exact.
+		s.inflightBytes += n
+		s.app.inflightBytes += n
+		s.laneBytes[cn] += n
+		fr.lane = cn
+		wasEmpty := len(s.sentq) == 0
+		s.sentq = append(s.sentq, fr)
+		if wasEmpty {
+			s.frontSince = time.Now()
+		}
+		s.app.mu.Unlock()
+
+		if cn.sess.trySendData(Frame{Typ: tData, SID: s.sid, Payload: payload}) {
+			return true
+		}
+		// Lane queue is full (slow lane): give the slot back and pick another.
+		s.app.mu.Lock()
+		if last := len(s.sentq) - 1; last >= 0 && s.sentq[last] == fr {
+			s.sentq[last] = nil
+			s.sentq = s.sentq[:last]
+		}
+		s.inflightBytes -= n
+		s.app.inflightBytes -= n
+		s.laneBytes[cn] -= n
+		fr.lane = nil
+		s.app.mu.Unlock()
+		if !sleepSelect(s.done, time.Millisecond) {
+			return false
 		}
 	}
-	s.laneCap[cn] = cn2
+}
+
+// stallSweepLoop periodically runs stall detection over streams with in-flight
+// upload data. One app-wide sweep instead of a ticker goroutine per stream
+// (browsers/speedtests open hundreds of short streams).
+func (a *clientApp) stallSweepLoop() {
+	t := time.NewTicker(200 * time.Millisecond)
+	defer t.Stop()
+	for {
+		select {
+		case <-a.stopCh:
+			return
+		case <-t.C:
+		}
+		a.mu.Lock()
+		sts := make([]*cStream, 0, len(a.streams))
+		for _, s := range a.streams {
+			if s.inflightBytes > 0 {
+				sts = append(sts, s)
+			}
+		}
+		a.mu.Unlock()
+		for _, s := range sts {
+			select {
+			case <-s.done:
+				continue
+			default:
+			}
+			s.checkStalls()
+		}
+	}
+}
+
+// checkStalls handles two cases:
+//  1. a lane whose session DIED: its in-flight frames are gone forever, so they
+//     are re-sent over the surviving lanes and the dead lane is detached once
+//     empty;
+//  2. a reorder hole: the front (lowest undelivered) frame blocks delivery of
+//     everything behind it, so it is fast-retransmitted after ~2 RTT.
+//
+// A live-but-slow lane is deliberately NOT migrated: TCP does not lose bytes on
+// a live connection, its frames will arrive, and migrating them used to pile
+// whole windows onto one lane / create a moving hole (livelock). Only lost
+// frames (dead session) or an actual hole need action.
+func (s *cStream) checkStalls() {
+	now := time.Now()
+	var frames []*sentFrame
+	var dead []*cConn
+	s.app.mu.Lock()
+	for _, cn := range s.conns {
+		if cn.sess != nil || cn == s.home {
+			// live lane (slowness is handled by the hole path), or the home
+			// session whose death makes sessionLoop fail the whole stream.
+			continue
+		}
+		for _, fr := range s.sentq {
+			if fr.lane == cn {
+				frames = append(frames, fr)
+			}
+		}
+		dead = append(dead, cn)
+	}
+	// Fast hole recovery: re-send the front burst as soon as it has been
+	// undelivered for ~2 RTT; if both copies were lost the next sweep retries.
+	// Only when frames are queued BEHIND the front: a lone pending frame that
+	// the backend has not delivered yet is not a hole, and blindly re-sending
+	// it every sweep just floods duplicates.
+	if len(s.sentq) > 1 && now.Sub(s.frontSince) > holeResendTO {
+		n := holeResendBurst
+		for i := 0; i < len(s.sentq) && n > 0; i++ {
+			if s.sentq[i].lane != nil {
+				frames = append(frames, s.sentq[i])
+				n--
+			}
+		}
+		s.frontSince = now
+	}
+	s.app.mu.Unlock()
+
+	for _, fr := range frames {
+		s.resendFrame(fr)
+	}
+	if len(frames) > 0 && os.Getenv("ZHD_DEBUG2") != "" {
+		log.Printf("[client] retransmit sid=%d frames=%d lanes=%d total=%d",
+			s.sid, len(frames), len(s.conns), s.resendCount.Load())
+	}
+	for _, cn := range dead {
+		s.app.mu.Lock()
+		done := s.laneBytes[cn] <= 0
+		s.app.mu.Unlock()
+		if done {
+			s.detachLane(cn)
+		}
+	}
+}
+
+// resendFrame retransmits one pending frame on the live lane that is expected
+// to drain first (same ETA score as normal pacing, excluding its current lane).
+// Frames stay in the window until delivered, so duplicate copies are harmless
+// (the server reassembler dedupes by seq).
+func (s *cStream) resendFrame(fr *sentFrame) {
+	n := int64(len(fr.payload))
+	s.app.mu.Lock()
+	if fr.lane == nil { // already released/acked
+		s.app.mu.Unlock()
+		return
+	}
+	old := fr.lane
+	now := time.Now()
+	const frameBytes = 12 * 1024
+	var best *cConn
+	bestETA := float64(1 << 62)
+	for _, cn := range s.conns {
+		if cn == old || cn.sess == nil || cn.currentSidLocked(s) == 0 {
+			continue
+		}
+		r := s.laneRate[cn]
+		if now.Sub(s.laneT[cn]) > 400*time.Millisecond {
+			r = laneRateMin
+		}
+		if r < laneRateMin {
+			r = laneRateMin
+		}
+		eta := (float64(s.laneBytes[cn])/frameBytes + 1) / r
+		if eta < bestETA {
+			best, bestETA = cn, eta
+		}
+	}
+	if best == nil {
+		s.app.mu.Unlock()
+		return
+	}
+	s.laneBytes[old] -= n
+	s.laneBytes[best] += n
+	fr.lane = best
+	s.app.mu.Unlock()
+	if best.sess.trySendData(Frame{Typ: tData, SID: s.sid, Payload: fr.payload}) {
+		s.resendCount.Add(1)
+		return
+	}
+	s.app.mu.Lock()
+	s.laneBytes[best] -= n
+	s.laneBytes[old] += n
+	fr.lane = old
+	s.app.mu.Unlock()
+}
+
+// detachLane removes a dead spread lane from the stream (bookkeeping only; the
+// server already dropped that session's stream membership).
+func (s *cStream) detachLane(cn *cConn) {
+	s.app.mu.Lock()
+	defer s.app.mu.Unlock()
+	if cn == s.home {
+		return
+	}
+	for i, c := range s.conns {
+		if c == cn {
+			s.conns = append(s.conns[:i], s.conns[i+1:]...)
+			delete(cn.members, s.id)
+			s.attached--
+			if s.attached < 0 {
+				s.attached = 0
+			}
+			s.app.lanes--
+			if s.app.lanes < 0 {
+				s.app.lanes = 0
+			}
+			delete(s.laneAck, cn)
+			delete(s.laneBytes, cn)
+			delete(s.laneRate, cn)
+			delete(s.laneCnt, cn)
+			delete(s.laneT, cn)
+			s.app.logf("stream %d lane slot %d lost: detached (%d lanes left)", s.id, cn.idx, len(s.conns))
+			return
+		}
+	}
 }
 
 // anyLiveLane reports whether at least one attached slot has a live
@@ -669,19 +1029,17 @@ func (s *cStream) waitOpenAny() bool {
 
 // trySpread grows the set of slots carrying this stream so a single bulk
 // upload fills multiple per-flow shaping buckets. The lane budget is
-// AUTO: min(cfg.spread, conns / live bulk streams) — a lone bulk stream
+// AUTO: min(cfg.spread, conns / live bulk streams) 閳?a lone bulk stream
 // may fan across all slots, but when a speedtest floods 15+ big streams
 // each stream keeps a dedicated lane (spreading would just slice every
 // lane into unusable crumbs). Adds one slot per spreadThreshold bytes sent.
-// detachLastDrainedLocked trims one spread lane (searching newest-first)
-// whose frames are fully acked. Pure client-side op: the lane is drained,
-// so the server simply stops seeing frames for this sid on that session;
-// its stale laneHi entry is reclaimed at stream end. No wire signal and
-// no fin semantics involved.
+// detachLastDrainedLocked trims one spread lane (newest-first) that has no
+// pending bytes left (everything it carried was delivered). Pure client-side
+// op; the server simply stops seeing frames for this sid on that session.
 func (s *cStream) detachLastDrainedLocked() bool {
 	for i := len(s.conns) - 1; i >= 1; i-- {
 		cn := s.conns[i]
-		if s.laneSent[cn] == s.laneAck[cn] {
+		if s.laneBytes[cn] <= 0 {
 			delete(cn.members, s.id)
 			s.conns = append(s.conns[:i], s.conns[i+1:]...)
 			s.attached--
@@ -692,6 +1050,11 @@ func (s *cStream) detachLastDrainedLocked() bool {
 			if s.app.lanes < 0 {
 				s.app.lanes = 0
 			}
+			delete(s.laneAck, cn)
+			delete(s.laneBytes, cn)
+			delete(s.laneRate, cn)
+			delete(s.laneCnt, cn)
+			delete(s.laneT, cn)
 			s.app.logf("stream %d rebalance: detach slot %d (lanes now %d)", s.id, cn.idx, s.app.lanes)
 			return true
 		}
@@ -800,31 +1163,17 @@ func (s *cStream) pumpUp() {
 		if n > 0 {
 			sent += int64(n)
 			seq++
+			frames++
 			payload := make([]byte, n+4)
 			binary.BigEndian.PutUint32(payload[:4], seq)
 			copy(payload[4:], buf[:n])
-			// Wait for lane credit; during a session-reconnect window keep the
-			// chunk (retrying the same seq) instead of silently dropping it:
-			// the server dedupes by seq, and a dropped chunk would permanently
-			// corrupt the app stream. Give up only after a hard 2min stall.
-			waitStart := time.Now()
-			for {
-				cn, live := s.pickLane()
-				if cn != nil {
-					cn.sess.sendData(Frame{Typ: tData, SID: s.sid, Payload: payload})
-					frames++
-					break
-				}
-				if !live && time.Since(waitStart) > 2*time.Minute {
-					s.teardown()
-					return
-				}
-				// all lanes saturated (or reconnecting): wait for tAck credit
-				if !sleepSelect(s.done, 20*time.Millisecond) {
-					return
-				}
+			// sendFrame applies the delivered-based window (blocks while full)
+			// and keeps the frame for retransmission until the server delivered
+			// it in order. Data is never dropped: a session-reconnect window
+			// just delays the frame until a lane is back.
+			if !s.sendFrame(seq, payload) {
+				return
 			}
-			// else: reconnect window, chunk dropped (in-flight loss, documented)
 			s.trySpread(sent)
 			if dbgOn && time.Since(dbgLast) > 2*time.Second {
 				dbgLast = time.Now()
@@ -850,6 +1199,31 @@ func (s *cStream) pumpUp() {
 					s.sid, sent, frames, avg, time.Since(t0).Round(time.Millisecond))
 			}
 			s.sendFin(seq + 1)
+			// Wait (bounded) for the tail to be DELIVERED before tearing down:
+			// teardown releases pending frames, so closing immediately would
+			// silently drop the end of the upload. The server also reports
+			// delivery on the FIN path, so this normally settles in one RTT.
+			deadline := time.Now().Add(20 * time.Second)
+			waitStart := time.Now()
+			var acked uint32
+			for {
+				s.app.mu.Lock()
+				acked = s.ackedSeq
+				delivered := acked >= seq
+				s.app.mu.Unlock()
+				if delivered || time.Now().After(deadline) {
+					break
+				}
+				select {
+				case <-s.done:
+					return
+				case <-time.After(10 * time.Millisecond):
+				}
+			}
+			if waited := time.Since(waitStart); waited > 2*time.Second && s.app.cfg.verbose {
+				log.Printf("[client] pumpUp finish slow sid=%d lastSeq=%d ackedSeq=%d waited=%v",
+					s.sid, seq, acked, waited.Round(time.Millisecond))
+			}
 			s.teardown()
 			return
 		}

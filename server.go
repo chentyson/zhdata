@@ -81,6 +81,7 @@ type sStream struct {
 	laneHi      map[*sSession]*laneAckState // per-member upload frame counts (tAck credit)
 	written     int64                       // forensic: bytes written upstream for this stream
 	lastParkLog time.Time                   // rate-limit park logging (st.mu)
+	holeSince   time.Time                   // first moment rx.next made no progress while rx.buf had data (st.mu); v0.11 retransmit watchdog
 	closed      bool
 	finDone     bool // CloseWrite already issued to backend
 
@@ -142,7 +143,58 @@ func newServerApp(cfg serverConfig) (*serverApp, error) {
 		go a.acceptLoop(ln)
 	}
 	go a.watchKeys()
+	go a.gapWatchLoop()
 	return a, nil
+}
+
+// gapWatchLoop resets upload streams whose reorder hole was not filled by the
+// client's retransmission within holeTimeout (both copies of some frames were
+// lost, or the peer vanished). Before v0.11 this was the 15s reader park, which
+// froze every stream on the session; now a stuck stream dies alone.
+func (a *serverApp) gapWatchLoop() {
+	t := time.NewTicker(time.Second)
+	defer t.Stop()
+	for {
+		select {
+		case <-a.stopCh:
+			return
+		case <-t.C:
+		}
+		now := time.Now()
+		var stuck []*sStream
+		type holeInfo struct {
+			next, minBuf uint32
+			bufN         int
+			members      int
+		}
+		hinfo := map[*sStream]holeInfo{}
+		a.stmMu.Lock()
+		for _, st := range a.streams {
+			st.mu.Lock()
+			hit := !st.holeSince.IsZero() && now.Sub(st.holeSince) > holeTimeout && !st.closed
+			if hit {
+				hi := holeInfo{next: st.rx.next, bufN: st.rx.bufN, members: len(st.members)}
+				for sq := range st.rx.buf {
+					if hi.minBuf == 0 || sq < hi.minBuf {
+						hi.minBuf = sq
+					}
+				}
+				hinfo[st] = hi
+				st.holeSince = time.Time{} // reset it once
+			}
+			st.mu.Unlock()
+			if hit {
+				stuck = append(stuck, st)
+			}
+		}
+		a.stmMu.Unlock()
+		for _, st := range stuck {
+			hi := hinfo[st]
+			a.logf("reorder hole unfilled sid=%d (>%v no retransmit) next=%d minBuf=%d bufN=%d members=%d -> reset stream",
+				st.sid, holeTimeout, hi.next, hi.minBuf, hi.bufN, hi.members)
+			a.closeStream(st, true)
+		}
+	}
 }
 
 // splitCSV splits a comma-separated list, trimming spaces, dropping empties.
@@ -321,11 +373,19 @@ func (st *sStream) wakeAll() {
 }
 
 // laneAckState tracks how many upload frames one session has delivered for a
-// stream; every ackEvery frames the server sends tAck(count) back so the
-// client can pace each lane by its own drain speed (pull credit, v0.5).
+// stream. tAck payload = count | deliveredPrefix (v0.11):
+//   - count: arrivals on this lane (client uses it only as a liveness signal);
+//   - deliveredPrefix: rx.next-1, i.e. how many frames the stream has emitted
+//     in order to the backend. The client only releases retransmit buffers /
+//     its send window on this prefix, which bounds the reassembler window.
+//
+// Acks are sent every ackEvery arrivals, and at least ackMinInterval apart when
+// delivered progress needs reporting early (short streams / sparse lanes).
 type laneAckState struct {
-	count uint32
-	acked uint32
+	count         uint32
+	acked         uint32
+	lastAck       time.Time
+	lastDelivered uint32
 }
 
 func (a *serverApp) dispatch(sh *sSession, f *Frame) {
@@ -422,21 +482,6 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 				rx.buf[seq] = data
 				rx.bufN += len(data)
 			}
-			needAck := false
-			var ackN uint32
-			if seq >= rx.next {
-				la := st.laneHi[sh]
-				if la == nil {
-					la = &laneAckState{}
-					st.laneHi[sh] = la
-				}
-				la.count++
-				if la.count-la.acked >= ackEvery {
-					la.acked = la.count
-					needAck = true
-					ackN = la.count
-				}
-			}
 			var ready [][]byte
 			if st.backend != nil {
 				for {
@@ -454,24 +499,56 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 					st.wakeAll()
 				}
 			}
+			// v0.11: track hole age for the retransmit watchdog. A hole that
+			// survives holeTimeout means the client could not resend those
+			// frames; the stream is then reset instead of hanging forever.
+			if len(ready) > 0 {
+				st.holeSince = time.Time{}
+			} else if rx.bufN > 0 && st.holeSince.IsZero() {
+				st.holeSince = time.Now()
+			}
 			finNow := st.backend != nil && rx.fin != 0 && rx.next >= rx.fin && !st.finDone
 			if finNow {
 				st.finDone = true
 			}
+			// v0.11 accounting: lane arrival counter (liveness detection on the
+			// client) plus the stream's DELIVERED prefix (rx.next-1). The client
+			// only releases its send window on the prefix, so the reorder buffer
+			// can never exceed the client's streamWindowBytes.
+			la := st.laneHi[sh]
+			if la == nil {
+				la = &laneAckState{}
+				st.laneHi[sh] = la
+			}
+			la.count++
+			deliveredNow := rx.next - 1
+			needAck := false
+			if la.count-la.acked >= ackEvery {
+				needAck = true
+			} else if deliveredNow != la.lastDelivered && time.Since(la.lastAck) >= ackMinInterval {
+				// Delivery progress must reach the client even when few frames
+				// arrive on this lane; otherwise a stream could stall with a
+				// full window while its frames were already delivered.
+				needAck = true
+			}
+			if needAck {
+				la.acked = la.count
+				la.lastAck = time.Now()
+				la.lastDelivered = deliveredNow
+			}
+			ackN := la.count
 			// Reorder window overflow. NEVER block the session reader here:
 			// a park used to freeze every stream sharing this session (and
 			// all of the affected stream's other lanes), turning one lost
-			// frame into a 15s whole-pool stall + tReset storm. With the
-			// client no longer dropping chunks, a hole means frames that were
-			// really lost (lane death / session reconnect), so reset only this
-			// stream; the app retries and other streams keep flowing.
+			// frame into a 15s whole-pool stall + tReset storm. The client
+			// retransmits holes now, so this is only a hard safety net.
 			overflow := seq >= rx.next && rx.bufN > maxReorderBytes
 			logOverflow := false
 			if overflow && time.Since(st.lastParkLog) > 5*time.Second {
 				st.lastParkLog = time.Now()
 				logOverflow = true
 			}
-			ackBufN := rx.bufN // reorder pressure feedback for client lane credit
+			ackBufN := rx.bufN
 			nextNow := rx.next
 			upq := st.upq
 			bc := st.backend
@@ -482,7 +559,7 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 			if needAck {
 				p := make([]byte, 8)
 				binary.BigEndian.PutUint32(p, ackN)
-				binary.BigEndian.PutUint32(p[4:], uint32(ackBufN))
+				binary.BigEndian.PutUint32(p[4:], deliveredNow)
 				// credit is monotonic state, not ordered data: ctrlQ keeps it
 				// flowing even when the session's downlink loQ is congested.
 				sh.sess.sendCtrl(Frame{Typ: tAck, SID: f.SID, Payload: p})
@@ -545,7 +622,20 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 			st.finDone = true
 		}
 		bc := st.backend
+		la := st.laneHi[sh]
+		if la == nil {
+			la = &laneAckState{}
+			st.laneHi[sh] = la
+		}
+		ackCount, ackDelivered := la.count, st.rx.next-1
 		st.mu.Unlock()
+		// Report final delivery on the FIN path: a sparse tail (or a single-frame
+		// request) may otherwise never reach ackEvery, leaving the client's
+		// retransmit window waiting for an ack that never comes.
+		p := make([]byte, 8)
+		binary.BigEndian.PutUint32(p, ackCount)
+		binary.BigEndian.PutUint32(p[4:], ackDelivered)
+		sh.sess.sendCtrl(Frame{Typ: tAck, SID: f.SID, Payload: p})
 		if finNow && bc != nil {
 			if tc, ok := bc.(*net.TCPConn); ok {
 				tc.CloseWrite()
@@ -679,7 +769,25 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 		st.finDone = true
 	}
 	close(st.dialDone) // after this, dispatch enqueues to upq; no orphan frames
+	// Report delivery progress from the pre-dial flush: without this the client
+	// keeps the flushed frames unacked until more traffic arrives (sparse
+	// request/response streams would retransmit them needlessly).
+	var preAck []byte
+	if la := st.laneHi[sh]; la != nil {
+		preDelivered := st.rx.next - 1
+		if preDelivered > la.lastDelivered {
+			preAck = make([]byte, 8)
+			binary.BigEndian.PutUint32(preAck, la.count)
+			binary.BigEndian.PutUint32(preAck[4:], preDelivered)
+			la.lastDelivered = preDelivered
+			la.acked = la.count
+			la.lastAck = time.Now()
+		}
+	}
 	st.mu.Unlock()
+	if preAck != nil {
+		sh.sess.sendCtrl(Frame{Typ: tAck, SID: st.sid, Payload: preAck})
+	}
 	// wake any lane parked pre-dial (nothing could emit until now)
 	st.wakeAll()
 	if werr != nil {
@@ -714,7 +822,25 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 			break
 		}
 	}
-	// backend EOF/error: notify client
+	// backend EOF/error: report final delivery, then notify client. The client
+	// may still hold frames it has not seen acked yet; without this final tAck
+	// it would keep retransmitting them into a stream that is already closing
+	// (wasted uplink + unknown-stream resets at every request end).
+	st.mu.Lock()
+	laEnd := st.laneHi[sh]
+	if laEnd == nil {
+		laEnd = &laneAckState{}
+		st.laneHi[sh] = laEnd
+	}
+	finalDelivered := st.rx.next - 1
+	finalCount := laEnd.count
+	st.mu.Unlock()
+	if st.owner == sh {
+		p := make([]byte, 8)
+		binary.BigEndian.PutUint32(p, finalCount)
+		binary.BigEndian.PutUint32(p[4:], finalDelivered)
+		sh.sess.sendCtrl(Frame{Typ: tAck, SID: st.sid, Payload: p})
+	}
 	sh.sess.sendOrdered(Frame{Typ: tClose, SID: st.sid})
 	a.logf("backend pump done sid=%d bytes=%d err=%v", st.sid, total, rerr)
 	a.closeStream(st, false)
@@ -795,8 +921,11 @@ func (a *serverApp) closeStream(st *sStream, sendReset bool) {
 }
 
 // detach removes one session from a stream; if the session owned the stream,
-// the whole stream dies (downlink flows only through the owner). Otherwise
-// the stream lives on the remaining sessions (spread resilience).
+// the whole stream dies (downlink flows only through the owner). Otherwise the
+// stream lives on the remaining sessions (spread resilience). v0.11: do NOT
+// truncate the hole left by the dead lane — the client retransmits those frames
+// over the other lanes, and a server-side hole watchdog resets the stream only
+// if nothing fills the gap within holeTimeout.
 func (a *serverApp) detach(sh *sSession, st *sStream) {
 	if st.owner == sh {
 		a.closeStream(st, true)
@@ -808,34 +937,7 @@ func (a *serverApp) detach(sh *sSession, st *sStream) {
 	a.stmMu.Unlock()
 	if empty {
 		a.closeStream(st, false)
-		return
 	}
-	// A spread lane died: its in-flight frames are gone, so any hole they
-	// left can never be filled. Truncate the gap immediately (documented
-	// loss semantics, same as v0.3 in-flight loss) and wake parked lanes;
-	// higher-seq frames already buffered keep flowing.
-	st.mu.Lock()
-	if !st.closed {
-		maxSeq := st.rx.next
-		for s := range st.rx.buf {
-			if s > maxSeq {
-				maxSeq = s
-			}
-		}
-		skipped := 0
-		for st.rx.next <= maxSeq {
-			if _, ok := st.rx.buf[st.rx.next]; ok {
-				break
-			}
-			skipped++
-			st.rx.next++
-		}
-		if skipped > 0 {
-			a.logf("gap truncate sid=%d skip=%d frames (lane lost)", st.sid, skipped)
-			st.wakeAll()
-		}
-	}
-	st.mu.Unlock()
 }
 
 func (sh *sSession) closeAll(a *serverApp) {
