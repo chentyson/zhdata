@@ -46,6 +46,7 @@ type clientApp struct {
 	sidSeq  uint16              // sid allocator, unique per uuid across sessions
 	bulk    int                 // live streams transferring bulk upload; drives the auto spread budget
 	lanes   int                 // total spread lanes attached across all streams; hard cap = cfg.conns (never oversubscribe the slot pool)
+	rr      uint32              // rotating cursor for home-slot selection (spreads streams over all slots)
 
 	stopCh  chan struct{}
 	stopped atomic.Bool
@@ -248,11 +249,22 @@ func (a *clientApp) acceptLoop() {
 	}
 }
 
-// pickConnLocked chooses the slot with the fewest assigned streams.
+// pickConnLocked chooses the slot with the fewest assigned streams, breaking
+// ties with a rotating cursor. Without the rotation every new stream picked
+// conns[0] while all slots were idle, so a browser's 4-6 streams all landed on
+// the first few slots: those long-lived TCP flows accumulated loss/reordering
+// history (client-side CUBIC cwnd collapse, which we cannot tune on Windows)
+// while the other ~26 sessions sat unused. Rotating spreads new streams over
+// all slots, so every stream starts on a TCP flow with fresh congestion state,
+// like the fresh connections the raw-TCP baseline uses.
 // Caller holds a.mu.
 func (a *clientApp) pickConnLocked() *cConn {
-	best := a.conns[0]
-	for _, cn := range a.conns[1:] {
+	n := len(a.conns)
+	start := int(a.rr % uint32(n))
+	a.rr++
+	best := a.conns[start]
+	for i := 1; i < n; i++ {
+		cn := a.conns[(start+i)%n]
 		if len(cn.members) < len(best.members) {
 			best = cn
 		}
