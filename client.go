@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"os"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -515,6 +516,27 @@ func (s *cStream) closeWriteLocal() {
 	}
 }
 
+// dbgLog prints per-stream upload pacing state (ZHD_DEBUG2=1): bytes/frames
+// actually pushed into lanes, average frame size, and every attached lane's
+// credit window (cap) and outstanding (out). This is what separates "app is
+// slow" from "credit clock limits the lane" in the field.
+func (s *cStream) dbgLog(sent, frames int64, t0 time.Time) {
+	s.app.mu.Lock()
+	var b strings.Builder
+	for _, cn := range s.conns {
+		out := int(s.laneSent[cn]) - int(s.laneAck[cn])
+		fmt.Fprintf(&b, " s%d:cap%d/out%d", cn.idx, s.laneCap[cn], out)
+	}
+	lanes := len(s.conns)
+	s.app.mu.Unlock()
+	avg := int64(0)
+	if frames > 0 {
+		avg = sent / frames
+	}
+	log.Printf("[dbg] sid=%d sent=%d frames=%d avg=%dB lanes=%d el=%s%s",
+		s.sid, sent, frames, avg, lanes, time.Since(t0).Round(time.Second), b.String())
+}
+
 // pickLane chooses the attached lane with the most credit
 // (laneCap - in-flight frames) and takes one frame of credit atomically.
 // Returns (nil, true) when live lanes exist but all are saturated (caller
@@ -716,7 +738,11 @@ func (s *cStream) sendFin(finSeq uint32) {
 func (s *cStream) pumpUp() {
 	buf := make([]byte, maxPayload)
 	var sent int64
+	var frames int64
 	var seq uint32 // next sequence number (1-based)
+	dbgOn := os.Getenv("ZHD_DEBUG2") != ""
+	t0 := time.Now()
+	dbgLast := time.Now()
 	for {
 		// wait until this stream is OPEN on at least one live session
 		if !s.waitOpenAny() {
@@ -733,23 +759,33 @@ func (s *cStream) pumpUp() {
 			payload := make([]byte, n+4)
 			binary.BigEndian.PutUint32(payload[:4], seq)
 			copy(payload[4:], buf[:n])
+			// Wait for lane credit; during a session-reconnect window keep the
+			// chunk (retrying the same seq) instead of silently dropping it:
+			// the server dedupes by seq, and a dropped chunk would permanently
+			// corrupt the app stream. Give up only after a hard 2min stall.
+			waitStart := time.Now()
 			for {
 				cn, live := s.pickLane()
 				if cn != nil {
 					cn.sess.sendData(Frame{Typ: tData, SID: s.sid, Payload: payload})
+					frames++
 					break
 				}
-				if !live {
-					// reconnect window, chunk dropped (in-flight loss, documented)
-					break
+				if !live && time.Since(waitStart) > 2*time.Minute {
+					s.teardown()
+					return
 				}
-				// all lanes saturated: wait for tAck credit (pull pacing)
+				// all lanes saturated (or reconnecting): wait for tAck credit
 				if !sleepSelect(s.done, 20*time.Millisecond) {
 					return
 				}
 			}
 			// else: reconnect window, chunk dropped (in-flight loss, documented)
 			s.trySpread(sent)
+			if dbgOn && time.Since(dbgLast) > 2*time.Second {
+				dbgLast = time.Now()
+				s.dbgLog(sent, frames, t0)
+			}
 		}
 		if err != nil {
 			if ne, ok := err.(net.Error); ok && ne.Timeout() {
@@ -760,6 +796,14 @@ func (s *cStream) pumpUp() {
 			// hundreds of tiny ones); only log abnormal terminations.
 			if s.app.cfg.verbose && !streamChurn(err) {
 				log.Printf("[client] pumpUp err stream=%d sent=%d err=%v", s.id, sent, err)
+			}
+			if s.app.cfg.verbose && sent >= spreadThreshold {
+				avg := int64(0)
+				if frames > 0 {
+					avg = sent / frames
+				}
+				log.Printf("[client] pumpUp done sid=%d sent=%d frames=%d avg=%dB dur=%s",
+					s.sid, sent, frames, avg, time.Since(t0).Round(time.Millisecond))
 			}
 			s.sendFin(seq + 1)
 			s.teardown()

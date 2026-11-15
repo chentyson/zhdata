@@ -21,20 +21,29 @@ const (
 	maxSlots           = 64 // client-side parallel session slots (handshake byte)
 	maxStreams         = 1024
 	maxReorderBytes    = 16 * 1024 * 1024 // v0.8.1: per-stream reassembly window. 8MB parked constantly on desynced lines (harsh-hour TCP shaping skews lanes -> silent park storms -> tunnel hits 0 while raw keeps ~5M); 16MB absorbs skew; bound = active bulk streams x 16MB.
-	gapSkip            = 4096            // tolerate lost frames after owner-session death
+	gapSkip            = 4096             // tolerate lost frames after owner-session death
 	gapWaitTO          = 15 * time.Second // park a fast lane this long waiting for a slow lane's gap
-	spreadThreshold    = 128 * 1024      // client: attach one more session per N bytes sent
-	laneCapInit        = 8               // v0.5 baseline (restored): start small; out-based AIMD grows fast lanes.
-	laneCapMin         = 8               // v0.5: AIMD shrink floor. INVARIANT: MUST be >= ackEvery. If cap < ackEvery a single-lane bulk stream can deadlock: client exhausts credit at out==cap (< ackEvery) and waits for a tAck, while the server never sends one because count-acked < ackEvery. laneCapMin >= ackEvery guarantees credit exhaustion implies the peer already has enough unacked frames to ack.
-	laneCapMax         = 96              // v0.5: AIMD growth ceiling (~1.5MB)
-	ackEvery           = 8               // v0.5: tAck every N frames per lane
-	trainEvery         = 2 * time.Second // v0.8 (EXPERIMENT, off by default via -train 0): per-session training padding (sid=0, server discards) to keep shaper buckets warm. Did not show benefit on this link; costs uplink.
-	trainPayload       = 16 * 1024       // v0.8: frame size
-	trainFrames        = 1               // v0.8: frames per session per tick
+	spreadThreshold    = 128 * 1024       // client: attach one more session per N bytes sent
+	// v0.10: static large credit window (1.5MB per lane). The old out-AIMD
+	// (8..96) self-limited to ~24 frames: the client refills to cap right after
+	// every tAck, so out stays ~= cap, the grow branch (out*2 <= cap) almost
+	// never fires while the shrink branch occasionally does -> each lane was
+	// clocked to ~2.5Mbps on a 200ms path. That is why 16 spread lanes were
+	// needed to reach 50M, and why the server reorder buffer then parked and
+	// collapsed. With per-flow spreading disabled (spread=1) there is nothing
+	// to reorder, so a large constant window is safe and the lane becomes
+	// TCP-limited again. INVARIANT: laneCapMin >= ackEvery.
+	laneCapInit  = 96
+	laneCapMin   = 96
+	laneCapMax   = 96
+	ackEvery     = 8               // v0.5: tAck every N frames per lane
+	trainEvery   = 2 * time.Second // v0.8 (EXPERIMENT, off by default via -train 0): per-session training padding (sid=0, server discards) to keep shaper buckets warm. Did not show benefit on this link; costs uplink.
+	trainPayload = 16 * 1024       // v0.8: frame size
+	trainFrames  = 1               // v0.8: frames per session per tick
 )
 
 func deadline(d time.Duration) time.Time { return time.Now().Add(d) }
-func noDeadline() time.Time               { return time.Time{} }
+func noDeadline() time.Time              { return time.Time{} }
 
 // session is one zhdata connection (TCP + continuous AES-CTR keystream).
 // Frames are written through three priority queues: ctrl > small DATA > bulk DATA.

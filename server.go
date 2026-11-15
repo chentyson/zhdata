@@ -458,19 +458,27 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 			if finNow {
 				st.finDone = true
 			}
-			// Still overfull after best-effort drain: our lane raced far ahead
-			// of a stalled one. Park THIS session's reader instead of killing
-			// the stream (our TCP window closes toward the client -> true
-			// per-stream flow control across spread lanes).
-			parked := seq >= rx.next && rx.bufN > maxReorderBytes
-			if parked && time.Since(st.lastParkLog) > 5*time.Second {
+			// Reorder window overflow. NEVER block the session reader here:
+			// a park used to freeze every stream sharing this session (and
+			// all of the affected stream's other lanes), turning one lost
+			// frame into a 15s whole-pool stall + tReset storm. With the
+			// client no longer dropping chunks, a hole means frames that were
+			// really lost (lane death / session reconnect), so reset only this
+			// stream; the app retries and other streams keep flowing.
+			overflow := seq >= rx.next && rx.bufN > maxReorderBytes
+			logOverflow := false
+			if overflow && time.Since(st.lastParkLog) > 5*time.Second {
 				st.lastParkLog = time.Now()
-				a.logf("reorder park sid=%d bufN=%d next=%d (session reader blocked: HOL for all streams on this session)", f.SID, rx.bufN, rx.next)
+				logOverflow = true
 			}
 			ackBufN := rx.bufN // reorder pressure feedback for client lane credit
+			nextNow := rx.next
 			upq := st.upq
 			bc := st.backend
 			st.mu.Unlock()
+			if logOverflow {
+				a.logf("reorder overflow sid=%d bufN=%d next=%d -> reset stream (reader unblocked)", f.SID, ackBufN, nextNow)
+			}
 			if needAck {
 				p := make([]byte, 8)
 				binary.BigEndian.PutUint32(p, ackN)
@@ -510,17 +518,9 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 					tc.CloseWrite()
 				}
 			}
-			if parked {
-				select {
-				case <-st.rxWake:
-					continue
-				case <-sh.sess.done:
-					return
-				case <-time.After(gapWaitTO):
-					a.logf("reorder gap stalled sid=%d (lane dead?)", f.SID)
-					a.closeStream(st, true)
-					return
-				}
+			if overflow {
+				a.closeStream(st, true)
+				return
 			}
 			return
 		}
