@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -38,8 +39,19 @@ type serverApp struct {
 	failMu sync.Mutex
 	fails  map[string]*failWin
 
+	dnsMu sync.Mutex // v0.9.1: multi-resolver fallback + cache (system 8.8.8.8 answers NXDOMAIN for many CN/CDN hosts under poison/throttle)
+	dns   map[string]dnsEntry
+
+	rstMu sync.Mutex       // v0.9.1: suppress duplicate tReset for late frames of already-dead sids (frame-storm amplification: one dead stream x hundreds of in-flight frames)
+	rst   map[string]int64 // streamKey -> unixnano of last reset sent
+
 	stopCh  chan struct{}
 	stopped atomic.Bool
+}
+
+type dnsEntry struct {
+	ips  []string
+	expA int64 // unixnano expiry
 }
 
 type sSession struct {
@@ -116,6 +128,8 @@ func newServerApp(cfg serverConfig) (*serverApp, error) {
 		conns:   map[string]*sSession{},
 		streams: map[string]*sStream{},
 		fails:   map[string]*failWin{},
+		dns:     map[string]dnsEntry{},
+		rst:     map[string]int64{},
 		stopCh:  make(chan struct{}),
 	}
 	addrs := make([]string, 0, len(lns))
@@ -383,8 +397,10 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 		st := sh.streams[f.SID]
 		sh.smu.Unlock()
 		if st == nil {
-			a.logf("tReset sid=%d reason=unknown-stream (tdata for closed/unopened sid) seq=%d", f.SID, seq)
-			sh.sess.sendCtrl(Frame{Typ: tReset, SID: f.SID})
+			if a.resetOnce(streamKey(sh.uuid, f.SID)) {
+				a.logf("tReset sid=%d reason=unknown-stream (tdata for closed/unopened sid) seq=%d", f.SID, seq)
+				sh.sess.sendCtrl(Frame{Typ: tReset, SID: f.SID})
+			}
 			return
 		}
 		for {
@@ -546,12 +562,86 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 	}
 }
 
+// lookupHost resolves via a chain of public resolvers (8.8.8.8 -> 1.1.1.1 ->
+// 223.5.5.5) with a 5-minute cache. The host's default resolver (8.8.8.8)
+// intermittently returns "no such host" for CN/CDN domains under poisoning
+// or rate limiting; background Windows traffic (store/ads/telemetry) then
+// storm-fails every dial. Fallback + cache fixes both latency and flapping.
+func (a *serverApp) lookupHost(host string) ([]string, error) {
+	if ip := net.ParseIP(host); ip != nil {
+		return []string{host}, nil
+	}
+	now := time.Now().UnixNano()
+	a.dnsMu.Lock()
+	e, ok := a.dns[host]
+	a.dnsMu.Unlock()
+	if ok && e.expA > now {
+		return e.ips, nil
+	}
+	var lastErr error
+	for _, rs := range []string{"8.8.8.8:53", "1.1.1.1:53", "223.5.5.5:53"} {
+		r := &net.Resolver{PreferGo: true, Dial: func(ctx context.Context, proto, addr string) (net.Conn, error) {
+			d := net.Dialer{Timeout: 3 * time.Second}
+			return d.DialContext(ctx, "udp", rs)
+		}}
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		ips, err := r.LookupHost(ctx, host)
+		cancel()
+		if err == nil && len(ips) > 0 {
+			a.dnsMu.Lock()
+			if len(a.dns) > 4096 {
+				for k, old := range a.dns {
+					if old.expA < now {
+						delete(a.dns, k)
+					}
+				}
+			}
+			a.dns[host] = dnsEntry{ips: ips, expA: now + int64(5*time.Minute)}
+			a.dnsMu.Unlock()
+			return ips, nil
+		}
+		lastErr = err
+	}
+	return nil, lastErr
+}
+
+// resetOnce rate-limits "unknown-stream" resets: a dead sid with hundreds of
+// late in-flight frames must not send hundreds of resets back.
+func (a *serverApp) resetOnce(key string) bool {
+	now := time.Now().UnixNano()
+	a.rstMu.Lock()
+	defer a.rstMu.Unlock()
+	if t, ok := a.rst[key]; ok && now-t < int64(10*time.Second) {
+		return false
+	}
+	if len(a.rst) > 4096 {
+		for k, t := range a.rst {
+			if now-t > int64(60*time.Second) {
+				delete(a.rst, k)
+			}
+		}
+	}
+	a.rst[key] = now
+	return true
+}
+
 func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byte, port uint16) {
 	var bc net.Conn
 	var err error
 	if a.cfg.backend == "direct" {
 		host := addrHost(atyp, addr)
-		bc, err = net.DialTimeout("tcp", net.JoinHostPort(host, fmt.Sprint(port)), backendDialTimeout)
+		ips, lerr := a.lookupHost(host)
+		if lerr != nil {
+			a.logf("backend dial %s failed: lookup: %v", addrStr(atyp, addr, port), lerr)
+			a.closeStream(st, true)
+			return
+		}
+		for _, ip := range ips {
+			bc, err = net.DialTimeout("tcp", net.JoinHostPort(ip, fmt.Sprint(port)), backendDialTimeout)
+			if err == nil {
+				break
+			}
+		}
 	} else {
 		bc, err = socksDial(a.cfg.backend, atyp, addr, port)
 	}

@@ -15692,3 +15692,1968 @@
 2026/11/15 15:47:12 [client] stream 7126 closeWriteLocal
 2026/11/15 15:47:45 [client] open ack slot=0 sid=7127
 2026/11/15 15:47:45 [client] open ack slot=1 sid=7128
+2026/11/15 15:49:37 [client] open ack slot=0 sid=7129
+2026/11/15 15:49:44 [client] stream 7129 closeWriteLocal
+2026/11/15 15:49:45 [client] open ack slot=0 sid=7130
+2026/11/15 15:49:45 [client] open ack slot=1 sid=7131
+2026/11/15 15:49:51 [client] stream 7130 closeWriteLocal
+2026/11/15 15:50:21 [client] stream 7131 closeWriteLocal
+2026/11/15 15:52:35 [client] open ack slot=0 sid=7132
+2026/11/15 15:52:38 [client] open ack slot=0 sid=7133
+2026/11/15 15:52:41 [client] open ack slot=5 sid=7139
+2026/11/15 15:52:41 [client] open ack slot=3 sid=7137
+2026/11/15 15:52:41 [client] open ack slot=4 sid=7138
+2026/11/15 15:52:41 [client] open ack slot=2 sid=7136
+2026/11/15 15:52:41 [client] open ack slot=8 sid=7142
+2026/11/15 15:52:41 [client] stream 7136 closeWriteLocal
+2026/11/15 15:52:41 [client] open ack slot=7 sid=7141
+2026/11/15 15:52:41 [client] open ack slot=9 sid=7143
+2026/11/15 15:52:41 [client] stream 7142 closeWriteLocal
+2026/11/15 15:52:41 [client] stream 7141 closeWriteLocal
+2026/11/15 15:52:41 [client] open ack slot=1 sid=7135
+2026/11/15 15:52:41 [client] open ack slot=0 sid=7134
+2026/11/15 15:52:41 [client] stream 7134 closeWriteLocal
+2026/11/15 15:52:41 [client] open ack slot=6 sid=7140
+2026/11/15 15:52:41 [client] stream 7140 closeWriteLocal
+2026/11/15 15:52:41 [client] stream 7135 closeWriteLocal
+2026/11/15 15:52:42 [client] stream 7138 closeWriteLocal
+2026/11/15 15:52:42 [client] stream 7137 closeWriteLocal
+2026/11/15 15:52:42 [client] stream 7143 closeWriteLocal
+2026/11/15 15:52:42 [client] open ack slot=2 sid=7144
+2026/11/15 15:52:42 [client] open ack slot=0 sid=7145
+2026/11/15 15:52:42 [client] open ack slot=7 sid=7150
+2026/11/15 15:52:42 [client] open ack slot=6 sid=7149
+2026/11/15 15:52:42 [client] open ack slot=10 sid=7153
+2026/11/15 15:52:42 [client] open ack slot=9 sid=7152
+2026/11/15 15:52:42 [client] open ack slot=8 sid=7151
+2026/11/15 15:52:42 [client] open ack slot=4 sid=7148
+2026/11/15 15:52:42 [client] open ack slot=1 sid=7146
+2026/11/15 15:52:42 [client] open ack slot=3 sid=7147
+2026/11/15 15:52:42 [client] open ack slot=11 sid=7154
+2026/11/15 15:52:42 [client] open ack slot=13 sid=7156
+2026/11/15 15:52:42 [client] open ack slot=12 sid=7155
+2026/11/15 15:52:42 [client] open ack slot=14 sid=7157
+2026/11/15 15:52:43 [client] open ack slot=15 sid=7158
+2026/11/15 15:52:43 [client] open ack slot=17 sid=7160
+2026/11/15 15:52:43 [client] open ack slot=16 sid=7159
+2026/11/15 15:52:43 [client] open ack slot=18 sid=7161
+2026/11/15 15:52:43 [client] open ack slot=19 sid=7162
+2026/11/15 15:52:44 [client] open ack slot=20 sid=7163
+2026/11/15 15:52:44 [client] open ack slot=21 sid=7164
+2026/11/15 15:52:44 [client] open ack slot=22 sid=7165
+2026/11/15 15:52:44 [client] open ack slot=25 sid=7168
+2026/11/15 15:52:44 [client] open ack slot=24 sid=7167
+2026/11/15 15:52:44 [client] open ack slot=23 sid=7166
+2026/11/15 15:52:44 [client] open ack slot=26 sid=7169
+2026/11/15 15:52:45 [client] open ack slot=28 sid=7171
+2026/11/15 15:52:45 [client] open ack slot=27 sid=7170
+2026/11/15 15:52:45 [client] open ack slot=29 sid=7172
+2026/11/15 15:52:45 [client] open ack slot=31 sid=7174
+2026/11/15 15:52:45 [client] open ack slot=30 sid=7173
+2026/11/15 15:52:46 [client] open ack slot=15 sid=7175
+2026/11/15 15:52:46 [client] open ack slot=0 sid=7176
+2026/11/15 15:52:46 [client] open ack slot=4 sid=7180
+2026/11/15 15:52:46 [client] open ack slot=2 sid=7178
+2026/11/15 15:52:46 [client] open ack slot=5 sid=7181
+2026/11/15 15:52:46 [client] open ack slot=7 sid=7183
+2026/11/15 15:52:46 [client] open ack slot=6 sid=7182
+2026/11/15 15:52:46 [client] open ack slot=1 sid=7177
+2026/11/15 15:52:46 [client] open ack slot=9 sid=7185
+2026/11/15 15:52:46 [client] open ack slot=8 sid=7184
+2026/11/15 15:52:46 [client] open ack slot=12 sid=7188
+2026/11/15 15:52:46 [client] open ack slot=11 sid=7187
+2026/11/15 15:52:47 [client] open ack slot=16 sid=7192
+2026/11/15 15:52:47 [client] open ack slot=15 sid=7191
+2026/11/15 15:52:47 [client] open ack slot=13 sid=7189
+2026/11/15 15:52:47 [client] open ack slot=14 sid=7190
+2026/11/15 15:52:47 [client] open ack slot=19 sid=7196
+2026/11/15 15:52:47 [client] open ack slot=18 sid=7195
+2026/11/15 15:52:47 [client] open ack slot=27 sid=7194
+2026/11/15 15:52:47 [client] open ack slot=20 sid=7197
+2026/11/15 15:52:47 [client] open ack slot=22 sid=7199
+2026/11/15 15:52:47 [client] open ack slot=24 sid=7201
+2026/11/15 15:52:47 [client] open ack slot=25 sid=7202
+2026/11/15 15:52:47 [client] open ack slot=21 sid=7198
+2026/11/15 15:52:47 [client] open ack slot=28 sid=7205
+2026/11/15 15:52:47 [client] open ack slot=29 sid=7206
+2026/11/15 15:52:47 [client] open ack slot=27 sid=7204
+2026/11/15 15:52:47 [client] open ack slot=26 sid=7203
+2026/11/15 15:52:47 [client] open ack slot=3 sid=7179
+2026/11/15 15:52:47 [client] open ack slot=4 sid=7213
+2026/11/15 15:52:47 [client] open ack slot=3 sid=7212
+2026/11/15 15:52:47 [client] open ack slot=2 sid=7211
+2026/11/15 15:52:47 [client] open ack slot=31 sid=7208
+2026/11/15 15:52:47 [client] open ack slot=0 sid=7209
+2026/11/15 15:52:47 [client] open ack slot=30 sid=7207
+2026/11/15 15:52:47 [client] open ack slot=1 sid=7210
+2026/11/15 15:52:47 [client] open ack slot=6 sid=7215
+2026/11/15 15:52:47 [client] open ack slot=5 sid=7214
+2026/11/15 15:52:47 [client] open ack slot=23 sid=7200
+2026/11/15 15:52:47 [client] open ack slot=14 sid=7223
+2026/11/15 15:52:47 [client] open ack slot=11 sid=7220
+2026/11/15 15:52:47 [client] open ack slot=8 sid=7217
+2026/11/15 15:52:47 [client] open ack slot=12 sid=7221
+2026/11/15 15:52:47 [client] open ack slot=9 sid=7218
+2026/11/15 15:52:47 [client] open ack slot=15 sid=7224
+2026/11/15 15:52:47 [client] open ack slot=17 sid=7226
+2026/11/15 15:52:47 [client] open ack slot=16 sid=7225
+2026/11/15 15:52:47 [client] open ack slot=13 sid=7222
+2026/11/15 15:52:47 [client] open ack slot=10 sid=7186
+2026/11/15 15:52:47 [client] open ack slot=19 sid=7228
+2026/11/15 15:52:47 [client] open ack slot=20 sid=7229
+2026/11/15 15:52:47 [client] open ack slot=10 sid=7219
+2026/11/15 15:52:47 [client] open ack slot=22 sid=7231
+2026/11/15 15:52:47 [client] open ack slot=23 sid=7232
+2026/11/15 15:52:47 [client] open ack slot=17 sid=7193
+2026/11/15 15:52:48 [client] open ack slot=25 sid=7234
+2026/11/15 15:52:48 [client] open ack slot=29 sid=7238
+2026/11/15 15:52:48 [client] open ack slot=1 sid=7242
+2026/11/15 15:52:48 [client] open ack slot=28 sid=7237
+2026/11/15 15:52:48 [client] open ack slot=0 sid=7241
+2026/11/15 15:52:48 [client] open ack slot=31 sid=7240
+2026/11/15 15:52:48 [client] open ack slot=30 sid=7239
+2026/11/15 15:52:48 [client] open ack slot=26 sid=7235
+2026/11/15 15:52:48 [client] open ack slot=18 sid=7227
+2026/11/15 15:52:48 [client] open ack slot=3 sid=7244
+2026/11/15 15:52:48 [client] open ack slot=4 sid=7245
+2026/11/15 15:52:48 [client] open ack slot=21 sid=7230
+2026/11/15 15:52:48 [client] open ack slot=5 sid=7246
+2026/11/15 15:52:48 [client] open ack slot=2 sid=7243
+2026/11/15 15:52:48 [client] open ack slot=7 sid=7248
+2026/11/15 15:52:48 [client] stream 7207 closeWriteLocal
+2026/11/15 15:52:48 [client] stream 7239 closeWriteLocal
+2026/11/15 15:52:48 [client] stream 7205 closeWriteLocal
+2026/11/15 15:52:48 [client] open ack slot=24 sid=7233
+2026/11/15 15:52:48 [client] open ack slot=8 sid=7249
+2026/11/15 15:52:48 [client] open ack slot=30 sid=7250
+2026/11/15 15:52:48 [client] open ack slot=28 sid=7251
+2026/11/15 15:52:48 [client] open ack slot=10 sid=7254
+2026/11/15 15:52:48 [client] open ack slot=9 sid=7253
+2026/11/15 15:52:48 [client] open ack slot=30 sid=7252
+2026/11/15 15:52:49 [client] open ack slot=11 sid=7255
+2026/11/15 15:52:49 [client] open ack slot=13 sid=7257
+2026/11/15 15:52:49 [client] stream 7210 closeWriteLocal
+2026/11/15 15:52:49 [client] open ack slot=15 sid=7261
+2026/11/15 15:52:49 [client] open ack slot=11 sid=7259
+2026/11/15 15:52:49 [client] open ack slot=3 sid=7258
+2026/11/15 15:52:49 [client] open ack slot=16 sid=7263
+2026/11/15 15:52:49 [client] open ack slot=27 sid=7236
+2026/11/15 15:52:49 [client] open ack slot=12 sid=7256
+2026/11/15 15:52:49 [client] open ack slot=1 sid=7264
+2026/11/15 15:52:49 [client] open ack slot=27 sid=7262
+2026/11/15 15:52:49 [client] open ack slot=19 sid=7267
+2026/11/15 15:52:49 [client] stream 7175 closeWriteLocal
+2026/11/15 15:52:49 [client] open ack slot=5 sid=7268
+2026/11/15 15:52:49 [client] tReset received sid=7269 slot=20 -> teardown local conn
+2026/11/15 15:52:49 [client] open ack slot=14 sid=7260
+2026/11/15 15:52:49 [client] open ack slot=6 sid=7247
+2026/11/15 15:52:49 [client] open ack slot=15 sid=7270
+2026/11/15 15:52:49 [client] open ack slot=18 sid=7266
+2026/11/15 15:52:49 [client] open ack slot=22 sid=7272
+2026/11/15 15:52:49 [client] open ack slot=17 sid=7265
+2026/11/15 15:52:50 [client] open ack slot=20 sid=7271
+2026/11/15 15:52:50 [client] open ack slot=23 sid=7275
+2026/11/15 15:52:50 [client] open ack slot=22 sid=7274
+2026/11/15 15:52:50 [client] open ack slot=24 sid=7276
+2026/11/15 15:52:50 [client] open ack slot=21 sid=7273
+2026/11/15 15:52:50 [client] open ack slot=25 sid=7277
+2026/11/15 15:52:50 [client] open ack slot=24 sid=7278
+2026/11/15 15:52:50 [client] open ack slot=25 sid=7280
+2026/11/15 15:52:50 [client] open ack slot=8 sid=7279
+2026/11/15 15:52:50 [client] open ack slot=27 sid=7282
+2026/11/15 15:52:50 [client] open ack slot=31 sid=7286
+2026/11/15 15:52:50 [client] open ack slot=0 sid=7287
+2026/11/15 15:52:50 [client] tReset received sid=7283 slot=28 -> teardown local conn
+2026/11/15 15:52:50 [client] open ack slot=29 sid=7284
+2026/11/15 15:52:50 [client] open ack slot=2 sid=7289
+2026/11/15 15:52:50 [client] stream 7221 closeWriteLocal
+2026/11/15 15:52:51 [client] open ack slot=28 sid=7290
+2026/11/15 15:52:51 [client] open ack slot=30 sid=7285
+2026/11/15 15:52:51 [client] open ack slot=1 sid=7288
+2026/11/15 15:52:51 [client] open ack slot=3 sid=7291
+2026/11/15 15:52:51 [client] open ack slot=26 sid=7281
+2026/11/15 15:52:51 [client] open ack slot=5 sid=7293
+2026/11/15 15:52:51 [client] stream 7282 closeWriteLocal
+2026/11/15 15:52:51 [client] open ack slot=6 sid=7294
+2026/11/15 15:52:51 [client] open ack slot=7 sid=7295
+2026/11/15 15:52:51 [client] open ack slot=4 sid=7292
+2026/11/15 15:52:51 [client] tReset received sid=7297 slot=8 -> teardown local conn
+2026/11/15 15:52:51 [client] stream 7281 closeWriteLocal
+2026/11/15 15:52:51 [client] open ack slot=27 sid=7296
+2026/11/15 15:52:51 [client] open ack slot=11 sid=7300
+2026/11/15 15:52:51 [client] tReset received sid=7299 slot=10 -> teardown local conn
+2026/11/15 15:52:51 [client] open ack slot=12 sid=7301
+2026/11/15 15:52:51 [client] open ack slot=8 sid=7302
+2026/11/15 15:52:51 [client] open ack slot=9 sid=7298
+2026/11/15 15:52:51 [client] open ack slot=10 sid=7303
+2026/11/15 15:52:52 [client] stream 7218 closeWriteLocal
+2026/11/15 15:52:52 [client] open ack slot=3 sid=7304
+2026/11/15 15:52:52 [client] open ack slot=13 sid=7306
+2026/11/15 15:52:52 [client] open ack slot=12 sid=7305
+2026/11/15 15:52:52 [client] open ack slot=9 sid=7307
+2026/11/15 15:52:52 [client] open ack slot=7 sid=7216
+2026/11/15 15:52:52 [client] open ack slot=26 sid=7309
+2026/11/15 15:52:52 [client] tReset received sid=7310 slot=15 -> teardown local conn
+2026/11/15 15:52:52 [client] open ack slot=20 sid=7311
+2026/11/15 15:52:52 [client] open ack slot=21 sid=7312
+2026/11/15 15:52:53 [client] tReset received sid=7308 slot=14 -> teardown local conn
+2026/11/15 15:52:53 [client] open ack slot=22 sid=7313
+2026/11/15 15:52:53 [client] stream 7232 closeWriteLocal
+2026/11/15 15:52:53 [client] open ack slot=14 sid=7314
+2026/11/15 15:52:53 [client] open ack slot=15 sid=7315
+2026/11/15 15:52:53 [client] open ack slot=29 sid=7318
+2026/11/15 15:52:53 [client] open ack slot=5 sid=7320
+2026/11/15 15:52:53 [client] open ack slot=2 sid=7319
+2026/11/15 15:52:53 [client] open ack slot=6 sid=7321
+2026/11/15 15:52:53 [client] open ack slot=8 sid=7322
+2026/11/15 15:52:53 [client] open ack slot=26 sid=7317
+2026/11/15 15:52:53 [client] open ack slot=18 sid=7316
+2026/11/15 15:52:54 [client] open ack slot=17 sid=7329
+2026/11/15 15:52:54 [client] open ack slot=16 sid=7328
+2026/11/15 15:52:54 [client] open ack slot=18 sid=7330
+2026/11/15 15:52:54 [client] open ack slot=9 sid=7323
+2026/11/15 15:52:54 [client] open ack slot=15 sid=7327
+2026/11/15 15:52:54 [client] open ack slot=11 sid=7324
+2026/11/15 15:52:55 [client] open ack slot=14 sid=7326
+2026/11/15 15:52:55 [client] open ack slot=23 sid=7331
+2026/11/15 15:52:55 [client] open ack slot=3 sid=7332
+2026/11/15 15:52:55 [client] open ack slot=19 sid=7334
+2026/11/15 15:52:56 [client] open ack slot=2 sid=7336
+2026/11/15 15:52:58 [client] stream 7277 closeWriteLocal
+2026/11/15 15:52:58 [client] open ack slot=25 sid=7337
+2026/11/15 15:52:58 [client] stream 7241 closeWriteLocal
+2026/11/15 15:52:59 [client] stream 7236 closeWriteLocal
+2026/11/15 15:52:59 [client] stream 7246 closeWriteLocal
+2026/11/15 15:53:00 [client] stream 7200 closeWriteLocal
+2026/11/15 15:53:00 [client] open ack slot=9 sid=7333
+2026/11/15 15:53:00 [client] stream 7152 closeWriteLocal
+2026/11/15 15:53:00 [client] open ack slot=5 sid=7338
+2026/11/15 15:53:01 [client] stream 7280 closeWriteLocal
+2026/11/15 15:53:01 [client] stream 7336 closeWriteLocal
+2026/11/15 15:53:02 [client] open ack slot=23 sid=7339
+2026/11/15 15:53:03 [client] open ack slot=24 sid=7340
+2026/11/15 15:53:03 [client] open ack slot=25 sid=7341
+2026/11/15 15:53:06 [client] stream 7284 closeWriteLocal
+2026/11/15 15:53:07 [client] open ack slot=11 sid=7345
+2026/11/15 15:53:07 [client] open ack slot=6 sid=7344
+2026/11/15 15:53:08 [client] open ack slot=0 sid=7342
+2026/11/15 15:53:08 [client] open ack slot=20 sid=7335
+2026/11/15 15:53:10 [client] stream 7339 closeWriteLocal
+2026/11/15 15:53:11 [client] open ack slot=3 sid=7343
+2026/11/15 15:53:12 [client] open ack slot=23 sid=7348
+2026/11/15 15:53:12 [client] open ack slot=0 sid=7347
+2026/11/15 15:53:14 [client] stream 7331 spread to 2 slots (sid=7331, sent=145817)
+2026/11/15 15:53:14 [client] stream 7331 spread to 3 slots (sid=7331, sent=276889)
+2026/11/15 15:53:14 [client] stream 7331 spread to 4 slots (sid=7331, sent=407961)
+2026/11/15 15:53:14 [client] stream 7331 spread to 5 slots (sid=7331, sent=539033)
+2026/11/15 15:53:14 [client] stream 7331 spread to 6 slots (sid=7331, sent=670105)
+2026/11/15 15:53:14 [client] stream 7331 spread to 7 slots (sid=7331, sent=793997)
+2026/11/15 15:53:14 [client] stream 7331 spread to 8 slots (sid=7331, sent=925069)
+2026/11/15 15:53:14 [client] stream 7331 spread to 9 slots (sid=7331, sent=1056141)
+2026/11/15 15:53:14 [client] stream 7331 spread to 10 slots (sid=7331, sent=1187213)
+2026/11/15 15:53:14 [client] stream 7331 spread to 11 slots (sid=7331, sent=1319011)
+2026/11/15 15:53:14 [client] stream 7331 spread to 12 slots (sid=7331, sent=1450259)
+2026/11/15 15:53:14 [client] stream 7331 spread to 13 slots (sid=7331, sent=1581507)
+2026/11/15 15:53:14 [client] stream 7331 spread to 14 slots (sid=7331, sent=1712755)
+2026/11/15 15:53:14 [client] stream 7331 spread to 15 slots (sid=7331, sent=1843959)
+2026/11/15 15:53:14 [client] stream 7331 spread to 16 slots (sid=7331, sent=1975031)
+2026/11/15 15:53:14 [client] open ack slot=17 sid=7351
+2026/11/15 15:53:17 [client] stream 7220 closeWriteLocal
+2026/11/15 15:53:17 [client] open ack slot=11 sid=7350
+2026/11/15 15:53:17 [client] stream 7345 spread to 2 slots (sid=7345, sent=143650)
+2026/11/15 15:53:17 [client] stream 7345 spread to 3 slots (sid=7345, sent=274722)
+2026/11/15 15:53:17 [client] stream 7345 spread to 4 slots (sid=7345, sent=397954)
+2026/11/15 15:53:17 [client] stream 7345 spread to 5 slots (sid=7345, sent=529026)
+2026/11/15 15:53:17 [client] stream 7345 spread to 6 slots (sid=7345, sent=660098)
+2026/11/15 15:53:17 [client] stream 7345 spread to 7 slots (sid=7345, sent=791170)
+2026/11/15 15:53:17 [client] stream 7345 spread to 8 slots (sid=7345, sent=922242)
+2026/11/15 15:53:17 [client] stream 7345 spread to 9 slots (sid=7345, sent=1063968)
+2026/11/15 15:53:17 [client] stream 7345 spread to 10 slots (sid=7345, sent=1184980)
+2026/11/15 15:53:17 [client] stream 7345 spread to 11 slots (sid=7345, sent=1316052)
+2026/11/15 15:53:17 [client] stream 7345 spread to 12 slots (sid=7345, sent=1447124)
+2026/11/15 15:53:17 [client] stream 7345 spread to 13 slots (sid=7345, sent=1578196)
+2026/11/15 15:53:17 [client] stream 7345 spread to 14 slots (sid=7345, sent=1710588)
+2026/11/15 15:53:17 [client] stream 7345 spread to 15 slots (sid=7345, sent=1841836)
+2026/11/15 15:53:18 [client] open ack slot=11 sid=7352
+2026/11/15 15:53:18 [client] stream 7344 spread to 2 slots (sid=7344, sent=143049)
+2026/11/15 15:53:18 [client] stream 7344 spread to 3 slots (sid=7344, sent=274121)
+2026/11/15 15:53:18 [client] stream 7344 spread to 4 slots (sid=7344, sent=405193)
+2026/11/15 15:53:18 [client] open ack slot=6 sid=7349
+2026/11/15 15:53:19 [client] stream 7340 closeWriteLocal
+2026/11/15 15:53:19 [client] open ack slot=13 sid=7325
+2026/11/15 15:53:23 [client] stream 7296 closeWriteLocal
+2026/11/15 15:53:24 [client] open ack slot=21 sid=7346
+2026/11/15 15:53:24 [client] stream 7273 closeWriteLocal
+2026/11/15 15:53:25 [client] stream 7345 rebalance: detach slot 10 (lanes now 31)
+2026/11/15 15:53:25 [client] stream 7344 spread to 5 slots (sid=7344, sent=2002569)
+2026/11/15 15:53:26 [client] stream 7345 rebalance: detach slot 15 (lanes now 31)
+2026/11/15 15:53:26 [client] stream 7345 rebalance: detach slot 6 (lanes now 30)
+2026/11/15 15:53:26 [client] stream 7348 spread to 2 slots (sid=7348, sent=1133586)
+2026/11/15 15:53:26 [client] stream 7348 spread to 3 slots (sid=7348, sent=1149970)
+2026/11/15 15:53:26 [client] stream 7345 closeWriteLocal
+2026/11/15 15:53:26 [client] stream 7344 spread to 6 slots (sid=7344, sent=2526857)
+2026/11/15 15:53:26 [client] stream 7344 spread to 7 slots (sid=7344, sent=2543241)
+2026/11/15 15:53:26 [client] stream 7344 spread to 8 slots (sid=7344, sent=2559625)
+2026/11/15 15:53:26 [client] stream 7344 spread to 9 slots (sid=7344, sent=2576009)
+2026/11/15 15:53:26 [client] stream 7344 spread to 10 slots (sid=7344, sent=2592393)
+2026/11/15 15:53:27 [client] stream 7348 spread to 4 slots (sid=7348, sent=2923248)
+2026/11/15 15:53:27 [client] stream 7348 spread to 5 slots (sid=7348, sent=2939632)
+2026/11/15 15:53:27 [client] stream 7348 spread to 6 slots (sid=7348, sent=2956016)
+2026/11/15 15:53:27 [client] stream 7348 spread to 7 slots (sid=7348, sent=2972400)
+2026/11/15 15:53:27 [client] stream 7348 spread to 8 slots (sid=7348, sent=2988784)
+2026/11/15 15:53:27 [client] stream 7348 spread to 9 slots (sid=7348, sent=3005168)
+2026/11/15 15:53:28 [client] stream 7331 rebalance: detach slot 31 (lanes now 31)
+2026/11/15 15:53:28 [client] stream 7348 spread to 10 slots (sid=7348, sent=6169150)
+2026/11/15 15:53:29 [client] stream 7331 closeWriteLocal
+2026/11/15 15:53:29 [client] tReset received sid=7331 slot=23 -> teardown local conn
+2026/11/15 15:53:29 [client] stream 7348 spread to 11 slots (sid=7348, sent=6824510)
+2026/11/15 15:53:29 [client] stream 7348 spread to 12 slots (sid=7348, sent=6840894)
+2026/11/15 15:53:29 [client] stream 7348 spread to 13 slots (sid=7348, sent=6857278)
+2026/11/15 15:53:29 [client] stream 7348 spread to 14 slots (sid=7348, sent=6873662)
+2026/11/15 15:53:29 [client] stream 7348 spread to 15 slots (sid=7348, sent=6890046)
+2026/11/15 15:53:29 [client] stream 7348 spread to 16 slots (sid=7348, sent=6906430)
+2026/11/15 15:53:29 [client] stream 7344 spread to 11 slots (sid=7344, sent=5706649)
+2026/11/15 15:53:29 [client] stream 7344 spread to 12 slots (sid=7344, sent=5723033)
+2026/11/15 15:53:29 [client] stream 7344 spread to 13 slots (sid=7344, sent=5739417)
+2026/11/15 15:53:29 [client] stream 7344 spread to 14 slots (sid=7344, sent=5755801)
+2026/11/15 15:53:29 [client] stream 7344 spread to 15 slots (sid=7344, sent=5772185)
+2026/11/15 15:53:29 [client] stream 7344 spread to 16 slots (sid=7344, sent=5788569)
+2026/11/15 15:53:30 [client] stream 7198 closeWriteLocal
+2026/11/15 15:53:30 [client] stream 7343 closeWriteLocal
+2026/11/15 15:53:31 [client] stream 7333 closeWriteLocal
+2026/11/15 15:53:32 [client] stream 7342 closeWriteLocal
+2026/11/15 15:53:32 [client] open ack slot=9 sid=7354
+2026/11/15 15:53:32 [client] stream 7146 closeWriteLocal
+2026/11/15 15:53:32 [client] open ack slot=0 sid=7360
+2026/11/15 15:53:32 [client] open ack slot=21 sid=7356
+2026/11/15 15:53:32 [client] open ack slot=26 sid=7358
+2026/11/15 15:53:32 [client] open ack slot=3 sid=7362
+2026/11/15 15:53:32 [client] open ack slot=6 sid=7353
+2026/11/15 15:53:32 [client] open ack slot=6 sid=7363
+2026/11/15 15:53:32 [client] open ack slot=27 sid=7359
+2026/11/15 15:53:32 [client] open ack slot=9 sid=7365
+2026/11/15 15:53:32 [client] open ack slot=1 sid=7361
+2026/11/15 15:53:32 [client] open ack slot=1 sid=7364
+2026/11/15 15:53:33 [client] open ack slot=21 sid=7368
+2026/11/15 15:53:33 [client] open ack slot=23 sid=7357
+2026/11/15 15:53:33 [client] open ack slot=23 sid=7370
+2026/11/15 15:53:33 [client] open ack slot=22 sid=7369
+2026/11/15 15:53:33 [client] open ack slot=11 sid=7366
+2026/11/15 15:53:33 [client] open ack slot=11 sid=7355
+2026/11/15 15:53:34 [client] open ack slot=18 sid=7373
+2026/11/15 15:53:34 [client] open ack slot=24 sid=7374
+2026/11/15 15:53:34 [client] open ack slot=26 sid=7376
+2026/11/15 15:53:35 [client] stream 7341 closeWriteLocal
+2026/11/15 15:53:35 [client] stream 7159 spread to 2 slots (sid=7159, sent=141670)
+2026/11/15 15:53:35 [client] open ack slot=11 sid=7377
+2026/11/15 15:53:35 [client] open ack slot=8 sid=7371
+2026/11/15 15:53:35 [client] open ack slot=13 sid=7367
+2026/11/15 15:53:35 [client] open ack slot=13 sid=7372
+2026/11/15 15:53:36 [client] stream 7374 closeWriteLocal
+2026/11/15 15:53:36 [client] stream 7373 closeWriteLocal
+2026/11/15 15:53:36 [client] stream 7362 closeWriteLocal
+2026/11/15 15:53:36 [client] stream 7360 closeWriteLocal
+2026/11/15 15:53:36 [client] stream 7361 closeWriteLocal
+2026/11/15 15:53:36 [client] open ack slot=23 sid=7381
+2026/11/15 15:53:36 [client] open ack slot=1 sid=7391
+2026/11/15 15:53:36 [client] open ack slot=18 sid=7378
+2026/11/15 15:53:36 [client] open ack slot=22 sid=7380
+2026/11/15 15:53:36 [client] open ack slot=24 sid=7382
+2026/11/15 15:53:36 [client] open ack slot=31 sid=7387
+2026/11/15 15:53:36 [client] open ack slot=3 sid=7389
+2026/11/15 15:53:36 [client] open ack slot=29 sid=7385
+2026/11/15 15:53:36 [client] open ack slot=0 sid=7388
+2026/11/15 15:53:36 [client] open ack slot=0 sid=7390
+2026/11/15 15:53:36 [client] open ack slot=21 sid=7379
+2026/11/15 15:53:36 [client] open ack slot=27 sid=7384
+2026/11/15 15:53:36 [client] open ack slot=2 sid=7392
+2026/11/15 15:53:36 [client] open ack slot=3 sid=7393
+2026/11/15 15:53:37 [client] open ack slot=5 sid=7395
+2026/11/15 15:53:37 [client] open ack slot=30 sid=7386
+2026/11/15 15:53:37 [client] open ack slot=25 sid=7375
+2026/11/15 15:53:37 [client] open ack slot=8 sid=7397
+2026/11/15 15:53:37 [client] open ack slot=11 sid=7400
+2026/11/15 15:53:37 [client] open ack slot=12 sid=7401
+2026/11/15 15:53:37 [client] open ack slot=6 sid=7396
+2026/11/15 15:53:37 [client] open ack slot=25 sid=7383
+2026/11/15 15:53:37 [client] open ack slot=1 sid=7403
+2026/11/15 15:53:37 [client] open ack slot=4 sid=7394
+2026/11/15 15:53:37 [client] open ack slot=9 sid=7398
+2026/11/15 15:53:37 [client] open ack slot=14 sid=7405
+2026/11/15 15:53:37 [client] open ack slot=3 sid=7402
+2026/11/15 15:53:37 [client] open ack slot=13 sid=7404
+2026/11/15 15:53:37 [client] open ack slot=10 sid=7399
+2026/11/15 15:53:37 [client] open ack slot=23 sid=7406
+2026/11/15 15:53:37 [client] open ack slot=27 sid=7407
+2026/11/15 15:53:37 [client] open ack slot=18 sid=7410
+2026/11/15 15:53:37 [client] open ack slot=20 sid=7412
+2026/11/15 15:53:38 [client] open ack slot=19 sid=7411
+2026/11/15 15:53:38 [client] open ack slot=21 sid=7413
+2026/11/15 15:53:38 [client] open ack slot=24 sid=7416
+2026/11/15 15:53:38 [client] open ack slot=15 sid=7408
+2026/11/15 15:53:38 [client] open ack slot=17 sid=7409
+2026/11/15 15:53:38 [client] open ack slot=25 sid=7417
+2026/11/15 15:53:38 [client] open ack slot=22 sid=7414
+2026/11/15 15:53:38 [client] open ack slot=23 sid=7415
+2026/11/15 15:53:38 [client] open ack slot=28 sid=7420
+2026/11/15 15:53:38 [client] open ack slot=30 sid=7422
+2026/11/15 15:53:38 [client] open ack slot=26 sid=7418
+2026/11/15 15:53:38 [client] open ack slot=27 sid=7419
+2026/11/15 15:53:38 [client] open ack slot=29 sid=7421
+2026/11/15 15:53:38 [client] stream 7375 closeWriteLocal
+2026/11/15 15:53:38 [client] open ack slot=31 sid=7423
+2026/11/15 15:53:38 [client] open ack slot=1 sid=7425
+2026/11/15 15:53:38 [client] open ack slot=0 sid=7424
+2026/11/15 15:53:38 [client] open ack slot=2 sid=7426
+2026/11/15 15:53:38 [client] open ack slot=5 sid=7429
+2026/11/15 15:53:38 [client] open ack slot=3 sid=7427
+2026/11/15 15:53:38 [client] open ack slot=4 sid=7428
+2026/11/15 15:53:39 [client] stream 7243 closeWriteLocal
+2026/11/15 15:53:39 [client] stream 7377 closeWriteLocal
+2026/11/15 15:53:39 [client] open ack slot=22 sid=7430
+2026/11/15 15:53:39 [client] stream 7363 closeWriteLocal
+2026/11/15 15:53:39 [client] open ack slot=11 sid=7431
+2026/11/15 15:53:40 [client] open ack slot=20 sid=7432
+2026/11/15 15:53:40 [client] stream 7326 closeWriteLocal
+2026/11/15 15:53:40 [client] open ack slot=25 sid=7433
+2026/11/15 15:53:40 [client] open ack slot=2 sid=7434
+2026/11/15 15:53:40 [client] open ack slot=6 sid=7435
+2026/11/15 15:53:40 [client] open ack slot=7 sid=7436
+2026/11/15 15:53:40 [client] open ack slot=14 sid=7445
+2026/11/15 15:53:40 [client] open ack slot=13 sid=7444
+2026/11/15 15:53:40 [client] stream 7444 closeWriteLocal
+2026/11/15 15:53:40 [client] open ack slot=8 sid=7439
+2026/11/15 15:53:40 [client] open ack slot=11 sid=7442
+2026/11/15 15:53:40 [client] open ack slot=9 sid=7440
+2026/11/15 15:53:40 [client] open ack slot=12 sid=7443
+2026/11/15 15:53:40 [client] stream 7323 closeWriteLocal
+2026/11/15 15:53:40 [client] open ack slot=15 sid=7446
+2026/11/15 15:53:40 [client] stream 7443 closeWriteLocal
+2026/11/15 15:53:40 [client] stream 7439 closeWriteLocal
+2026/11/15 15:53:40 [client] stream 7442 closeWriteLocal
+2026/11/15 15:53:41 [client] open ack slot=10 sid=7441
+2026/11/15 15:53:41 [client] open ack slot=16 sid=7447
+2026/11/15 15:53:41 [client] open ack slot=13 sid=7448
+2026/11/15 15:53:41 [client] open ack slot=8 sid=7451
+2026/11/15 15:53:41 [client] open ack slot=14 sid=7437
+2026/11/15 15:53:41 [client] stream 7405 closeWriteLocal
+2026/11/15 15:53:41 [client] stream 7437 closeWriteLocal
+2026/11/15 15:53:41 [client] stream 7441 closeWriteLocal
+2026/11/15 15:53:41 [client] open ack slot=11 sid=7453
+2026/11/15 15:53:41 [client] stream 7406 closeWriteLocal
+2026/11/15 15:53:41 [client] open ack slot=6 sid=7438
+2026/11/15 15:53:41 [client] stream 7438 closeWriteLocal
+2026/11/15 15:53:41 [client] open ack slot=9 sid=7449
+2026/11/15 15:53:41 [client] stream 7440 closeWriteLocal
+2026/11/15 15:53:41 [client] open ack slot=14 sid=7454
+2026/11/15 15:53:41 [client] open ack slot=17 sid=7452
+2026/11/15 15:53:41 [client] open ack slot=12 sid=7450
+2026/11/15 15:53:41 [client] stream 7417 closeWriteLocal
+2026/11/15 15:53:41 [client] open ack slot=10 sid=7458
+2026/11/15 15:53:42 [client] open ack slot=9 sid=7457
+2026/11/15 15:53:42 [client] open ack slot=23 sid=7462
+2026/11/15 15:53:42 [client] stream 7403 closeWriteLocal
+2026/11/15 15:53:42 [client] open ack slot=26 sid=7464
+2026/11/15 15:53:42 [client] open ack slot=28 sid=7466
+2026/11/15 15:53:42 [client] stream 7303 closeWriteLocal
+2026/11/15 15:53:43 [client] stream 7414 closeWriteLocal
+2026/11/15 15:53:43 [client] open ack slot=25 sid=7465
+2026/11/15 15:53:44 [client] open ack slot=17 sid=7468
+2026/11/15 15:53:44 [client] open ack slot=1 sid=7467
+2026/11/15 15:53:45 [client] stream 7365 closeWriteLocal
+2026/11/15 15:53:46 [client] open ack slot=4 sid=7474
+2026/11/15 15:53:46 [client] open ack slot=29 sid=7470
+2026/11/15 15:53:46 [client] open ack slot=22 sid=7469
+2026/11/15 15:53:46 [client] open ack slot=31 sid=7471
+2026/11/15 15:53:46 [client] open ack slot=0 sid=7472
+2026/11/15 15:53:46 [client] open ack slot=23 sid=7455
+2026/11/15 15:53:46 [client] stream 7181 closeWriteLocal
+2026/11/15 15:53:46 [client] open ack slot=9 sid=7475
+2026/11/15 15:53:46 [client] open ack slot=14 sid=7459
+2026/11/15 15:53:48 [client] stream 7226 closeWriteLocal
+2026/11/15 15:53:48 [client] stream 7229 closeWriteLocal
+2026/11/15 15:53:49 [client] open ack slot=17 sid=7476
+2026/11/15 15:53:49 [client] stream 7263 closeWriteLocal
+2026/11/15 15:53:50 [client] open ack slot=1 sid=7473
+2026/11/15 15:53:50 [client] stream 7425 closeWriteLocal
+2026/11/15 15:53:50 [client] stream 7271 closeWriteLocal
+2026/11/15 15:53:51 [client] stream 7382 closeWriteLocal
+2026/11/15 15:53:51 [client] stream 7274 closeWriteLocal
+2026/11/15 15:53:52 [client] stream 7402 closeWriteLocal
+2026/11/15 15:53:53 [client] stream 7429 closeWriteLocal
+2026/11/15 15:53:54 [client] stream 7451 closeWriteLocal
+2026/11/15 15:53:54 [client] tReset received sid=7451 slot=8 -> teardown local conn
+2026/11/15 15:53:55 [client] stream 7334 closeWriteLocal
+2026/11/15 15:53:55 [client] open ack slot=20 sid=7477
+2026/11/15 15:53:56 [client] open ack slot=25 sid=7463
+2026/11/15 15:53:56 [client] open ack slot=25 sid=7460
+2026/11/15 15:53:57 [client] open ack slot=20 sid=7482
+2026/11/15 15:53:57 [client] open ack slot=19 sid=7481
+2026/11/15 15:53:57 [client] open ack slot=16 sid=7480
+2026/11/15 15:53:57 [client] open ack slot=5 sid=7479
+2026/11/15 15:53:57 [client] open ack slot=1 sid=7478
+2026/11/15 15:53:57 [client] open ack slot=22 sid=7484
+2026/11/15 15:53:58 [client] open ack slot=24 sid=7485
+2026/11/15 15:53:58 [client] open ack slot=27 sid=7488
+2026/11/15 15:53:58 [client] open ack slot=1 sid=7491
+2026/11/15 15:53:59 [client] open ack slot=0 sid=7490
+2026/11/15 15:54:00 [client] open ack slot=9 sid=7492
+2026/11/15 15:54:00 [client] open ack slot=11 sid=7493
+2026/11/15 15:54:00 [client] open ack slot=17 sid=7494
+2026/11/15 15:54:01 [client] open ack slot=23 sid=7496
+2026/11/15 15:54:01 [client] stream 7463 closeWriteLocal
+2026/11/15 15:54:01 [client] open ack slot=25 sid=7486
+2026/11/15 15:54:01 [client] stream 7460 closeWriteLocal
+2026/11/15 15:54:01 [client] stream 7433 closeWriteLocal
+2026/11/15 15:54:01 [client] stream 7480 spread to 2 slots (sid=7480, sent=136311)
+2026/11/15 15:54:01 [client] stream 7480 spread to 3 slots (sid=7480, sent=267383)
+2026/11/15 15:54:01 [client] stream 7480 spread to 4 slots (sid=7480, sent=406955)
+2026/11/15 15:54:01 [client] stream 7480 spread to 5 slots (sid=7480, sent=538027)
+2026/11/15 15:54:01 [client] stream 7480 spread to 6 slots (sid=7480, sent=671633)
+2026/11/15 15:54:01 [client] stream 7480 spread to 7 slots (sid=7480, sent=792683)
+2026/11/15 15:54:01 [client] stream 7480 spread to 8 slots (sid=7480, sent=932079)
+2026/11/15 15:54:01 [client] stream 7480 spread to 9 slots (sid=7480, sent=1055113)
+2026/11/15 15:54:01 [client] stream 7480 spread to 10 slots (sid=7480, sent=1186185)
+2026/11/15 15:54:01 [client] stream 7480 spread to 11 slots (sid=7480, sent=1317257)
+2026/11/15 15:54:01 [client] stream 7480 spread to 12 slots (sid=7480, sent=1448329)
+2026/11/15 15:54:01 [client] stream 7480 spread to 13 slots (sid=7480, sent=1579401)
+2026/11/15 15:54:01 [client] stream 7480 spread to 14 slots (sid=7480, sent=1710473)
+2026/11/15 15:54:01 [client] stream 7480 spread to 15 slots (sid=7480, sent=1841545)
+2026/11/15 15:54:01 [client] stream 7480 spread to 16 slots (sid=7480, sent=1972617)
+2026/11/15 15:54:01 [client] open ack slot=28 sid=7489
+2026/11/15 15:54:02 [client] stream 7481 spread to 2 slots (sid=7481, sent=136880)
+2026/11/15 15:54:02 [client] stream 7481 spread to 3 slots (sid=7481, sent=267952)
+2026/11/15 15:54:02 [client] stream 7481 spread to 4 slots (sid=7481, sent=399024)
+2026/11/15 15:54:02 [client] stream 7481 spread to 5 slots (sid=7481, sent=530096)
+2026/11/15 15:54:02 [client] stream 7481 spread to 6 slots (sid=7481, sent=661168)
+2026/11/15 15:54:02 [client] stream 7481 spread to 7 slots (sid=7481, sent=792240)
+2026/11/15 15:54:02 [client] stream 7481 spread to 8 slots (sid=7481, sent=922628)
+2026/11/15 15:54:02 [client] stream 7481 spread to 9 slots (sid=7481, sent=1053700)
+2026/11/15 15:54:02 [client] stream 7481 spread to 10 slots (sid=7481, sent=1184772)
+2026/11/15 15:54:02 [client] stream 7480 rebalance: detach slot 12 (lanes now 24)
+2026/11/15 15:54:02 [client] stream 7482 spread to 2 slots (sid=7482, sent=134674)
+2026/11/15 15:54:02 [client] stream 7482 spread to 3 slots (sid=7482, sent=265746)
+2026/11/15 15:54:02 [client] stream 7482 spread to 4 slots (sid=7482, sent=396818)
+2026/11/15 15:54:02 [client] stream 7482 spread to 5 slots (sid=7482, sent=527890)
+2026/11/15 15:54:02 [client] stream 7482 spread to 6 slots (sid=7482, sent=658962)
+2026/11/15 15:54:02 [client] stream 7482 spread to 7 slots (sid=7482, sent=790034)
+2026/11/15 15:54:02 [client] stream 7482 spread to 8 slots (sid=7482, sent=921106)
+2026/11/15 15:54:02 [client] open ack slot=20 sid=7495
+2026/11/15 15:54:02 [client] stream 7491 closeWriteLocal
+2026/11/15 15:54:03 [client] stream 7489 spread to 2 slots (sid=7489, sent=142384)
+2026/11/15 15:54:03 [client] tReset received sid=7491 slot=1 -> teardown local conn
+2026/11/15 15:54:03 [client] stream 7201 closeWriteLocal
+2026/11/15 15:54:04 [client] open ack slot=24 sid=7499
+2026/11/15 15:54:04 [client] open ack slot=6 sid=7456
+2026/11/15 15:54:05 [client] stream 7267 closeWriteLocal
+2026/11/15 15:54:05 [client] stream 7481 rebalance: detach slot 4 (lanes now 31)
+2026/11/15 15:54:05 [client] stream 7456 closeWriteLocal
+2026/11/15 15:54:06 [client] stream 7476 closeWriteLocal
+2026/11/15 15:54:06 [client] open ack slot=1 sid=7500
+2026/11/15 15:54:07 [client] stream 7489 spread to 3 slots (sid=7489, sent=854184)
+2026/11/15 15:54:07 [client] stream 7302 closeWriteLocal
+2026/11/15 15:54:08 [client] stream 7480 rebalance: detach slot 11 (lanes now 31)
+2026/11/15 15:54:08 [client] stream 7480 rebalance: detach slot 6 (lanes now 30)
+2026/11/15 15:54:08 [client] stream 7489 spread to 4 slots (sid=7489, sent=1247400)
+2026/11/15 15:54:08 [client] stream 7489 spread to 5 slots (sid=7489, sent=1263784)
+2026/11/15 15:54:09 [client] open ack slot=19 sid=7501
+2026/11/15 15:54:12 [client] stream 7480 rebalance: detach slot 17 (lanes now 31)
+2026/11/15 15:54:12 [client] stream 7480 rebalance: detach slot 14 (lanes now 30)
+2026/11/15 15:54:12 [client] stream 7489 spread to 6 slots (sid=7489, sent=2164904)
+2026/11/15 15:54:12 [client] open ack slot=25 sid=7498
+2026/11/15 15:54:13 [client] stream 7484 closeWriteLocal
+2026/11/15 15:54:13 [client] open ack slot=6 sid=7502
+2026/11/15 15:54:13 [client] tReset received sid=7480 slot=29 -> teardown local conn
+2026/11/15 15:54:13 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:13 [client] tReset received sid=7480 slot=1 -> teardown local conn
+2026/11/15 15:54:13 [client] tReset received sid=7480 slot=9 -> teardown local conn
+2026/11/15 15:54:13 [client] tReset received sid=7480 slot=12 -> teardown local conn
+2026/11/15 15:54:13 [client] tReset received sid=7480 slot=15 -> teardown local conn
+2026/11/15 15:54:13 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:13 [client] tReset received sid=7480 slot=6 -> teardown local conn
+2026/11/15 15:54:14 [client] tReset received sid=7480 slot=11 -> teardown local conn
+2026/11/15 15:54:14 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:14 [client] stream 7489 spread to 7 slots (sid=7489, sent=2689192)
+2026/11/15 15:54:14 [client] stream 7489 spread to 8 slots (sid=7489, sent=2705576)
+2026/11/15 15:54:14 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:15 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:15 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:15 [client] open ack slot=26 sid=7487
+2026/11/15 15:54:15 [client] stream 7309 closeWriteLocal
+2026/11/15 15:54:15 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=11 -> teardown local conn
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:16 [client] stream 7478 closeWriteLocal
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=11 -> teardown local conn
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=11 -> teardown local conn
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=11 -> teardown local conn
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:16 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=11 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=11 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=11 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=11 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=11 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:17 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:18 [client] stream 7481 spread to 10 slots (sid=7481, sent=15619076)
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=11 -> teardown local conn
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=11 -> teardown local conn
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=11 -> teardown local conn
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=11 -> teardown local conn
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=11 -> teardown local conn
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=11 -> teardown local conn
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:18 [client] open ack slot=21 sid=7461
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=11 -> teardown local conn
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:18 [client] stream 7479 closeWriteLocal
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=14 -> teardown local conn
+2026/11/15 15:54:18 [client] tReset received sid=7480 slot=17 -> teardown local conn
+2026/11/15 15:54:20 [client] open ack slot=21 sid=7483
+2026/11/15 15:54:20 [client] stream 7356 closeWriteLocal
+2026/11/15 15:54:20 [client] stream 7483 closeWriteLocal
+2026/11/15 15:54:20 [client] open ack slot=21 sid=7509
+2026/11/15 15:54:20 [client] open ack slot=22 sid=7510
+2026/11/15 15:54:20 [client] open ack slot=26 sid=7503
+2026/11/15 15:54:20 [client] open ack slot=6 sid=7505
+2026/11/15 15:54:20 [client] open ack slot=20 sid=7508
+2026/11/15 15:54:21 [client] open ack slot=26 sid=7512
+2026/11/15 15:54:21 [client] open ack slot=1 sid=7504
+2026/11/15 15:54:21 [client] open ack slot=14 sid=7506
+2026/11/15 15:54:21 [client] open ack slot=25 sid=7511
+2026/11/15 15:54:21 [client] open ack slot=6 sid=7515
+2026/11/15 15:54:22 [client] tReset received sid=7481 slot=4 -> teardown local conn
+2026/11/15 15:54:22 [client] open ack slot=17 sid=7507
+2026/11/15 15:54:22 [client] open ack slot=5 sid=7514
+2026/11/15 15:54:22 [client] open ack slot=21 sid=7516
+2026/11/15 15:54:22 [client] open ack slot=8 sid=7519
+2026/11/15 15:54:22 [client] open ack slot=10 sid=7521
+2026/11/15 15:54:22 [client] open ack slot=11 sid=7522
+2026/11/15 15:54:22 [client] open ack slot=5 sid=7518
+2026/11/15 15:54:22 [client] open ack slot=12 sid=7523
+2026/11/15 15:54:22 [client] open ack slot=14 sid=7524
+2026/11/15 15:54:22 [client] open ack slot=16 sid=7526
+2026/11/15 15:54:22 [client] open ack slot=1 sid=7513
+2026/11/15 15:54:22 [client] open ack slot=17 sid=7527
+2026/11/15 15:54:22 [client] open ack slot=20 sid=7529
+2026/11/15 15:54:22 [client] open ack slot=19 sid=7528
+2026/11/15 15:54:22 [client] open ack slot=22 sid=7531
+2026/11/15 15:54:22 [client] open ack slot=21 sid=7530
+2026/11/15 15:54:23 [client] open ack slot=1 sid=7517
+2026/11/15 15:54:23 [client] open ack slot=25 sid=7534
+2026/11/15 15:54:23 [client] open ack slot=15 sid=7525
+2026/11/15 15:54:23 [client] open ack slot=24 sid=7533
+2026/11/15 15:54:23 [client] open ack slot=28 sid=7537
+2026/11/15 15:54:23 [client] open ack slot=0 sid=7539
+2026/11/15 15:54:23 [client] open ack slot=29 sid=7538
+2026/11/15 15:54:23 [client] open ack slot=3 sid=7541
+2026/11/15 15:54:23 [client] open ack slot=4 sid=7542
+2026/11/15 15:54:23 [client] open ack slot=23 sid=7532
+2026/11/15 15:54:23 [client] open ack slot=26 sid=7535
+2026/11/15 15:54:23 [client] open ack slot=26 sid=7536
+2026/11/15 15:54:23 [client] open ack slot=20 sid=7543
+2026/11/15 15:54:23 [client] open ack slot=5 sid=7544
+2026/11/15 15:54:23 [client] open ack slot=6 sid=7545
+2026/11/15 15:54:23 [client] open ack slot=11 sid=7550
+2026/11/15 15:54:24 [client] open ack slot=8 sid=7547
+2026/11/15 15:54:24 [client] open ack slot=13 sid=7552
+2026/11/15 15:54:24 [client] open ack slot=12 sid=7551
+2026/11/15 15:54:24 [client] stream 7516 closeWriteLocal
+2026/11/15 15:54:24 [client] stream 7498 closeWriteLocal
+2026/11/15 15:54:24 [client] stream 7511 closeWriteLocal
+2026/11/15 15:54:24 [client] open ack slot=15 sid=7555
+2026/11/15 15:54:24 [client] stream 7508 closeWriteLocal
+2026/11/15 15:54:24 [client] stream 7510 closeWriteLocal
+2026/11/15 15:54:24 [client] stream 7502 closeWriteLocal
+2026/11/15 15:54:24 [client] open ack slot=2 sid=7497
+2026/11/15 15:54:24 [client] open ack slot=16 sid=7556
+2026/11/15 15:54:24 [client] stream 7159 spread to 3 slots (sid=7159, sent=266807)
+2026/11/15 15:54:24 [client] open ack slot=14 sid=7554
+2026/11/15 15:54:24 [client] stream 7392 closeWriteLocal
+2026/11/15 15:54:24 [client] open ack slot=17 sid=7557
+2026/11/15 15:54:24 [client] open ack slot=19 sid=7560
+2026/11/15 15:54:25 [client] open ack slot=2 sid=7559
+2026/11/15 15:54:25 [client] open ack slot=22 sid=7562
+2026/11/15 15:54:25 [client] open ack slot=20 sid=7563
+2026/11/15 15:54:25 [client] open ack slot=21 sid=7561
+2026/11/15 15:54:25 [client] open ack slot=25 sid=7565
+2026/11/15 15:54:25 [client] tReset received sid=7568 slot=23 -> teardown local conn
+2026/11/15 15:54:25 [client] tReset received sid=7570 slot=6 -> teardown local conn
+2026/11/15 15:54:25 [client] open ack slot=24 sid=7569
+2026/11/15 15:54:25 [client] open ack slot=20 sid=7571
+2026/11/15 15:54:25 [client] open ack slot=25 sid=7566
+2026/11/15 15:54:25 [client] open ack slot=22 sid=7567
+2026/11/15 15:54:25 [client] open ack slot=10 sid=7549
+2026/11/15 15:54:25 [client] stream 7569 closeWriteLocal
+2026/11/15 15:54:25 [client] open ack slot=1 sid=7540
+2026/11/15 15:54:26 [client] open ack slot=21 sid=7558
+2026/11/15 15:54:26 [client] open ack slot=21 sid=7564
+2026/11/15 15:54:26 [client] stream 7565 closeWriteLocal
+2026/11/15 15:54:26 [client] tReset received sid=7573 slot=6 -> teardown local conn
+2026/11/15 15:54:26 [client] open ack slot=22 sid=7574
+2026/11/15 15:54:26 [client] open ack slot=31 sid=7584
+2026/11/15 15:54:26 [client] open ack slot=1 sid=7586
+2026/11/15 15:54:26 [client] open ack slot=0 sid=7585
+2026/11/15 15:54:26 [client] open ack slot=25 sid=7578
+2026/11/15 15:54:26 [client] open ack slot=24 sid=7576
+2026/11/15 15:54:26 [client] open ack slot=25 sid=7577
+2026/11/15 15:54:26 [client] open ack slot=30 sid=7583
+2026/11/15 15:54:26 [client] open ack slot=29 sid=7582
+2026/11/15 15:54:26 [client] open ack slot=26 sid=7579
+2026/11/15 15:54:26 [client] open ack slot=28 sid=7581
+2026/11/15 15:54:26 [client] open ack slot=23 sid=7575
+2026/11/15 15:54:26 [client] open ack slot=2 sid=7587
+2026/11/15 15:54:26 [client] tReset received sid=7588 slot=6 -> teardown local conn
+2026/11/15 15:54:26 [client] open ack slot=27 sid=7580
+2026/11/15 15:54:26 [client] open ack slot=3 sid=7589
+2026/11/15 15:54:26 [client] open ack slot=4 sid=7591
+2026/11/15 15:54:26 [client] open ack slot=6 sid=7590
+2026/11/15 15:54:26 [client] open ack slot=6 sid=7593
+2026/11/15 15:54:26 [client] open ack slot=5 sid=7592
+2026/11/15 15:54:26 [client] open ack slot=25 sid=7594
+2026/11/15 15:54:26 [client] open ack slot=8 sid=7596
+2026/11/15 15:54:27 [client] open ack slot=11 sid=7600
+2026/11/15 15:54:27 [client] open ack slot=10 sid=7599
+2026/11/15 15:54:27 [client] stream 7523 closeWriteLocal
+2026/11/15 15:54:27 [client] tReset received sid=7602 slot=13 -> teardown local conn
+2026/11/15 15:54:27 [client] open ack slot=12 sid=7601
+2026/11/15 15:54:27 [client] stream 7551 closeWriteLocal
+2026/11/15 15:54:27 [client] open ack slot=15 sid=7604
+2026/11/15 15:54:27 [client] stream 7550 closeWriteLocal
+2026/11/15 15:54:27 [client] open ack slot=24 sid=7598
+2026/11/15 15:54:27 [client] open ack slot=13 sid=7607
+2026/11/15 15:54:27 [client] open ack slot=14 sid=7603
+2026/11/15 15:54:27 [client] open ack slot=16 sid=7608
+2026/11/15 15:54:27 [client] open ack slot=17 sid=7609
+2026/11/15 15:54:28 [client] open ack slot=19 sid=7610
+2026/11/15 15:54:28 [client] open ack slot=12 sid=7605
+2026/11/15 15:54:28 [client] open ack slot=0 sid=7611
+2026/11/15 15:54:28 [client] tReset received sid=7606 slot=12 -> teardown local conn
+2026/11/15 15:54:28 [client] open ack slot=2 sid=7612
+2026/11/15 15:54:28 [client] open ack slot=2 sid=7613
+2026/11/15 15:54:28 [client] open ack slot=11 sid=7617
+2026/11/15 15:54:28 [client] open ack slot=3 sid=7614
+2026/11/15 15:54:28 [client] open ack slot=8 sid=7616
+2026/11/15 15:54:28 [client] open ack slot=5 sid=7615
+2026/11/15 15:54:29 [client] open ack slot=16 sid=7619
+2026/11/15 15:54:29 [client] open ack slot=15 sid=7618
+2026/11/15 15:54:29 [client] open ack slot=17 sid=7620
+2026/11/15 15:54:29 [client] open ack slot=18 sid=7621
+2026/11/15 15:54:29 [client] open ack slot=19 sid=7622
+2026/11/15 15:54:29 [client] open ack slot=20 sid=7623
+2026/11/15 15:54:29 [client] open ack slot=21 sid=7624
+2026/11/15 15:54:29 [client] open ack slot=22 sid=7625
+2026/11/15 15:54:30 [client] open ack slot=24 sid=7626
+2026/11/15 15:54:31 [client] open ack slot=28 sid=7627
+2026/11/15 15:54:31 [client] stream 7608 closeWriteLocal
+2026/11/15 15:54:31 [client] open ack slot=29 sid=7628
+2026/11/15 15:54:32 [client] open ack slot=7 sid=7546
+2026/11/15 15:54:32 [client] open ack slot=7 sid=7595
+2026/11/15 15:54:32 [client] stream 7607 closeWriteLocal
+2026/11/15 15:54:32 [client] open ack slot=31 sid=7629
+2026/11/15 15:54:32 [client] stream 7558 closeWriteLocal
+2026/11/15 15:54:32 [client] open ack slot=0 sid=7631
+2026/11/15 15:54:32 [client] open ack slot=16 sid=7630
+2026/11/15 15:54:33 [client] open ack slot=21 sid=7633
+2026/11/15 15:54:34 [client] open ack slot=13 sid=7635
+2026/11/15 15:54:35 [client] open ack slot=21 sid=7636
+2026/11/15 15:54:36 [client] open ack slot=4 sid=7637
+2026/11/15 15:54:36 [client] stream 7605 closeWriteLocal
+2026/11/15 15:54:37 [client] stream 7524 closeWriteLocal
+2026/11/15 15:54:38 [client] open ack slot=26 sid=7638
+2026/11/15 15:54:40 [client] open ack slot=12 sid=7639
+2026/11/15 15:54:40 [client] open ack slot=12 sid=7648
+2026/11/15 15:54:40 [client] open ack slot=11 sid=7647
+2026/11/15 15:54:40 [client] stream 7648 closeWriteLocal
+2026/11/15 15:54:40 [client] stream 7639 closeWriteLocal
+2026/11/15 15:54:40 [client] open ack slot=4 sid=7643
+2026/11/15 15:54:40 [client] open ack slot=27 sid=7641
+2026/11/15 15:54:40 [client] open ack slot=6 sid=7645
+2026/11/15 15:54:40 [client] stream 7643 closeWriteLocal
+2026/11/15 15:54:40 [client] stream 7641 closeWriteLocal
+2026/11/15 15:54:40 [client] stream 7647 closeWriteLocal
+2026/11/15 15:54:40 [client] stream 7645 closeWriteLocal
+2026/11/15 15:54:41 [client] open ack slot=26 sid=7640
+2026/11/15 15:54:41 [client] open ack slot=30 sid=7642
+2026/11/15 15:54:41 [client] stream 7640 closeWriteLocal
+2026/11/15 15:54:41 [client] open ack slot=12 sid=7650
+2026/11/15 15:54:41 [client] stream 7638 closeWriteLocal
+2026/11/15 15:54:42 [client] open ack slot=26 sid=7651
+2026/11/15 15:54:42 [client] stream 7642 closeWriteLocal
+2026/11/15 15:54:43 [client] open ack slot=26 sid=7652
+2026/11/15 15:54:43 [client] open ack slot=2 sid=7632
+2026/11/15 15:54:44 [client] stream 7618 closeWriteLocal
+2026/11/15 15:54:45 [client] open ack slot=8 sid=7646
+2026/11/15 15:54:45 [client] open ack slot=30 sid=7655
+2026/11/15 15:54:45 [client] open ack slot=4 sid=7658
+2026/11/15 15:54:45 [client] open ack slot=27 sid=7654
+2026/11/15 15:54:45 [client] open ack slot=15 sid=7653
+2026/11/15 15:54:45 [client] stream 7586 closeWriteLocal
+2026/11/15 15:54:46 [client] stream 7591 closeWriteLocal
+2026/11/15 15:54:46 [client] open ack slot=6 sid=7660
+2026/11/15 15:54:46 [client] open ack slot=8 sid=7661
+2026/11/15 15:54:46 [client] open ack slot=11 sid=7662
+2026/11/15 15:54:46 [client] open ack slot=13 sid=7649
+2026/11/15 15:54:46 [client] open ack slot=12 sid=7663
+2026/11/15 15:54:46 [client] stream 7652 closeWriteLocal
+2026/11/15 15:54:47 [client] open ack slot=17 sid=7665
+2026/11/15 15:54:47 [client] open ack slot=16 sid=7664
+2026/11/15 15:54:47 [client] stream 7655 spread to 2 slots (sid=7655, sent=145082)
+2026/11/15 15:54:47 [client] stream 7658 spread to 2 slots (sid=7658, sent=144875)
+2026/11/15 15:54:47 [client] stream 7655 spread to 3 slots (sid=7655, sent=276154)
+2026/11/15 15:54:47 [client] stream 7664 spread to 2 slots (sid=7664, sent=134302)
+2026/11/15 15:54:47 [client] stream 7658 spread to 3 slots (sid=7658, sent=275947)
+2026/11/15 15:54:47 [client] stream 7665 spread to 2 slots (sid=7665, sent=134194)
+2026/11/15 15:54:47 [client] stream 7655 spread to 4 slots (sid=7655, sent=407226)
+2026/11/15 15:54:47 [client] stream 7658 spread to 4 slots (sid=7658, sent=407019)
+2026/11/15 15:54:47 [client] stream 7665 spread to 3 slots (sid=7665, sent=265266)
+2026/11/15 15:54:47 [client] stream 7664 spread to 3 slots (sid=7664, sent=265374)
+2026/11/15 15:54:47 [client] stream 7665 spread to 4 slots (sid=7665, sent=396338)
+2026/11/15 15:54:47 [client] stream 7658 spread to 5 slots (sid=7658, sent=538091)
+2026/11/15 15:54:47 [client] stream 7664 spread to 4 slots (sid=7664, sent=396446)
+2026/11/15 15:54:47 [client] stream 7655 spread to 5 slots (sid=7655, sent=538298)
+2026/11/15 15:54:47 [client] stream 7665 spread to 5 slots (sid=7665, sent=527410)
+2026/11/15 15:54:47 [client] stream 7658 spread to 6 slots (sid=7658, sent=669163)
+2026/11/15 15:54:47 [client] stream 7664 spread to 5 slots (sid=7664, sent=527518)
+2026/11/15 15:54:47 [client] stream 7665 spread to 6 slots (sid=7665, sent=658482)
+2026/11/15 15:54:47 [client] stream 7658 spread to 7 slots (sid=7658, sent=800235)
+2026/11/15 15:54:47 [client] stream 7655 spread to 6 slots (sid=7655, sent=669370)
+2026/11/15 15:54:47 [client] stream 7664 spread to 6 slots (sid=7664, sent=658590)
+2026/11/15 15:54:47 [client] stream 7658 spread to 8 slots (sid=7658, sent=931307)
+2026/11/15 15:54:47 [client] stream 7665 spread to 7 slots (sid=7665, sent=790478)
+2026/11/15 15:54:47 [client] stream 7655 spread to 7 slots (sid=7655, sent=800442)
+2026/11/15 15:54:47 [client] stream 7664 spread to 7 slots (sid=7664, sent=789662)
+2026/11/15 15:54:47 [client] stream 7655 spread to 8 slots (sid=7655, sent=931514)
+2026/11/15 15:54:47 [client] stream 7665 spread to 8 slots (sid=7665, sent=921704)
+2026/11/15 15:54:47 [client] stream 7664 spread to 8 slots (sid=7664, sent=921856)
+2026/11/15 15:54:49 [client] open ack slot=26 sid=7666
+2026/11/15 15:54:51 [client] open ack slot=9 sid=7553
+2026/11/15 15:54:51 [client] open ack slot=9 sid=7520
+2026/11/15 15:54:52 [client] open ack slot=9 sid=7548
+2026/11/15 15:54:52 [client] open ack slot=9 sid=7597
+2026/11/15 15:54:52 [client] open ack slot=9 sid=7572
+2026/11/15 15:54:55 [client] stream 7636 closeWriteLocal
+2026/11/15 15:54:55 [client] stream 7612 closeWriteLocal
+2026/11/15 15:54:55 [client] open ack slot=2 sid=7656
+2026/11/15 15:54:56 [client] stream 7664 closeWriteLocal
+2026/11/15 15:54:56 [client] stream 7665 spread to 9 slots (sid=7665, sent=21435540)
+2026/11/15 15:54:56 [client] stream 7665 spread to 10 slots (sid=7665, sent=21451924)
+2026/11/15 15:54:57 [client] stream 7655 spread to 9 slots (sid=7655, sent=12416658)
+2026/11/15 15:54:57 [client] stream 7655 spread to 10 slots (sid=7655, sent=12433042)
+2026/11/15 15:54:57 [client] stream 7658 spread to 9 slots (sid=7658, sent=23966079)
+2026/11/15 15:54:57 [client] stream 7658 spread to 10 slots (sid=7658, sent=23982463)
+2026/11/15 15:54:57 [client] stream 7658 closeWriteLocal
+2026/11/15 15:54:57 [client] stream 7665 spread to 11 slots (sid=7665, sent=23139476)
+2026/11/15 15:54:57 [client] stream 7665 spread to 12 slots (sid=7665, sent=23155860)
+2026/11/15 15:54:57 [client] stream 7665 spread to 13 slots (sid=7665, sent=23172244)
+2026/11/15 15:54:57 [client] stream 7665 spread to 14 slots (sid=7665, sent=23188628)
+2026/11/15 15:54:57 [client] stream 7665 spread to 15 slots (sid=7665, sent=23205012)
+2026/11/15 15:54:57 [client] stream 7665 spread to 16 slots (sid=7665, sent=23221396)
+2026/11/15 15:54:57 [client] open ack slot=24 sid=7658
+2026/11/15 15:54:57 [client] stream 7655 spread to 11 slots (sid=7655, sent=12809874)
+2026/11/15 15:54:57 [client] stream 7655 spread to 12 slots (sid=7655, sent=12826258)
+2026/11/15 15:54:57 [client] stream 7655 spread to 13 slots (sid=7655, sent=12842642)
+2026/11/15 15:54:57 [client] stream 7655 spread to 14 slots (sid=7655, sent=12859026)
+2026/11/15 15:54:57 [client] stream 7655 spread to 15 slots (sid=7655, sent=12875410)
+2026/11/15 15:54:57 [client] stream 7655 spread to 16 slots (sid=7655, sent=12891794)
+2026/11/15 15:54:58 [client] stream 7600 closeWriteLocal
+2026/11/15 15:54:58 [client] stream 7610 closeWriteLocal
+2026/11/15 15:54:58 [client] stream 7601 closeWriteLocal
+2026/11/15 15:54:58 [client] stream 7609 closeWriteLocal
+2026/11/15 15:54:58 [client] open ack slot=11 sid=7668
+2026/11/15 15:54:59 [client] open ack slot=29 sid=7667
+2026/11/15 15:54:59 [client] stream 7665 closeWriteLocal
+2026/11/15 15:54:59 [client] open ack slot=3 sid=7634
+2026/11/15 15:55:00 [client] stream 7621 closeWriteLocal
+2026/11/15 15:55:00 [client] open ack slot=20 sid=7665
+2026/11/15 15:55:01 [client] stream 7661 closeWriteLocal
+2026/11/15 15:55:01 [client] stream 7662 closeWriteLocal
+2026/11/15 15:55:01 [client] stream 7660 closeWriteLocal
+2026/11/15 15:55:02 [client] stream 7653 closeWriteLocal
+2026/11/15 15:55:02 [client] open ack slot=14 sid=7670
+2026/11/15 15:55:02 [client] stream 7654 closeWriteLocal
+2026/11/15 15:55:03 [client] stream 7670 closeWriteLocal
+2026/11/15 15:55:03 [client] open ack slot=3 sid=7657
+2026/11/15 15:55:03 [client] stream 7634 closeWriteLocal
+2026/11/15 15:55:03 [client] open ack slot=16 sid=7672
+2026/11/15 15:55:03 [client] open ack slot=15 sid=7671
+2026/11/15 15:55:03 [client] open ack slot=12 sid=7669
+2026/11/15 15:55:03 [client] open ack slot=4 sid=7674
+2026/11/15 15:55:04 [client] open ack slot=14 sid=7675
+2026/11/15 15:55:04 [client] open ack slot=16 sid=7676
+2026/11/15 15:55:04 [client] open ack slot=28 sid=7683
+2026/11/15 15:55:04 [client] open ack slot=18 sid=7678
+2026/11/15 15:55:04 [client] open ack slot=19 sid=7679
+2026/11/15 15:55:04 [client] open ack slot=21 sid=7681
+2026/11/15 15:55:04 [client] open ack slot=20 sid=7680
+2026/11/15 15:55:04 [client] open ack slot=27 sid=7682
+2026/11/15 15:55:04 [client] open ack slot=29 sid=7684
+2026/11/15 15:55:04 [client] open ack slot=3 sid=7688
+2026/11/15 15:55:04 [client] open ack slot=11 sid=7692
+2026/11/15 15:55:04 [client] open ack slot=6 sid=7690
+2026/11/15 15:55:04 [client] open ack slot=30 sid=7685
+2026/11/15 15:55:04 [client] open ack slot=8 sid=7691
+2026/11/15 15:55:04 [client] open ack slot=16 sid=7695
+2026/11/15 15:55:04 [client] open ack slot=14 sid=7693
+2026/11/15 15:55:04 [client] open ack slot=15 sid=7694
+2026/11/15 15:55:04 [client] open ack slot=18 sid=7697
+2026/11/15 15:55:04 [client] open ack slot=2 sid=7687
+2026/11/15 15:55:04 [client] open ack slot=4 sid=7689
+2026/11/15 15:55:05 [client] open ack slot=19 sid=7699
+2026/11/15 15:55:05 [client] open ack slot=18 sid=7698
+2026/11/15 15:55:06 [client] open ack slot=21 sid=7701
+2026/11/15 15:55:06 [client] open ack slot=22 sid=7702
+2026/11/15 15:55:06 [client] open ack slot=24 sid=7703
+2026/11/15 15:55:06 [client] open ack slot=25 sid=7704
+2026/11/15 15:55:06 [client] open ack slot=26 sid=7705
+2026/11/15 15:55:06 [client] open ack slot=30 sid=7709
+2026/11/15 15:55:06 [client] open ack slot=31 sid=7710
+2026/11/15 15:55:06 [client] open ack slot=28 sid=7707
+2026/11/15 15:55:06 [client] open ack slot=2 sid=7713
+2026/11/15 15:55:06 [client] open ack slot=3 sid=7714
+2026/11/15 15:55:06 [client] open ack slot=29 sid=7708
+2026/11/15 15:55:06 [client] open ack slot=27 sid=7706
+2026/11/15 15:55:06 [client] open ack slot=20 sid=7700
+2026/11/15 15:55:07 [client] open ack slot=0 sid=7711
+2026/11/15 15:55:07 [client] open ack slot=17 sid=7673
+2026/11/15 15:55:07 [client] open ack slot=17 sid=7677
+2026/11/15 15:55:07 [client] open ack slot=4 sid=7715
+2026/11/15 15:55:07 [client] open ack slot=17 sid=7696
+2026/11/15 15:55:07 [client] open ack slot=6 sid=7717
+2026/11/15 15:55:07 [client] open ack slot=20 sid=7731
+2026/11/15 15:55:07 [client] open ack slot=18 sid=7729
+2026/11/15 15:55:07 [client] open ack slot=10 sid=7721
+2026/11/15 15:55:07 [client] open ack slot=3 sid=7746
+2026/11/15 15:55:07 [client] open ack slot=0 sid=7743
+2026/11/15 15:55:07 [client] open ack slot=12 sid=7723
+2026/11/15 15:55:07 [client] open ack slot=9 sid=7720
+2026/11/15 15:55:07 [client] open ack slot=15 sid=7726
+2026/11/15 15:55:07 [client] open ack slot=29 sid=7740
+2026/11/15 15:55:07 [client] open ack slot=11 sid=7722
+2026/11/15 15:55:07 [client] open ack slot=11 sid=7754
+2026/11/15 15:55:07 [client] open ack slot=2 sid=7745
+2026/11/15 15:55:07 [client] open ack slot=9 sid=7752
+2026/11/15 15:55:07 [client] stream 7597 closeWriteLocal
+2026/11/15 15:55:07 [client] open ack slot=19 sid=7730
+2026/11/15 15:55:07 [client] open ack slot=25 sid=7736
+2026/11/15 15:55:07 [client] open ack slot=30 sid=7741
+2026/11/15 15:55:07 [client] open ack slot=10 sid=7753
+2026/11/15 15:55:07 [client] open ack slot=6 sid=7749
+2026/11/15 15:55:07 [client] open ack slot=13 sid=7724
+2026/11/15 15:55:07 [client] open ack slot=24 sid=7735
+2026/11/15 15:55:07 [client] open ack slot=27 sid=7738
+2026/11/15 15:55:07 [client] open ack slot=12 sid=7755
+2026/11/15 15:55:07 [client] open ack slot=17 sid=7728
+2026/11/15 15:55:07 [client] open ack slot=21 sid=7732
+2026/11/15 15:55:07 [client] stream 7692 closeWriteLocal
+2026/11/15 15:55:07 [client] open ack slot=16 sid=7727
+2026/11/15 15:55:07 [client] open ack slot=23 sid=7734
+2026/11/15 15:55:07 [client] open ack slot=26 sid=7737
+2026/11/15 15:55:07 [client] open ack slot=31 sid=7742
+2026/11/15 15:55:07 [client] open ack slot=7 sid=7718
+2026/11/15 15:55:07 [client] open ack slot=7 sid=7750
+2026/11/15 15:55:07 [client] open ack slot=13 sid=7756
+2026/11/15 15:55:07 [client] stream 7684 closeWriteLocal
+2026/11/15 15:55:07 [client] open ack slot=8 sid=7719
+2026/11/15 15:55:07 [client] open ack slot=8 sid=7751
+2026/11/15 15:55:07 [client] stream 7691 closeWriteLocal
+2026/11/15 15:55:07 [client] open ack slot=18 sid=7761
+2026/11/15 15:55:07 [client] open ack slot=16 sid=7759
+2026/11/15 15:55:07 [client] open ack slot=15 sid=7758
+2026/11/15 15:55:07 [client] open ack slot=17 sid=7760
+2026/11/15 15:55:07 [client] open ack slot=22 sid=7733
+2026/11/15 15:55:07 [client] open ack slot=21 sid=7764
+2026/11/15 15:55:07 [client] open ack slot=14 sid=7725
+2026/11/15 15:55:07 [client] open ack slot=14 sid=7757
+2026/11/15 15:55:07 [client] open ack slot=20 sid=7763
+2026/11/15 15:55:07 [client] open ack slot=19 sid=7762
+2026/11/15 15:55:07 [client] open ack slot=24 sid=7767
+2026/11/15 15:55:07 [client] open ack slot=4 sid=7747
+2026/11/15 15:55:07 [client] stream 7741 closeWriteLocal
+2026/11/15 15:55:07 [client] open ack slot=28 sid=7739
+2026/11/15 15:55:08 [client] open ack slot=22 sid=7765
+2026/11/15 15:55:08 [client] open ack slot=26 sid=7769
+2026/11/15 15:55:08 [client] open ack slot=25 sid=7768
+2026/11/15 15:55:08 [client] tReset received sid=7770 slot=27 -> teardown local conn
+2026/11/15 15:55:08 [client] open ack slot=28 sid=7771
+2026/11/15 15:55:08 [client] open ack slot=29 sid=7772
+2026/11/15 15:55:08 [client] open ack slot=23 sid=7766
+2026/11/15 15:55:08 [client] open ack slot=30 sid=7773
+2026/11/15 15:55:08 [client] stream 7690 closeWriteLocal
+2026/11/15 15:55:08 [client] stream 7742 closeWriteLocal
+2026/11/15 15:55:08 [client] stream 7710 closeWriteLocal
+2026/11/15 15:55:08 [client] stream 7572 closeWriteLocal
+2026/11/15 15:55:08 [client] open ack slot=31 sid=7774
+2026/11/15 15:55:08 [client] open ack slot=0 sid=7775
+2026/11/15 15:55:09 [client] open ack slot=8 sid=7777
+2026/11/15 15:55:09 [client] tReset received sid=7744 slot=1 -> teardown local conn
+2026/11/15 15:55:09 [client] open ack slot=1 sid=7686
+2026/11/15 15:55:09 [client] open ack slot=1 sid=7712
+2026/11/15 15:55:09 [client] open ack slot=1 sid=7776
+2026/11/15 15:55:09 [client] tReset received sid=7778 slot=9 -> teardown local conn
+2026/11/15 15:55:09 [client] open ack slot=31 sid=7779
+2026/11/15 15:55:09 [client] open ack slot=1 sid=7780
+2026/11/15 15:55:09 [client] open ack slot=6 sid=7781
+2026/11/15 15:55:10 [client] tReset received sid=7782 slot=9 -> teardown local conn
+2026/11/15 15:55:10 [client] open ack slot=9 sid=7783
+2026/11/15 15:55:10 [client] open ack slot=9 sid=7784
+2026/11/15 15:55:11 [client] stream 7720 closeWriteLocal
+2026/11/15 15:55:12 [client] stream 7738 closeWriteLocal
+2026/11/15 15:55:12 [client] stream 7553 closeWriteLocal
+2026/11/15 15:55:12 [client] open ack slot=9 sid=7788
+2026/11/15 15:55:12 [client] open ack slot=19 sid=7790
+2026/11/15 15:55:12 [client] open ack slot=11 sid=7789
+2026/11/15 15:55:12 [client] open ack slot=4 sid=7787
+2026/11/15 15:55:12 [client] open ack slot=27 sid=7786
+2026/11/15 15:55:12 [client] open ack slot=20 sid=7791
+2026/11/15 15:55:13 [client] open ack slot=21 sid=7792
+2026/11/15 15:55:14 [client] open ack slot=9 sid=7793
+2026/11/15 15:55:14 [client] stream 7737 closeWriteLocal
+2026/11/15 15:55:15 [client] stream 7679 closeWriteLocal
+2026/11/15 15:55:15 [client] open ack slot=13 sid=7794
+2026/11/15 15:55:15 [client] open ack slot=19 sid=7795
+2026/11/15 15:55:15 [client] stream 7689 closeWriteLocal
+2026/11/15 15:55:16 [client] open ack slot=22 sid=7796
+2026/11/15 15:55:16 [client] open ack slot=4 sid=7797
+2026/11/15 15:55:16 [client] open ack slot=24 sid=7799
+2026/11/15 15:55:16 [client] open ack slot=23 sid=7798
+2026/11/15 15:55:17 [client] stream 7740 closeWriteLocal
+2026/11/15 15:55:17 [client] stream 7791 closeWriteLocal
+2026/11/15 15:55:18 [client] stream 7729 closeWriteLocal
+2026/11/15 15:55:18 [client] open ack slot=29 sid=7800
+2026/11/15 15:55:19 [client] stream 7777 closeWriteLocal
+2026/11/15 15:55:20 [client] stream 7717 closeWriteLocal
+2026/11/15 15:55:20 [client] stream 7722 closeWriteLocal
+2026/11/15 15:55:20 [client] open ack slot=8 sid=7804
+2026/11/15 15:55:20 [client] open ack slot=4 sid=7801
+2026/11/15 15:55:20 [client] open ack slot=6 sid=7803
+2026/11/15 15:55:21 [client] open ack slot=5 sid=7644
+2026/11/15 15:55:21 [client] open ack slot=5 sid=7659
+2026/11/15 15:55:21 [client] open ack slot=27 sid=7806
+2026/11/15 15:55:22 [client] open ack slot=1 sid=7807
+2026/11/15 15:55:22 [client] open ack slot=11 sid=7805
+2026/11/15 15:55:22 [client] stream 7786 closeWriteLocal
+2026/11/15 15:55:22 [client] tReset received sid=7592 slot=5 -> teardown local conn
+2026/11/15 15:55:22 [client] stream 7644 closeWriteLocal
+2026/11/15 15:55:22 [client] stream 7592 closeWriteLocal
+2026/11/15 15:55:22 [client] open ack slot=5 sid=7716
+2026/11/15 15:55:22 [client] open ack slot=5 sid=7748
+2026/11/15 15:55:22 [client] open ack slot=5 sid=7785
+2026/11/15 15:55:22 [client] open ack slot=5 sid=7802
+2026/11/15 15:55:22 [client] stream 7748 closeWriteLocal
+2026/11/15 15:55:22 [client] tReset received sid=7748 slot=5 -> teardown local conn
+2026/11/15 15:55:23 [client] open ack slot=5 sid=7808
+2026/11/15 15:55:24 [client] open ack slot=5 sid=7809
+2026/11/15 15:55:25 [client] stream 7730 closeWriteLocal
+2026/11/15 15:55:25 [client] open ack slot=27 sid=7810
+2026/11/15 15:55:27 [client] stream 7590 closeWriteLocal
+2026/11/15 15:55:29 [client] open ack slot=27 sid=7811
+2026/11/15 15:55:32 [client] open ack slot=29 sid=7812
+2026/11/15 15:55:34 [client] stream 7604 closeWriteLocal
+2026/11/15 15:55:37 [client] stream 7696 closeWriteLocal
+2026/11/15 15:55:38 [client] stream 7739 closeWriteLocal
+2026/11/15 15:55:40 [client] stream 7802 closeWriteLocal
+2026/11/15 15:55:40 [client] open ack slot=7 sid=7818
+2026/11/15 15:55:40 [client] stream 7818 closeWriteLocal
+2026/11/15 15:55:40 [client] open ack slot=9 sid=7820
+2026/11/15 15:55:40 [client] open ack slot=10 sid=7821
+2026/11/15 15:55:40 [client] open ack slot=8 sid=7819
+2026/11/15 15:55:40 [client] open ack slot=6 sid=7813
+2026/11/15 15:55:40 [client] open ack slot=6 sid=7817
+2026/11/15 15:55:40 [client] stream 7813 closeWriteLocal
+2026/11/15 15:55:40 [client] stream 7817 closeWriteLocal
+2026/11/15 15:55:40 [client] open ack slot=27 sid=7814
+2026/11/15 15:55:40 [client] open ack slot=5 sid=7816
+2026/11/15 15:55:40 [client] stream 7820 closeWriteLocal
+2026/11/15 15:55:40 [client] stream 7819 closeWriteLocal
+2026/11/15 15:55:40 [client] stream 7816 closeWriteLocal
+2026/11/15 15:55:41 [client] open ack slot=2 sid=7815
+2026/11/15 15:55:41 [client] open ack slot=15 sid=7823
+2026/11/15 15:55:41 [client] open ack slot=11 sid=7822
+2026/11/15 15:55:41 [client] stream 7814 closeWriteLocal
+2026/11/15 15:55:41 [client] stream 7806 closeWriteLocal
+2026/11/15 15:55:41 [client] open ack slot=5 sid=7824
+2026/11/15 15:55:41 [client] stream 7805 closeWriteLocal
+2026/11/15 15:55:41 [client] stream 7815 closeWriteLocal
+2026/11/15 15:55:41 [client] stream 7593 closeWriteLocal
+2026/11/15 15:55:42 [client] open ack slot=2 sid=7830
+2026/11/15 15:55:42 [client] open ack slot=27 sid=7825
+2026/11/15 15:55:42 [client] open ack slot=6 sid=7828
+2026/11/15 15:55:42 [client] open ack slot=27 sid=7827
+2026/11/15 15:55:42 [client] open ack slot=6 sid=7826
+2026/11/15 15:55:42 [client] open ack slot=6 sid=7832
+2026/11/15 15:55:42 [client] open ack slot=5 sid=7831
+2026/11/15 15:55:42 [client] open ack slot=7 sid=7833
+2026/11/15 15:55:43 [client] tReset received sid=7829 slot=27 -> teardown local conn
+2026/11/15 15:55:43 [client] open ack slot=8 sid=7834
+2026/11/15 15:55:44 [client] open ack slot=9 sid=7835
+2026/11/15 15:55:44 [client] tReset received sid=7836 slot=19 -> teardown local conn
+2026/11/15 15:55:44 [client] open ack slot=19 sid=7837
+2026/11/15 15:55:45 [client] open ack slot=27 sid=7838
+2026/11/15 15:55:46 [client] open ack slot=1 sid=7840
+2026/11/15 15:55:46 [client] open ack slot=9 sid=7841
+2026/11/15 15:55:46 [client] stream 7656 closeWriteLocal
+2026/11/15 15:55:46 [client] open ack slot=27 sid=7839
+2026/11/15 15:55:47 [client] stream 7657 closeWriteLocal
+2026/11/15 15:55:47 [client] open ack slot=11 sid=7842
+2026/11/15 15:55:47 [client] open ack slot=2 sid=7844
+2026/11/15 15:55:47 [client] open ack slot=16 sid=7843
+2026/11/15 15:55:47 [client] open ack slot=17 sid=7845
+2026/11/15 15:55:47 [client] open ack slot=18 sid=7846
+2026/11/15 15:55:48 [client] open ack slot=3 sid=7847
+2026/11/15 15:55:49 [client] tReset received sid=7848 slot=19 -> teardown local conn
+2026/11/15 15:55:50 [client] open ack slot=19 sid=7849
+2026/11/15 15:55:50 [client] tReset received sid=7850 slot=20 -> teardown local conn
+2026/11/15 15:55:51 [client] stream 7821 closeWriteLocal
+2026/11/15 15:55:52 [client] stream 7823 closeWriteLocal
+2026/11/15 15:55:52 [client] stream 7846 closeWriteLocal
+2026/11/15 15:55:52 [client] stream 7694 closeWriteLocal
+2026/11/15 15:55:53 [client] stream 7828 closeWriteLocal
+2026/11/15 15:55:54 [client] open ack slot=15 sid=7851
+2026/11/15 15:55:58 [client] stream 7728 closeWriteLocal
+2026/11/15 15:55:58 [client] stream 7589 closeWriteLocal
+2026/11/15 15:56:01 [client] open ack slot=3 sid=7852
+2026/11/15 15:56:02 [client] stream 7826 closeWriteLocal
+2026/11/15 15:56:04 [client] stream 7693 closeWriteLocal
+2026/11/15 15:56:07 [client] stream 7708 closeWriteLocal
+2026/11/15 15:56:07 [client] stream 7711 closeWriteLocal
+2026/11/15 15:56:07 [client] stream 7727 closeWriteLocal
+2026/11/15 15:56:07 [client] stream 7723 closeWriteLocal
+2026/11/15 15:56:08 [client] stream 7736 closeWriteLocal
+2026/11/15 15:56:08 [client] stream 7734 closeWriteLocal
+2026/11/15 15:56:08 [client] stream 7733 closeWriteLocal
+2026/11/15 15:56:09 [client] stream 7264 closeWriteLocal
+2026/11/15 15:56:09 [client] stream 7595 closeWriteLocal
+2026/11/15 15:56:09 [client] stream 7774 closeWriteLocal
+2026/11/15 15:56:10 [client] stream 7831 closeWriteLocal
+2026/11/15 15:56:10 [client] tReset received sid=7831 slot=5 -> teardown local conn
+2026/11/15 15:56:10 [client] stream 7611 closeWriteLocal
+2026/11/15 15:56:12 [client] open ack slot=29 sid=7853
+2026/11/15 15:56:14 [client] open ack slot=0 sid=7854
+2026/11/15 15:56:15 [client] open ack slot=1 sid=7855
+2026/11/15 15:56:16 [client] open ack slot=6 sid=7856
+2026/11/15 15:56:17 [client] stream 7575 closeWriteLocal
+2026/11/15 15:56:18 [client] open ack slot=21 sid=7857
+2026/11/15 15:56:18 [client] open ack slot=23 sid=7858
+2026/11/15 15:56:21 [client] stream 7798 closeWriteLocal
+2026/11/15 15:56:21 [client] open ack slot=29 sid=7859
+2026/11/15 15:56:21 [client] stream 7709 closeWriteLocal
+2026/11/15 15:56:21 [client] stream 7801 closeWriteLocal
+2026/11/15 15:56:22 [client] stream 7803 closeWriteLocal
+2026/11/15 15:56:22 [client] stream 7578 closeWriteLocal
+2026/11/15 15:56:22 [client] stream 7574 closeWriteLocal
+2026/11/15 15:56:24 [client] stream 7725 closeWriteLocal
+2026/11/15 15:56:27 [client] stream 7852 closeWriteLocal
+2026/11/15 15:56:29 [client] stream 7622 closeWriteLocal
+2026/11/15 15:56:37 [client] open ack slot=5 sid=7864
+2026/11/15 15:56:37 [client] open ack slot=4 sid=7860
+2026/11/15 15:56:37 [client] open ack slot=6 sid=7861
+2026/11/15 15:56:37 [client] open ack slot=1 sid=7862
+2026/11/15 15:56:37 [client] open ack slot=4 sid=7863
+2026/11/15 15:56:37 [client] open ack slot=6 sid=7865
+2026/11/15 15:56:38 [client] stream 7841 closeWriteLocal
+2026/11/15 15:56:40 [client] open ack slot=29 sid=7871
+2026/11/15 15:56:40 [client] open ack slot=25 sid=7870
+2026/11/15 15:56:40 [client] open ack slot=9 sid=7866
+2026/11/15 15:56:40 [client] open ack slot=22 sid=7868
+2026/11/15 15:56:40 [client] open ack slot=31 sid=7873
+2026/11/15 15:56:40 [client] stream 7873 closeWriteLocal
+2026/11/15 15:56:40 [client] open ack slot=30 sid=7872
+2026/11/15 15:56:40 [client] stream 7871 closeWriteLocal
+2026/11/15 15:56:40 [client] stream 7866 closeWriteLocal
+2026/11/15 15:56:40 [client] stream 7870 closeWriteLocal
+2026/11/15 15:56:40 [client] open ack slot=23 sid=7869
+2026/11/15 15:56:41 [client] open ack slot=14 sid=7867
+2026/11/15 15:56:41 [client] stream 7872 closeWriteLocal
+2026/11/15 15:56:41 [client] stream 7868 closeWriteLocal
+2026/11/15 15:56:41 [client] stream 7867 closeWriteLocal
+2026/11/15 15:56:41 [client] stream 7869 closeWriteLocal
+2026/11/15 15:56:45 [client] stream 7671 spread to 2 slots (sid=7671, sent=133291)
+2026/11/15 15:56:47 [client] tReset received sid=7874 slot=14 -> teardown local conn
+2026/11/15 15:56:47 [client] open ack slot=22 sid=7875
+2026/11/15 15:56:47 [client] tReset received sid=7876 slot=23 -> teardown local conn
+2026/11/15 15:56:48 [client] stream 7860 closeWriteLocal
+2026/11/15 15:56:50 [client] open ack slot=4 sid=7877
+2026/11/15 15:56:51 [client] stream 7663 closeWriteLocal
+2026/11/15 15:56:51 [client] open ack slot=22 sid=7879
+2026/11/15 15:56:51 [client] open ack slot=14 sid=7878
+2026/11/15 15:56:51 [client] tReset received sid=7880 slot=23 -> teardown local conn
+2026/11/15 15:56:51 [client] open ack slot=25 sid=7881
+2026/11/15 15:56:51 [client] open ack slot=23 sid=7882
+2026/11/15 15:56:51 [client] open ack slot=29 sid=7883
+2026/11/15 15:56:52 [client] open ack slot=27 sid=7884
+2026/11/15 15:56:53 [client] tReset received sid=7885 slot=12 -> teardown local conn
+2026/11/15 15:56:56 [client] stream 7847 closeWriteLocal
+2026/11/15 15:57:01 [client] stream 7877 closeWriteLocal
+2026/11/15 15:57:02 [client] stream 7879 closeWriteLocal
+2026/11/15 15:57:02 [client] open ack slot=3 sid=7886
+2026/11/15 15:57:02 [client] open ack slot=4 sid=7887
+2026/11/15 15:57:03 [client] open ack slot=12 sid=7888
+2026/11/15 15:57:04 [client] stream 7771 closeWriteLocal
+2026/11/15 15:57:04 [client] stream 7596 closeWriteLocal
+2026/11/15 15:57:04 [client] stream 7598 closeWriteLocal
+2026/11/15 15:57:07 [client] stream 7627 closeWriteLocal
+2026/11/15 15:57:08 [client] stream 7760 closeWriteLocal
+2026/11/15 15:57:08 [client] stream 7724 closeWriteLocal
+2026/11/15 15:57:10 [client] stream 7878 closeWriteLocal
+2026/11/15 15:57:10 [client] stream 7881 closeWriteLocal
+2026/11/15 15:57:13 [client] stream 7832 closeWriteLocal
+2026/11/15 15:57:13 [client] stream 7833 closeWriteLocal
+2026/11/15 15:57:14 [client] stream 7834 closeWriteLocal
+2026/11/15 15:57:17 [client] stream 7844 closeWriteLocal
+2026/11/15 15:57:35 [client] stream 7883 closeWriteLocal
+2026/11/15 15:57:39 [client] stream 7812 closeWriteLocal
+2026/11/15 15:57:40 [client] open ack slot=3 sid=7891
+2026/11/15 15:57:40 [client] open ack slot=4 sid=7892
+2026/11/15 15:57:40 [client] open ack slot=28 sid=7889
+2026/11/15 15:57:40 [client] open ack slot=8 sid=7895
+2026/11/15 15:57:40 [client] open ack slot=12 sid=7896
+2026/11/15 15:57:40 [client] open ack slot=7 sid=7894
+2026/11/15 15:57:40 [client] stream 7891 closeWriteLocal
+2026/11/15 15:57:40 [client] stream 7889 closeWriteLocal
+2026/11/15 15:57:40 [client] stream 7895 closeWriteLocal
+2026/11/15 15:57:40 [client] stream 7894 closeWriteLocal
+2026/11/15 15:57:40 [client] open ack slot=6 sid=7893
+2026/11/15 15:57:40 [client] stream 7893 closeWriteLocal
+2026/11/15 15:57:41 [client] open ack slot=29 sid=7890
+2026/11/15 15:57:41 [client] stream 7892 closeWriteLocal
+2026/11/15 15:57:41 [client] stream 7890 closeWriteLocal
+2026/11/15 15:57:41 [client] stream 7896 closeWriteLocal
+2026/11/15 15:57:41 [client] stream 7884 closeWriteLocal
+2026/11/15 15:57:44 [client] stream 7830 closeWriteLocal
+2026/11/15 15:57:45 [client] open ack slot=4 sid=7898
+2026/11/15 15:57:45 [client] open ack slot=6 sid=7897
+2026/11/15 15:57:45 [client] open ack slot=6 sid=7899
+2026/11/15 15:57:45 [client] open ack slot=28 sid=7900
+2026/11/15 15:57:46 [client] stream 7825 closeWriteLocal
+2026/11/15 15:57:46 [client] open ack slot=27 sid=7901
+2026/11/15 15:57:46 [client] open ack slot=29 sid=7902
+2026/11/15 15:57:46 [client] open ack slot=1 sid=7903
+2026/11/15 15:57:46 [client] open ack slot=2 sid=7904
+2026/11/15 15:57:46 [client] open ack slot=6 sid=7908
+2026/11/15 15:57:46 [client] open ack slot=4 sid=7906
+2026/11/15 15:57:47 [client] open ack slot=5 sid=7907
+2026/11/15 15:57:47 [client] open ack slot=7 sid=7909
+2026/11/15 15:57:47 [client] open ack slot=8 sid=7910
+2026/11/15 15:57:47 [client] open ack slot=12 sid=7911
+2026/11/15 15:57:48 [client] open ack slot=3 sid=7905
+2026/11/15 15:57:48 [client] open ack slot=14 sid=7912
+2026/11/15 15:57:49 [client] open ack slot=17 sid=7913
+2026/11/15 15:57:49 [client] open ack slot=7 sid=7914
+2026/11/15 15:57:50 [client] open ack slot=24 sid=7916
+2026/11/15 15:57:50 [client] open ack slot=27 sid=7918
+2026/11/15 15:57:50 [client] open ack slot=31 sid=7922
+2026/11/15 15:57:50 [client] open ack slot=30 sid=7921
+2026/11/15 15:57:50 [client] open ack slot=0 sid=7923
+2026/11/15 15:57:50 [client] open ack slot=28 sid=7919
+2026/11/15 15:57:50 [client] open ack slot=29 sid=7920
+2026/11/15 15:57:50 [client] open ack slot=1 sid=7924
+2026/11/15 15:57:50 [client] open ack slot=25 sid=7917
+2026/11/15 15:57:50 [client] open ack slot=2 sid=7925
+2026/11/15 15:57:50 [client] open ack slot=5 sid=7928
+2026/11/15 15:57:50 [client] open ack slot=6 sid=7929
+2026/11/15 15:57:50 [client] open ack slot=8 sid=7931
+2026/11/15 15:57:50 [client] open ack slot=11 sid=7934
+2026/11/15 15:57:50 [client] open ack slot=10 sid=7933
+2026/11/15 15:57:50 [client] open ack slot=13 sid=7936
+2026/11/15 15:57:50 [client] open ack slot=14 sid=7937
+2026/11/15 15:57:50 [client] open ack slot=9 sid=7932
+2026/11/15 15:57:50 [client] open ack slot=12 sid=7935
+2026/11/15 15:57:51 [client] open ack slot=15 sid=7938
+2026/11/15 15:57:51 [client] open ack slot=3 sid=7926
+2026/11/15 15:57:51 [client] open ack slot=4 sid=7927
+2026/11/15 15:57:51 [client] open ack slot=16 sid=7939
+2026/11/15 15:57:51 [client] open ack slot=17 sid=7940
+2026/11/15 15:57:51 [client] open ack slot=20 sid=7943
+2026/11/15 15:57:51 [client] open ack slot=19 sid=7942
+2026/11/15 15:57:51 [client] open ack slot=28 sid=7951
+2026/11/15 15:57:51 [client] open ack slot=21 sid=7944
+2026/11/15 15:57:51 [client] open ack slot=26 sid=7949
+2026/11/15 15:57:51 [client] open ack slot=27 sid=7950
+2026/11/15 15:57:51 [client] tReset received sid=7971 slot=16 -> teardown local conn
+2026/11/15 15:57:51 [client] open ack slot=17 sid=7972
+2026/11/15 15:57:51 [client] open ack slot=19 sid=7974
+2026/11/15 15:57:51 [client] open ack slot=24 sid=7947
+2026/11/15 15:57:51 [client] open ack slot=30 sid=7953
+2026/11/15 15:57:51 [client] open ack slot=0 sid=7955
+2026/11/15 15:57:51 [client] open ack slot=12 sid=7967
+2026/11/15 15:57:51 [client] open ack slot=4 sid=7959
+2026/11/15 15:57:51 [client] open ack slot=5 sid=7960
+2026/11/15 15:57:51 [client] open ack slot=20 sid=7975
+2026/11/15 15:57:51 [client] open ack slot=21 sid=7976
+2026/11/15 15:57:51 [client] open ack slot=10 sid=7965
+2026/11/15 15:57:51 [client] open ack slot=9 sid=7964
+2026/11/15 15:57:51 [client] open ack slot=3 sid=7958
+2026/11/15 15:57:51 [client] open ack slot=11 sid=7966
+2026/11/15 15:57:51 [client] open ack slot=23 sid=7946
+2026/11/15 15:57:51 [client] open ack slot=23 sid=7978
+2026/11/15 15:57:51 [client] open ack slot=14 sid=7969
+2026/11/15 15:57:51 [client] open ack slot=29 sid=7952
+2026/11/15 15:57:51 [client] open ack slot=13 sid=7968
+2026/11/15 15:57:51 [client] open ack slot=8 sid=7963
+2026/11/15 15:57:51 [client] open ack slot=6 sid=7961
+2026/11/15 15:57:51 [client] open ack slot=15 sid=7970
+2026/11/15 15:57:51 [client] open ack slot=2 sid=7957
+2026/11/15 15:57:51 [client] open ack slot=18 sid=7941
+2026/11/15 15:57:51 [client] open ack slot=18 sid=7973
+2026/11/15 15:57:51 [client] open ack slot=16 sid=7979
+2026/11/15 15:57:51 [client] open ack slot=31 sid=7954
+2026/11/15 15:57:51 [client] open ack slot=27 sid=7983
+2026/11/15 15:57:51 [client] open ack slot=31 sid=7987
+2026/11/15 15:57:51 [client] open ack slot=28 sid=7984
+2026/11/15 15:57:51 [client] open ack slot=30 sid=7986
+2026/11/15 15:57:51 [client] open ack slot=29 sid=7985
+2026/11/15 15:57:51 [client] open ack slot=1 sid=7956
+2026/11/15 15:57:51 [client] open ack slot=25 sid=7948
+2026/11/15 15:57:51 [client] open ack slot=25 sid=7981
+2026/11/15 15:57:52 [client] open ack slot=24 sid=7980
+2026/11/15 15:57:52 [client] open ack slot=0 sid=7988
+2026/11/15 15:57:52 [client] open ack slot=3 sid=7992
+2026/11/15 15:57:52 [client] open ack slot=4 sid=7993
+2026/11/15 15:57:52 [client] open ack slot=6 sid=7995
+2026/11/15 15:57:52 [client] open ack slot=31 sid=7990
+2026/11/15 15:57:52 [client] open ack slot=1 sid=7989
+2026/11/15 15:57:52 [client] stream 7906 closeWriteLocal
+2026/11/15 15:57:52 [client] open ack slot=26 sid=7982
+2026/11/15 15:57:52 [client] open ack slot=22 sid=7915
+2026/11/15 15:57:52 [client] open ack slot=8 sid=7997
+2026/11/15 15:57:52 [client] open ack slot=5 sid=7994
+2026/11/15 15:57:52 [client] open ack slot=4 sid=7998
+2026/11/15 15:57:52 [client] open ack slot=9 sid=7999
+2026/11/15 15:57:52 [client] open ack slot=11 sid=8001
+2026/11/15 15:57:52 [client] open ack slot=10 sid=8000
+2026/11/15 15:57:52 [client] tReset received sid=7991 slot=2 -> teardown local conn
+2026/11/15 15:57:52 [client] open ack slot=15 sid=8005
+2026/11/15 15:57:52 [client] open ack slot=13 sid=8003
+2026/11/15 15:57:52 [client] open ack slot=14 sid=8004
+2026/11/15 15:57:52 [client] stream 7912 closeWriteLocal
+2026/11/15 15:57:52 [client] open ack slot=16 sid=8006
+2026/11/15 15:57:52 [client] tReset received sid=8007 slot=17 -> teardown local conn
+2026/11/15 15:57:52 [client] open ack slot=18 sid=8008
+2026/11/15 15:57:52 [client] open ack slot=2 sid=8009
+2026/11/15 15:57:52 [client] open ack slot=12 sid=8002
+2026/11/15 15:57:52 [client] open ack slot=27 sid=8012
+2026/11/15 15:57:52 [client] open ack slot=17 sid=8013
+2026/11/15 15:57:52 [client] open ack slot=21 sid=8015
+2026/11/15 15:57:52 [client] open ack slot=20 sid=8014
+2026/11/15 15:57:53 [client] open ack slot=26 sid=8017
+2026/11/15 15:57:53 [client] open ack slot=3 sid=8018
+2026/11/15 15:57:53 [client] open ack slot=19 sid=8011
+2026/11/15 15:57:53 [client] open ack slot=26 sid=8019
+2026/11/15 15:57:53 [client] open ack slot=14 sid=8010
+2026/11/15 15:57:53 [client] open ack slot=7 sid=7930
+2026/11/15 15:57:53 [client] open ack slot=30 sid=8021
+2026/11/15 15:57:53 [client] open ack slot=3 sid=8023
+2026/11/15 15:57:53 [client] open ack slot=5 sid=8024
+2026/11/15 15:57:53 [client] open ack slot=8 sid=8027
+2026/11/15 15:57:53 [client] open ack slot=13 sid=8031
+2026/11/15 15:57:53 [client] open ack slot=24 sid=8034
+2026/11/15 15:57:53 [client] open ack slot=11 sid=8029
+2026/11/15 15:57:53 [client] open ack slot=26 sid=8035
+2026/11/15 15:57:53 [client] open ack slot=12 sid=8030
+2026/11/15 15:57:53 [client] open ack slot=6 sid=8026
+2026/11/15 15:57:53 [client] open ack slot=10 sid=8028
+2026/11/15 15:57:53 [client] open ack slot=4 sid=8025
+2026/11/15 15:57:53 [client] open ack slot=28 sid=8020
+2026/11/15 15:57:53 [client] tReset received sid=8036 slot=28 -> teardown local conn
+2026/11/15 15:57:53 [client] open ack slot=17 sid=8032
+2026/11/15 15:57:53 [client] open ack slot=20 sid=8033
+2026/11/15 15:57:53 [client] open ack slot=2 sid=8022
+2026/11/15 15:57:53 [client] open ack slot=30 sid=8037
+2026/11/15 15:57:53 [client] open ack slot=28 sid=8038
+2026/11/15 15:57:53 [client] open ack slot=15 sid=8039
+2026/11/15 15:57:53 [client] open ack slot=28 sid=8040
+2026/11/15 15:57:54 [client] open ack slot=30 sid=8042
+2026/11/15 15:57:54 [client] open ack slot=29 sid=8041
+2026/11/15 15:57:54 [client] open ack slot=31 sid=8043
+2026/11/15 15:57:54 [client] open ack slot=0 sid=8044
+2026/11/15 15:57:54 [client] open ack slot=3 sid=8046
+2026/11/15 15:57:54 [client] open ack slot=2 sid=8045
+2026/11/15 15:57:54 [client] open ack slot=7 sid=7962
+2026/11/15 15:57:54 [client] open ack slot=6 sid=8049
+2026/11/15 15:57:54 [client] open ack slot=5 sid=8048
+2026/11/15 15:57:54 [client] open ack slot=4 sid=8047
+2026/11/15 15:57:54 [client] open ack slot=8 sid=8050
+2026/11/15 15:57:54 [client] open ack slot=7 sid=7996
+2026/11/15 15:57:54 [client] open ack slot=9 sid=8051
+2026/11/15 15:57:54 [client] open ack slot=10 sid=8052
+2026/11/15 15:57:54 [client] open ack slot=11 sid=8053
+2026/11/15 15:57:54 [client] open ack slot=15 sid=8057
+2026/11/15 15:57:54 [client] open ack slot=12 sid=8054
+2026/11/15 15:57:54 [client] open ack slot=18 sid=8059
+2026/11/15 15:57:55 [client] stream 7988 closeWriteLocal
+2026/11/15 15:57:55 [client] open ack slot=19 sid=8060
+2026/11/15 15:57:55 [client] open ack slot=14 sid=8056
+2026/11/15 15:57:55 [client] stream 8000 closeWriteLocal
+2026/11/15 15:57:55 [client] open ack slot=30 sid=8061
+2026/11/15 15:57:55 [client] open ack slot=2 sid=8062
+2026/11/15 15:57:55 [client] open ack slot=30 sid=8063
+2026/11/15 15:57:55 [client] open ack slot=21 sid=8065
+2026/11/15 15:57:55 [client] open ack slot=23 sid=8066
+2026/11/15 15:57:56 [client] open ack slot=24 sid=8067
+2026/11/15 15:57:56 [client] open ack slot=0 sid=8068
+2026/11/15 15:57:57 [client] stream 7924 closeWriteLocal
+2026/11/15 15:57:57 [client] open ack slot=22 sid=7945
+2026/11/15 15:57:57 [client] open ack slot=22 sid=7977
+2026/11/15 15:57:57 [client] open ack slot=22 sid=8016
+2026/11/15 15:57:58 [client] open ack slot=10 sid=8069
+2026/11/15 15:57:58 [client] open ack slot=11 sid=8070
+2026/11/15 15:57:58 [client] stream 7961 closeWriteLocal
+2026/11/15 15:57:58 [client] open ack slot=1 sid=8071
+2026/11/15 15:57:59 [client] open ack slot=6 sid=8072
+2026/11/15 15:57:59 [client] open ack slot=9 sid=8073
+2026/11/15 15:58:01 [client] open ack slot=8 sid=8074
+2026/11/15 15:58:01 [client] stream 7969 closeWriteLocal
+2026/11/15 15:58:02 [client] stream 7999 closeWriteLocal
+2026/11/15 15:58:02 [client] open ack slot=14 sid=8075
+2026/11/15 15:58:03 [client] open ack slot=0 sid=8078
+2026/11/15 15:58:03 [client] open ack slot=29 sid=8088
+2026/11/15 15:58:03 [client] open ack slot=25 sid=8084
+2026/11/15 15:58:03 [client] open ack slot=9 sid=8079
+2026/11/15 15:58:03 [client] open ack slot=24 sid=8083
+2026/11/15 15:58:03 [client] open ack slot=27 sid=8086
+2026/11/15 15:58:03 [client] open ack slot=21 sid=8077
+2026/11/15 15:58:04 [client] stream 7954 closeWriteLocal
+2026/11/15 15:58:04 [client] open ack slot=2 sid=8093
+2026/11/15 15:58:04 [client] open ack slot=3 sid=8094
+2026/11/15 15:58:04 [client] open ack slot=5 sid=8096
+2026/11/15 15:58:04 [client] open ack slot=6 sid=8097
+2026/11/15 15:58:04 [client] open ack slot=4 sid=8095
+2026/11/15 15:58:04 [client] open ack slot=31 sid=8090
+2026/11/15 15:58:04 [client] open ack slot=1 sid=8092
+2026/11/15 15:58:04 [client] open ack slot=14 sid=8076
+2026/11/15 15:58:04 [client] open ack slot=28 sid=8087
+2026/11/15 15:58:04 [client] stream 7962 closeWriteLocal
+2026/11/15 15:58:04 [client] open ack slot=21 sid=8082
+2026/11/15 15:58:04 [client] open ack slot=0 sid=8091
+2026/11/15 15:58:05 [client] open ack slot=30 sid=8089
+2026/11/15 15:58:05 [client] open ack slot=31 sid=8098
+2026/11/15 15:58:05 [client] open ack slot=9 sid=8099
+2026/11/15 15:58:05 [client] open ack slot=14 sid=8080
+2026/11/15 15:58:05 [client] open ack slot=4 sid=8100
+2026/11/15 15:58:05 [client] stream 8052 closeWriteLocal
+2026/11/15 15:58:06 [client] open ack slot=21 sid=8101
+2026/11/15 15:58:06 [client] open ack slot=10 sid=8102
+2026/11/15 15:58:08 [client] open ack slot=21 sid=8103
+2026/11/15 15:58:08 [client] open ack slot=31 sid=8104
+2026/11/15 15:58:09 [client] stream 8038 closeWriteLocal
+2026/11/15 15:58:09 [client] stream 8098 closeWriteLocal
+2026/11/15 15:58:09 [client] stream 8034 closeWriteLocal
+2026/11/15 15:58:09 [client] tReset received sid=8098 slot=31 -> teardown local conn
+2026/11/15 15:58:09 [client] open ack slot=10 sid=8105
+2026/11/15 15:58:10 [client] open ack slot=12 sid=8106
+2026/11/15 15:58:10 [client] open ack slot=24 sid=8111
+2026/11/15 15:58:11 [client] open ack slot=21 sid=8110
+2026/11/15 15:58:11 [client] open ack slot=10 sid=8113
+2026/11/15 15:58:11 [client] open ack slot=31 sid=8112
+2026/11/15 15:58:11 [client] open ack slot=9 sid=8114
+2026/11/15 15:58:12 [client] open ack slot=28 sid=8118
+2026/11/15 15:58:12 [client] open ack slot=27 sid=8117
+2026/11/15 15:58:12 [client] open ack slot=15 sid=8116
+2026/11/15 15:58:12 [client] stream 8111 spread to 2 slots (sid=8111, sent=138912)
+2026/11/15 15:58:12 [client] stream 8111 spread to 3 slots (sid=8111, sent=267552)
+2026/11/15 15:58:12 [client] stream 8111 spread to 4 slots (sid=8111, sent=398624)
+2026/11/15 15:58:14 [client] open ack slot=17 sid=8058
+2026/11/15 15:58:15 [client] stream 8106 closeWriteLocal
+2026/11/15 15:58:15 [client] open ack slot=12 sid=8119
+2026/11/15 15:58:16 [client] stream 7915 closeWriteLocal
+2026/11/15 15:58:16 [client] stream 8110 spread to 2 slots (sid=8110, sent=134684)
+2026/11/15 15:58:16 [client] stream 8110 spread to 3 slots (sid=8110, sent=265756)
+2026/11/15 15:58:16 [client] stream 8110 spread to 4 slots (sid=8110, sent=395642)
+2026/11/15 15:58:16 [client] stream 8110 spread to 5 slots (sid=8110, sent=528010)
+2026/11/15 15:58:16 [client] stream 8110 spread to 6 slots (sid=8110, sent=659082)
+2026/11/15 15:58:16 [client] stream 8110 spread to 7 slots (sid=8110, sent=790154)
+2026/11/15 15:58:16 [client] stream 8110 spread to 8 slots (sid=8110, sent=921226)
+2026/11/15 15:58:16 [client] stream 8110 spread to 9 slots (sid=8110, sent=1052298)
+2026/11/15 15:58:16 [client] stream 8110 spread to 10 slots (sid=8110, sent=1183370)
+2026/11/15 15:58:16 [client] stream 8110 spread to 11 slots (sid=8110, sent=1314442)
+2026/11/15 15:58:16 [client] stream 8110 spread to 12 slots (sid=8110, sent=1445514)
+2026/11/15 15:58:16 [client] stream 8110 spread to 13 slots (sid=8110, sent=1576586)
+2026/11/15 15:58:16 [client] stream 8110 spread to 14 slots (sid=8110, sent=1707658)
+2026/11/15 15:58:16 [client] stream 8110 spread to 15 slots (sid=8110, sent=1838730)
+2026/11/15 15:58:16 [client] stream 8110 spread to 16 slots (sid=8110, sent=1970420)
+2026/11/15 15:58:16 [client] open ack slot=13 sid=8055
+2026/11/15 15:58:18 [client] stream 8111 spread to 5 slots (sid=8111, sent=529696)
+2026/11/15 15:58:18 [client] stream 8111 spread to 6 slots (sid=8111, sent=660768)
+2026/11/15 15:58:18 [client] stream 8111 spread to 7 slots (sid=8111, sent=791840)
+2026/11/15 15:58:18 [client] stream 8111 spread to 8 slots (sid=8111, sent=922912)
+2026/11/15 15:58:18 [client] stream 8111 spread to 9 slots (sid=8111, sent=1056416)
+2026/11/15 15:58:18 [client] stream 8111 spread to 10 slots (sid=8111, sent=1187488)
+2026/11/15 15:58:18 [client] stream 8111 spread to 11 slots (sid=8111, sent=1318560)
+2026/11/15 15:58:18 [client] stream 8111 spread to 12 slots (sid=8111, sent=1449632)
+2026/11/15 15:58:18 [client] stream 8111 spread to 13 slots (sid=8111, sent=1575798)
+2026/11/15 15:58:18 [client] stream 8111 spread to 14 slots (sid=8111, sent=1713888)
+2026/11/15 15:58:18 [client] stream 8111 spread to 15 slots (sid=8111, sent=1845136)
+2026/11/15 15:58:18 [client] stream 8111 spread to 16 slots (sid=8111, sent=1976406)
+2026/11/15 15:58:18 [client] stream 8118 spread to 2 slots (sid=8118, sent=134280)
+2026/11/15 15:58:18 [client] stream 8118 spread to 3 slots (sid=8118, sent=265352)
+2026/11/15 15:58:21 [client] stream 8110 closeWriteLocal
+2026/11/15 15:58:21 [client] tReset received sid=8110 slot=1 -> teardown local conn
+2026/11/15 15:58:21 [client] tReset received sid=8110 slot=14 -> teardown local conn
+2026/11/15 15:58:22 [client] open ack slot=17 sid=8108
+2026/11/15 15:58:22 [client] stream 8118 spread to 4 slots (sid=8118, sent=1633658)
+2026/11/15 15:58:22 [client] stream 8118 spread to 5 slots (sid=8118, sent=1650042)
+2026/11/15 15:58:22 [client] stream 8118 spread to 6 slots (sid=8118, sent=1666426)
+2026/11/15 15:58:22 [client] stream 8118 spread to 7 slots (sid=8118, sent=1682810)
+2026/11/15 15:58:22 [client] stream 8118 spread to 8 slots (sid=8118, sent=1699194)
+2026/11/15 15:58:22 [client] stream 8118 spread to 9 slots (sid=8118, sent=1715578)
+2026/11/15 15:58:22 [client] stream 8118 spread to 10 slots (sid=8118, sent=1731962)
+2026/11/15 15:58:22 [client] stream 7960 closeWriteLocal
+2026/11/15 15:58:22 [client] stream 8117 spread to 2 slots (sid=8117, sent=732572)
+2026/11/15 15:58:22 [client] stream 8117 spread to 3 slots (sid=8117, sent=748956)
+2026/11/15 15:58:22 [client] stream 8117 spread to 4 slots (sid=8117, sent=765340)
+2026/11/15 15:58:22 [client] stream 8117 spread to 5 slots (sid=8117, sent=781724)
+2026/11/15 15:58:22 [client] stream 8117 spread to 6 slots (sid=8117, sent=798108)
+2026/11/15 15:58:22 [client] stream 8117 spread to 7 slots (sid=8117, sent=814492)
+2026/11/15 15:58:22 [client] stream 8117 spread to 8 slots (sid=8117, sent=929180)
+2026/11/15 15:58:22 [client] stream 8117 spread to 9 slots (sid=8117, sent=1060252)
+2026/11/15 15:58:23 [client] open ack slot=28 sid=8122
+2026/11/15 15:58:23 [client] open ack slot=27 sid=8121
+2026/11/15 15:58:24 [client] open ack slot=10 sid=8126
+2026/11/15 15:58:24 [client] open ack slot=21 sid=8124
+2026/11/15 15:58:25 [client] stream 8112 closeWriteLocal
+2026/11/15 15:58:25 [client] stream 8104 closeWriteLocal
+2026/11/15 15:58:25 [client] stream 8111 rebalance: detach slot 31 (lanes now 31)
+2026/11/15 15:58:25 [client] stream 8117 spread to 10 slots (sid=8117, sent=7288526)
+2026/11/15 15:58:25 [client] open ack slot=30 sid=8130
+2026/11/15 15:58:25 [client] stream 8111 rebalance: detach slot 30 (lanes now 31)
+2026/11/15 15:58:26 [client] stream 8119 closeWriteLocal
+2026/11/15 15:58:27 [client] stream 8113 closeWriteLocal
+2026/11/15 15:58:28 [client] stream 8114 closeWriteLocal
+2026/11/15 15:58:30 [client] open ack slot=29 sid=8129
+2026/11/15 15:58:31 [client] open ack slot=22 sid=8128
+2026/11/15 15:58:31 [client] open ack slot=21 sid=8127
+2026/11/15 15:58:31 [client] open ack slot=0 sid=8123
+2026/11/15 15:58:31 [client] open ack slot=31 sid=8132
+2026/11/15 15:58:31 [client] open ack slot=22 sid=8134
+2026/11/15 15:58:31 [client] open ack slot=3 sid=8136
+2026/11/15 15:58:31 [client] open ack slot=9 sid=8138
+2026/11/15 15:58:31 [client] open ack slot=12 sid=8140
+2026/11/15 15:58:31 [client] open ack slot=10 sid=8139
+2026/11/15 15:58:31 [client] open ack slot=31 sid=8135
+2026/11/15 15:58:31 [client] open ack slot=22 sid=8143
+2026/11/15 15:58:31 [client] open ack slot=31 sid=8147
+2026/11/15 15:58:31 [client] open ack slot=27 sid=8145
+2026/11/15 15:58:31 [client] open ack slot=24 sid=8144
+2026/11/15 15:58:31 [client] open ack slot=3 sid=8151
+2026/11/15 15:58:31 [client] open ack slot=1 sid=8149
+2026/11/15 15:58:31 [client] open ack slot=0 sid=8148
+2026/11/15 15:58:32 [client] open ack slot=28 sid=8146
+2026/11/15 15:58:32 [client] open ack slot=5 sid=8137
+2026/11/15 15:58:32 [client] open ack slot=2 sid=8150
+2026/11/15 15:58:32 [client] open ack slot=5 sid=8125
+2026/11/15 15:58:32 [client] open ack slot=20 sid=8064
+2026/11/15 15:58:32 [client] stream 7932 closeWriteLocal
+2026/11/15 15:58:34 [client] open ack slot=21 sid=8142
+2026/11/15 15:58:34 [client] open ack slot=21 sid=8133
+2026/11/15 15:58:34 [client] open ack slot=21 sid=8131
+2026/11/15 15:58:34 [client] open ack slot=4 sid=8153
+2026/11/15 15:58:34 [client] stream 8147 closeWriteLocal
+2026/11/15 15:58:35 [client] open ack slot=13 sid=8107
+2026/11/15 15:58:35 [client] open ack slot=26 sid=8085
+2026/11/15 15:58:35 [client] open ack slot=26 sid=8115
+2026/11/15 15:58:35 [client] stream 8134 closeWriteLocal
+2026/11/15 15:58:35 [client] stream 8143 closeWriteLocal
+2026/11/15 15:58:35 [client] open ack slot=14 sid=8141
+2026/11/15 15:58:35 [client] open ack slot=13 sid=8152
+2026/11/15 15:58:36 [client] stream 8149 closeWriteLocal
+2026/11/15 15:58:36 [client] open ack slot=26 sid=8120
+2026/11/15 15:58:37 [client] open ack slot=22 sid=8154
+2026/11/15 15:58:37 [client] open ack slot=22 sid=8157
+2026/11/15 15:58:37 [client] open ack slot=9 sid=8155
+2026/11/15 15:58:37 [client] open ack slot=30 sid=8159
+2026/11/15 15:58:37 [client] open ack slot=26 sid=8158
+2026/11/15 15:58:37 [client] stream 8107 closeWriteLocal
+2026/11/15 15:58:37 [client] open ack slot=31 sid=8161
+2026/11/15 15:58:37 [client] open ack slot=13 sid=8160
+2026/11/15 15:58:37 [client] open ack slot=1 sid=8162
+2026/11/15 15:58:37 [client] open ack slot=8 sid=8166
+2026/11/15 15:58:37 [client] open ack slot=6 sid=8164
+2026/11/15 15:58:37 [client] open ack slot=10 sid=8168
+2026/11/15 15:58:37 [client] open ack slot=9 sid=8167
+2026/11/15 15:58:37 [client] open ack slot=12 sid=8170
+2026/11/15 15:58:37 [client] open ack slot=7 sid=8165
+2026/11/15 15:58:37 [client] open ack slot=5 sid=8163
+2026/11/15 15:58:37 [client] open ack slot=16 sid=8174
+2026/11/15 15:58:38 [client] open ack slot=17 sid=8175
+2026/11/15 15:58:38 [client] open ack slot=15 sid=8173
+2026/11/15 15:58:38 [client] open ack slot=13 sid=8171
+2026/11/15 15:58:38 [client] open ack slot=11 sid=8169
+2026/11/15 15:58:38 [client] open ack slot=18 sid=8176
+2026/11/15 15:58:38 [client] open ack slot=21 sid=8179
+2026/11/15 15:58:38 [client] open ack slot=22 sid=8180
+2026/11/15 15:58:38 [client] open ack slot=23 sid=8181
+2026/11/15 15:58:38 [client] open ack slot=24 sid=8182
+2026/11/15 15:58:38 [client] open ack slot=25 sid=8183
+2026/11/15 15:58:38 [client] open ack slot=20 sid=8081
+2026/11/15 15:58:38 [client] open ack slot=26 sid=8184
+2026/11/15 15:58:38 [client] open ack slot=27 sid=8185
+2026/11/15 15:58:39 [client] open ack slot=28 sid=8186
+2026/11/15 15:58:39 [client] open ack slot=31 sid=8189
+2026/11/15 15:58:39 [client] open ack slot=30 sid=8188
+2026/11/15 15:58:39 [client] open ack slot=0 sid=8190
+2026/11/15 15:58:39 [client] open ack slot=1 sid=8191
+2026/11/15 15:58:39 [client] open ack slot=2 sid=8192
+2026/11/15 15:58:39 [client] open ack slot=29 sid=8187
+2026/11/15 15:58:39 [client] open ack slot=3 sid=8193
+2026/11/15 15:58:39 [client] open ack slot=4 sid=8194
+2026/11/15 15:58:39 [client] open ack slot=20 sid=8109
+2026/11/15 15:58:39 [client] open ack slot=6 sid=8196
+2026/11/15 15:58:39 [client] open ack slot=7 sid=8197
+2026/11/15 15:58:39 [client] open ack slot=14 sid=8172
+2026/11/15 15:58:40 [client] open ack slot=8 sid=8198
+2026/11/15 15:58:40 [client] open ack slot=19 sid=8177
+2026/11/15 15:58:40 [client] open ack slot=12 sid=8199
+2026/11/15 15:58:40 [client] open ack slot=5 sid=8195
+2026/11/15 15:58:40 [client] open ack slot=9 sid=8200
+2026/11/15 15:58:40 [client] open ack slot=19 sid=8210
+2026/11/15 15:58:40 [client] open ack slot=10 sid=8201
+2026/11/15 15:58:40 [client] open ack slot=18 sid=8209
+2026/11/15 15:58:40 [client] open ack slot=14 sid=8205
+2026/11/15 15:58:40 [client] open ack slot=17 sid=8208
+2026/11/15 15:58:40 [client] open ack slot=12 sid=8203
+2026/11/15 15:58:40 [client] open ack slot=13 sid=8204
+2026/11/15 15:58:40 [client] stream 8204 closeWriteLocal
+2026/11/15 15:58:40 [client] stream 8205 closeWriteLocal
+2026/11/15 15:58:40 [client] stream 8208 closeWriteLocal
+2026/11/15 15:58:40 [client] stream 8203 closeWriteLocal
+2026/11/15 15:58:40 [client] stream 8209 closeWriteLocal
+2026/11/15 15:58:40 [client] stream 8200 closeWriteLocal
+2026/11/15 15:58:40 [client] open ack slot=16 sid=8207
+2026/11/15 15:58:41 [client] stream 8207 closeWriteLocal
+2026/11/15 15:58:41 [client] open ack slot=11 sid=8202
+2026/11/15 15:58:41 [client] open ack slot=15 sid=8206
+2026/11/15 15:58:41 [client] stream 8174 closeWriteLocal
+2026/11/15 15:58:41 [client] stream 8206 closeWriteLocal
+2026/11/15 15:58:41 [client] open ack slot=20 sid=8156
+2026/11/15 15:58:41 [client] stream 7975 closeWriteLocal
+2026/11/15 15:58:41 [client] open ack slot=20 sid=8178
+2026/11/15 15:58:41 [client] open ack slot=20 sid=8211
+2026/11/15 15:58:41 [client] open ack slot=27 sid=8212
+2026/11/15 15:58:41 [client] stream 8148 closeWriteLocal
+2026/11/15 15:58:41 [client] stream 8146 closeWriteLocal
+2026/11/15 15:58:41 [client] open ack slot=9 sid=8214
+2026/11/15 15:58:41 [client] stream 8202 closeWriteLocal
+2026/11/15 15:58:41 [client] open ack slot=20 sid=8213
+2026/11/15 15:58:41 [client] stream 8182 closeWriteLocal
+2026/11/15 15:58:42 [client] open ack slot=3 sid=8216
+2026/11/15 15:58:42 [client] open ack slot=1 sid=8215
+2026/11/15 15:58:42 [client] stream 8168 closeWriteLocal
+2026/11/15 15:58:42 [client] stream 8138 closeWriteLocal
+2026/11/15 15:58:42 [client] tReset received sid=8217 slot=4 -> teardown local conn
+2026/11/15 15:58:42 [client] tReset received sid=8218 slot=10 -> teardown local conn
+2026/11/15 15:58:42 [client] open ack slot=16 sid=8219
+2026/11/15 15:58:42 [client] open ack slot=0 sid=8221
+2026/11/15 15:58:42 [client] open ack slot=28 sid=8220
+2026/11/15 15:58:42 [client] tReset received sid=8182 slot=24 -> teardown local conn
+2026/11/15 15:58:43 [client] stream 8180 closeWriteLocal
+2026/11/15 15:58:43 [client] open ack slot=4 sid=8222
+2026/11/15 15:58:43 [client] open ack slot=22 sid=8223
+2026/11/15 15:58:43 [client] tReset received sid=8224 slot=24 -> teardown local conn
+2026/11/15 15:58:43 [client] tReset received sid=8225 slot=9 -> teardown local conn
+2026/11/15 15:58:43 [client] open ack slot=24 sid=8226
+2026/11/15 15:58:44 [client] open ack slot=9 sid=8227
+2026/11/15 15:58:44 [client] open ack slot=25 sid=8228
+2026/11/15 15:58:44 [client] open ack slot=12 sid=8229
+2026/11/15 15:58:46 [client] stream 8188 closeWriteLocal
+2026/11/15 15:58:47 [client] stream 8227 closeWriteLocal
+2026/11/15 15:58:47 [client] open ack slot=21 sid=8230
+2026/11/15 15:58:48 [client] stream 8176 closeWriteLocal
+2026/11/15 15:58:49 [client] stream 8162 closeWriteLocal
+2026/11/15 15:58:50 [client] stream 8192 closeWriteLocal
+2026/11/15 15:58:51 [client] open ack slot=18 sid=8231
+2026/11/15 15:58:51 [client] stream 8230 closeWriteLocal
+2026/11/15 15:58:51 [client] open ack slot=21 sid=8232
+2026/11/15 15:58:52 [client] stream 8216 closeWriteLocal
+2026/11/15 15:58:52 [client] stream 8221 closeWriteLocal
+2026/11/15 15:58:52 [client] open ack slot=21 sid=8233
+2026/11/15 15:58:55 [client] stream 8229 closeWriteLocal
+2026/11/15 15:59:00 [client] open ack slot=12 sid=8235
+2026/11/15 15:59:00 [client] open ack slot=31 sid=8234
+2026/11/15 15:59:00 [client] stream 8026 closeWriteLocal
+2026/11/15 15:59:00 [client] stream 8028 closeWriteLocal
+2026/11/15 15:59:00 [client] open ack slot=6 sid=8236
+2026/11/15 15:59:00 [client] stream 8074 closeWriteLocal
+2026/11/15 15:59:01 [client] open ack slot=10 sid=8237
+2026/11/15 15:59:02 [client] open ack slot=13 sid=8239
+2026/11/15 15:59:03 [client] open ack slot=21 sid=8241
+2026/11/15 15:59:03 [client] open ack slot=18 sid=8240
+2026/11/15 15:59:03 [client] stream 8060 closeWriteLocal
+2026/11/15 15:59:06 [client] stream 8089 closeWriteLocal
+2026/11/15 15:59:06 [client] open ack slot=8 sid=8238
+2026/11/15 15:59:06 [client] stream 8239 closeWriteLocal
+2026/11/15 15:59:07 [client] stream 8240 closeWriteLocal
+2026/11/15 15:59:07 [client] stream 8241 closeWriteLocal
+2026/11/15 15:59:07 [client] open ack slot=23 sid=8245
+2026/11/15 15:59:07 [client] open ack slot=13 sid=8243
+2026/11/15 15:59:07 [client] open ack slot=19 sid=8244
+2026/11/15 15:59:08 [client] open ack slot=30 sid=8242
+2026/11/15 15:59:08 [client] open ack slot=25 sid=8246
+2026/11/15 15:59:08 [client] open ack slot=18 sid=8247
+2026/11/15 15:59:09 [client] open ack slot=21 sid=8248
+2026/11/15 15:59:12 [client] stream 8116 closeWriteLocal
+2026/11/15 15:59:12 [client] stream 8108 closeWriteLocal
+2026/11/15 15:59:14 [client] open ack slot=15 sid=8249
+2026/11/15 15:59:14 [client] stream 8226 closeWriteLocal
+2026/11/15 15:59:16 [client] stream 8232 closeWriteLocal
+2026/11/15 15:59:20 [client] stream 8115 closeWriteLocal
+2026/11/15 15:59:24 [client] stream 8242 closeWriteLocal
+2026/11/15 15:59:25 [client] open ack slot=21 sid=8255
+2026/11/15 15:59:25 [client] open ack slot=30 sid=8250
+2026/11/15 15:59:26 [client] open ack slot=16 sid=8253
+2026/11/15 15:59:26 [client] open ack slot=31 sid=8256
+2026/11/15 15:59:26 [client] open ack slot=18 sid=8257
+2026/11/15 15:59:27 [client] open ack slot=21 sid=8258
+2026/11/15 15:59:27 [client] open ack slot=24 sid=8260
+2026/11/15 15:59:27 [client] open ack slot=25 sid=8261
+2026/11/15 15:59:27 [client] stream 8253 spread to 2 slots (sid=8253, sent=145715)
+2026/11/15 15:59:27 [client] stream 8253 spread to 3 slots (sid=8253, sent=276787)
+2026/11/15 15:59:27 [client] stream 8253 spread to 4 slots (sid=8253, sent=407859)
+2026/11/15 15:59:27 [client] stream 8253 spread to 5 slots (sid=8253, sent=538931)
+2026/11/15 15:59:27 [client] stream 8253 spread to 6 slots (sid=8253, sent=670003)
+2026/11/15 15:59:27 [client] stream 8253 spread to 7 slots (sid=8253, sent=801075)
+2026/11/15 15:59:27 [client] stream 8253 spread to 8 slots (sid=8253, sent=932147)
+2026/11/15 15:59:27 [client] stream 8253 spread to 9 slots (sid=8253, sent=1063219)
+2026/11/15 15:59:27 [client] stream 8253 spread to 10 slots (sid=8253, sent=1194291)
+2026/11/15 15:59:27 [client] stream 8253 spread to 11 slots (sid=8253, sent=1325363)
+2026/11/15 15:59:27 [client] stream 8253 spread to 12 slots (sid=8253, sent=1456435)
+2026/11/15 15:59:27 [client] stream 8253 spread to 13 slots (sid=8253, sent=1587507)
+2026/11/15 15:59:27 [client] stream 8253 spread to 14 slots (sid=8253, sent=1710673)
+2026/11/15 15:59:27 [client] stream 8253 spread to 15 slots (sid=8253, sent=1840613)
+2026/11/15 15:59:27 [client] stream 8253 spread to 16 slots (sid=8253, sent=1971685)
+2026/11/15 15:59:27 [client] stream 8260 spread to 2 slots (sid=8260, sent=142352)
+2026/11/15 15:59:27 [client] stream 8260 spread to 3 slots (sid=8260, sent=273424)
+2026/11/15 15:59:27 [client] stream 8260 spread to 4 slots (sid=8260, sent=404496)
+2026/11/15 15:59:27 [client] stream 8260 spread to 5 slots (sid=8260, sent=535568)
+2026/11/15 15:59:27 [client] stream 8260 spread to 6 slots (sid=8260, sent=666640)
+2026/11/15 15:59:27 [client] stream 8260 spread to 7 slots (sid=8260, sent=797712)
+2026/11/15 15:59:27 [client] stream 8260 spread to 8 slots (sid=8260, sent=928784)
+2026/11/15 15:59:27 [client] stream 8260 spread to 9 slots (sid=8260, sent=1059856)
+2026/11/15 15:59:27 [client] stream 8260 spread to 10 slots (sid=8260, sent=1190928)
+2026/11/15 15:59:27 [client] stream 8260 spread to 11 slots (sid=8260, sent=1322000)
+2026/11/15 15:59:27 [client] stream 8260 spread to 12 slots (sid=8260, sent=1443462)
+2026/11/15 15:59:27 [client] stream 8260 spread to 13 slots (sid=8260, sent=1574534)
+2026/11/15 15:59:27 [client] stream 8260 spread to 14 slots (sid=8260, sent=1705606)
+2026/11/15 15:59:27 [client] stream 8260 spread to 15 slots (sid=8260, sent=1836678)
+2026/11/15 15:59:27 [client] stream 8260 spread to 16 slots (sid=8260, sent=1967750)
+2026/11/15 15:59:28 [client] stream 8255 spread to 2 slots (sid=8255, sent=144242)
+2026/11/15 15:59:28 [client] stream 8255 spread to 3 slots (sid=8255, sent=275314)
+2026/11/15 15:59:28 [client] stream 8260 rebalance: detach slot 21 (lanes now 31)
+2026/11/15 15:59:28 [client] stream 8261 spread to 2 slots (sid=8261, sent=134206)
+2026/11/15 15:59:29 [client] stream 8058 closeWriteLocal
+2026/11/15 15:59:29 [client] stream 8253 rebalance: detach slot 31 (lanes now 31)
+2026/11/15 15:59:29 [client] stream 8255 spread to 4 slots (sid=8255, sent=1463484)
+2026/11/15 15:59:30 [client] open ack slot=31 sid=8262
+2026/11/15 15:59:30 [client] stream 7990 closeWriteLocal
+2026/11/15 15:59:31 [client] open ack slot=5 sid=8263
+2026/11/15 15:59:32 [client] open ack slot=6 sid=8264
+2026/11/15 15:59:34 [client] open ack slot=23 sid=8259
+2026/11/15 15:59:35 [client] stream 8260 rebalance: detach slot 25 (lanes now 31)
+2026/11/15 15:59:35 [client] stream 8255 spread to 5 slots (sid=8255, sent=9533942)
+2026/11/15 15:59:36 [client] stream 8260 rebalance: detach slot 2 (lanes now 31)
+2026/11/15 15:59:36 [client] stream 8255 spread to 6 slots (sid=8255, sent=10058230)
+2026/11/15 15:59:37 [client] stream 8155 closeWriteLocal
+2026/11/15 15:59:37 [client] stream 8017 closeWriteLocal
+2026/11/15 15:59:38 [client] stream 7950 closeWriteLocal
+2026/11/15 15:59:38 [client] stream 7956 closeWriteLocal
+2026/11/15 15:59:38 [client] stream 7957 closeWriteLocal
+2026/11/15 15:59:38 [client] stream 8167 closeWriteLocal
+2026/11/15 15:59:39 [client] stream 8260 rebalance: detach slot 31 (lanes now 31)
+2026/11/15 15:59:39 [client] stream 8255 spread to 7 slots (sid=8255, sent=12801130)
+2026/11/15 15:59:39 [client] stream 7959 closeWriteLocal
+2026/11/15 15:59:39 [client] tReset received sid=8260 slot=29 -> teardown local conn
+2026/11/15 15:59:39 [client] tReset received sid=8260 slot=2 -> teardown local conn
+2026/11/15 15:59:39 [client] tReset received sid=8260 slot=20 -> teardown local conn
+2026/11/15 15:59:39 [client] tReset received sid=8260 slot=30 -> teardown local conn
+2026/11/15 15:59:39 [client] tReset received sid=8260 slot=21 -> teardown local conn
+2026/11/15 15:59:39 [client] tReset received sid=8260 slot=23 -> teardown local conn
+2026/11/15 15:59:39 [client] tReset received sid=8260 slot=16 -> teardown local conn
+2026/11/15 15:59:39 [client] tReset received sid=8260 slot=25 -> teardown local conn
+2026/11/15 15:59:39 [client] tReset received sid=8260 slot=28 -> teardown local conn
+2026/11/15 15:59:39 [client] tReset received sid=8260 slot=1 -> teardown local conn
+2026/11/15 15:59:39 [client] tReset received sid=8260 slot=0 -> teardown local conn
+2026/11/15 15:59:39 [client] tReset received sid=8260 slot=3 -> teardown local conn
+2026/11/15 15:59:39 [client] tReset received sid=8260 slot=27 -> teardown local conn
+2026/11/15 15:59:39 [client] tReset received sid=8260 slot=26 -> teardown local conn
+2026/11/15 15:59:39 [client] tReset received sid=8260 slot=31 -> teardown local conn
+2026/11/15 15:59:39 [client] tReset received sid=8260 slot=24 -> teardown local conn
+2026/11/15 15:59:39 [client] stream 8261 spread to 3 slots (sid=8261, sent=5521476)
+2026/11/15 15:59:39 [client] stream 8261 spread to 4 slots (sid=8261, sent=5537860)
+2026/11/15 15:59:39 [client] stream 8261 spread to 5 slots (sid=8261, sent=5554244)
+2026/11/15 15:59:39 [client] stream 8261 spread to 6 slots (sid=8261, sent=5570628)
+2026/11/15 15:59:39 [client] stream 8261 spread to 7 slots (sid=8261, sent=5587012)
+2026/11/15 15:59:39 [client] stream 8261 spread to 8 slots (sid=8261, sent=5603396)
+2026/11/15 15:59:39 [client] stream 8261 spread to 9 slots (sid=8261, sent=5619780)
+2026/11/15 15:59:39 [client] stream 8261 spread to 10 slots (sid=8261, sent=5636164)
+2026/11/15 15:59:39 [client] tReset received sid=8260 slot=2 -> teardown local conn
+2026/11/15 15:59:39 [client] stream 8255 spread to 8 slots (sid=8255, sent=13063274)
+2026/11/15 15:59:39 [client] stream 8255 spread to 9 slots (sid=8255, sent=13079658)
+2026/11/15 15:59:39 [client] stream 8255 spread to 10 slots (sid=8255, sent=13096042)
+2026/11/15 15:59:40 [client] tReset received sid=8260 slot=2 -> teardown local conn
+2026/11/15 15:59:40 [client] tReset received sid=8260 slot=2 -> teardown local conn
+2026/11/15 15:59:40 [client] tReset received sid=8260 slot=2 -> teardown local conn
+2026/11/15 15:59:40 [client] open ack slot=3 sid=8272
+2026/11/15 15:59:40 [client] stream 8272 closeWriteLocal
+2026/11/15 15:59:41 [client] tReset received sid=8260 slot=2 -> teardown local conn
+2026/11/15 15:59:41 [client] tReset received sid=8260 slot=2 -> teardown local conn
+2026/11/15 15:59:41 [client] tReset received sid=8260 slot=2 -> teardown local conn
+2026/11/15 15:59:41 [client] open ack slot=3 sid=8273
+2026/11/15 15:59:41 [client] stream 7967 closeWriteLocal
+2026/11/15 15:59:41 [client] tReset received sid=8253 slot=30 -> teardown local conn
+2026/11/15 15:59:41 [client] tReset received sid=8253 slot=26 -> teardown local conn
+2026/11/15 15:59:41 [client] tReset received sid=8253 slot=8 -> teardown local conn
+2026/11/15 15:59:41 [client] tReset received sid=8253 slot=11 -> teardown local conn
+2026/11/15 15:59:41 [client] tReset received sid=8253 slot=16 -> teardown local conn
+2026/11/15 15:59:41 [client] tReset received sid=8253 slot=17 -> teardown local conn
+2026/11/15 15:59:41 [client] tReset received sid=8253 slot=18 -> teardown local conn
+2026/11/15 15:59:41 [client] tReset received sid=8253 slot=7 -> teardown local conn
+2026/11/15 15:59:41 [client] tReset received sid=8253 slot=6 -> teardown local conn
+2026/11/15 15:59:41 [client] tReset received sid=8253 slot=31 -> teardown local conn
+2026/11/15 15:59:41 [client] tReset received sid=8253 slot=10 -> teardown local conn
+2026/11/15 15:59:41 [client] tReset received sid=8260 slot=2 -> teardown local conn
+2026/11/15 15:59:41 [client] stream 7955 closeWriteLocal
+2026/11/15 15:59:41 [client] stream 8261 spread to 11 slots (sid=8261, sent=7864388)
+2026/11/15 15:59:41 [client] stream 8261 spread to 12 slots (sid=8261, sent=7880772)
+2026/11/15 15:59:41 [client] stream 8261 spread to 13 slots (sid=8261, sent=7897156)
+2026/11/15 15:59:41 [client] stream 8261 spread to 14 slots (sid=8261, sent=7913540)
+2026/11/15 15:59:41 [client] stream 8261 spread to 15 slots (sid=8261, sent=7929924)
+2026/11/15 15:59:41 [client] stream 8261 spread to 16 slots (sid=8261, sent=7946308)
+2026/11/15 15:59:42 [client] open ack slot=31 sid=8268
+2026/11/15 15:59:42 [client] stream 8268 closeWriteLocal
+2026/11/15 15:59:42 [client] open ack slot=1 sid=8270
+2026/11/15 15:59:42 [client] stream 8178 closeWriteLocal
+2026/11/15 15:59:42 [client] stream 8270 closeWriteLocal
+2026/11/15 15:59:42 [client] stream 8255 spread to 11 slots (sid=8255, sent=15668924)
+2026/11/15 15:59:42 [client] stream 8255 spread to 12 slots (sid=8255, sent=15685308)
+2026/11/15 15:59:42 [client] stream 8255 spread to 13 slots (sid=8255, sent=15701692)
+2026/11/15 15:59:42 [client] stream 8255 spread to 14 slots (sid=8255, sent=15718076)
+2026/11/15 15:59:42 [client] stream 8255 spread to 15 slots (sid=8255, sent=15734460)
+2026/11/15 15:59:42 [client] stream 8255 spread to 16 slots (sid=8255, sent=15750844)
+2026/11/15 15:59:42 [client] stream 8262 closeWriteLocal
+2026/11/15 15:59:42 [client] stream 8256 closeWriteLocal
+2026/11/15 15:59:42 [client] stream 8257 closeWriteLocal
+2026/11/15 15:59:42 [client] stream 8250 closeWriteLocal
+2026/11/15 15:59:42 [client] open ack slot=2 sid=8271
+2026/11/15 15:59:44 [client] open ack slot=31 sid=8276
+2026/11/15 15:59:44 [client] open ack slot=3 sid=8280
+2026/11/15 15:59:45 [client] open ack slot=29 sid=8266
+2026/11/15 15:59:45 [client] open ack slot=1 sid=8278
+2026/11/15 15:59:45 [client] open ack slot=2 sid=8279
+2026/11/15 15:59:46 [client] open ack slot=4 sid=8274
+2026/11/15 15:59:49 [client] open ack slot=30 sid=8267
+2026/11/15 15:59:50 [client] open ack slot=24 sid=8265
+2026/11/15 15:59:52 [client] open ack slot=0 sid=8269
+2026/11/15 15:59:52 [client] open ack slot=0 sid=8277
+2026/11/15 15:59:59 [client] open ack slot=13 sid=8251
+2026/11/15 16:00:00 [client] open ack slot=15 sid=8252
+2026/11/15 16:00:02 [client] open ack slot=12 sid=8275
+2026/11/15 16:00:08 [client] open ack slot=19 sid=8254
+2026/11/15 16:03:53 [client] stream 8277 closeWriteLocal
+2026/11/15 16:04:46 [client] stream 8279 closeWriteLocal
+2026/11/15 16:04:51 [client] stream 8278 closeWriteLocal
+2026/11/15 16:04:51 [client] slot 21 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 1 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 15 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 12 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 24 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 26 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 28 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 7 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 23 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 18 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 9 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 22 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 20 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 16 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 19 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 13 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 30 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 17 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 0 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 29 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 27 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 10 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 31 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 11 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 25 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 8 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 14 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 2 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 6 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 5 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 4 session ended: EOF (retry in 1s)
+2026/11/15 16:04:51 [client] slot 3 session ended: EOF (retry in 1s)
+2026/11/15 16:04:52 [client] session established slot=27 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=24 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=13 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=21 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=8 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=7 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=30 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=25 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=10 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=23 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=6 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=2 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=1 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=4 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=15 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=29 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=19 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=11 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=20 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=16 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=9 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=31 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=18 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=5 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=3 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=0 (gen=3, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=17 (gen=2, reopen streams=0)
+2026/11/15 16:04:52 [client] session established slot=28 (gen=2, reopen streams=0)
+2026/11/15 16:04:53 [client] session established slot=12 (gen=2, reopen streams=0)
+2026/11/15 16:04:53 [client] session established slot=26 (gen=2, reopen streams=0)
+2026/11/15 16:04:53 [client] session established slot=22 (gen=2, reopen streams=0)
+2026/11/15 16:04:53 [client] session established slot=14 (gen=2, reopen streams=0)
