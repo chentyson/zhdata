@@ -724,21 +724,18 @@ func TestSpreadRebalanceFairness(t *testing.T) {
 
 	a.mu.Lock()
 	s := &cStream{
-		app:      a,
-		id:       1,
-		sid:      1,
-		bulk:     true, // rebalanceLocked only trims bulk streams
-		laneSent: map[*cConn]uint32{},
-		laneAck:  map[*cConn]uint32{},
-		laneCap:  map[*cConn]int{},
+		app:  a,
+		id:   1,
+		sid:  1,
+		bulk: true, // rebalanceLocked only trims bulk streams
 	}
 	s.home = a.conns[0]
 	s.conns = append(s.conns, a.conns...) // home + 7 attached: hogging the pool
 	s.attached = len(s.conns) - 1
 	for _, cn := range s.conns {
 		cn.members[s.id] = s
-		s.laneSent[cn] = 40
-		s.laneAck[cn] = 40 // fully drained: detachable
+		s.ensureLaneLocked(cn)
+		s.laneBytes[cn] = 0 // fully delivered: detachable
 	}
 	a.streams[s.id] = s
 	a.bulk = 1
@@ -806,4 +803,116 @@ func splitHostPort(t *testing.T, url string) (string, uint16) {
 		t.Fatal(err)
 	}
 	return host, uint16(p)
+}
+
+// TestRetransmitSurvivesSessionKill is the end-to-end proof of route A: an
+// 8MB upload is spread over two lanes; one lane's TCP session is killed
+// mid-flight. The frames in flight on it are lost, but the client retransmits
+// them on the surviving lane and the target must receive the exact body.
+// Without retransmission this test fails (hole -> reset / truncated body).
+func TestRetransmitSurvivesSessionKill(t *testing.T) {
+	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			w.Write([]byte("read-err"))
+			return
+		}
+		w.Write([]byte(sha256Hex(body) + ":" + strconv.Itoa(len(body))))
+	}))
+	defer target.Close()
+	host, port := splitHostPort(t, target.URL)
+
+	const uuid = "rtx-user"
+	srv, err := newServerApp(serverConfig{
+		listen:    "127.0.0.1:0",
+		usersPath: usersFileWith(t, uuid),
+		backend:   "direct",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer srv.Close()
+	cli, err := newClientApp(clientConfig{
+		listen: "127.0.0.1:0",
+		server: srv.Addr(),
+		uuid:   uuid,
+		conns:  2,
+		spread: 2,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cli.Close()
+	waitFor(t, func() bool { return srv.estab.Load() >= 2 }, "2 sessions")
+
+	const chunk = 16384
+	const nchunks = 512 // 8MB
+	seed := make([]byte, chunk)
+	for i := range seed {
+		seed[i] = byte(i*13 + 7)
+	}
+	sum := sha256Hex(bytes.Repeat(seed, nchunks))
+
+	c, err := socksDial(cli.Addr(), atypDomain, []byte(host), port)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	c.SetDeadline(time.Now().Add(60 * time.Second))
+	fmt.Fprintf(c, "POST /h HTTP/1.0\r\nContent-Length: %d\r\n\r\n", chunk*nchunks)
+
+	writeErr := make(chan error, 1)
+	go func() {
+		for i := 0; i < nchunks; i++ {
+			if _, err := c.Write(seed); err != nil {
+				writeErr <- err
+				return
+			}
+			time.Sleep(time.Millisecond) // pace so frames are in flight when the lane dies
+		}
+		writeErr <- nil
+	}()
+
+	killed := false
+	waitFor(t, func() bool {
+		srv.stmMu.Lock()
+		defer srv.stmMu.Unlock()
+		for _, st := range srv.streams {
+			if st.owner == nil || len(st.members) < 2 {
+				continue
+			}
+			for sh := range st.members {
+				if sh == st.owner {
+					continue
+				}
+				st.mu.Lock()
+				n := uint32(0)
+				if la := st.laneHi[sh]; la != nil {
+					n = la.count
+				}
+				st.mu.Unlock()
+				if n < 8 {
+					continue
+				}
+				sh.sess.close() // the lane's TCP dies mid-upload
+				killed = true
+				return true
+			}
+		}
+		return false
+	}, "a spread lane to receive frames before being killed")
+	if !killed {
+		t.Fatal("no lane was killed")
+	}
+
+	if err := <-writeErr; err != nil {
+		t.Fatalf("upload write failed: %v", err)
+	}
+	resp, err := io.ReadAll(c)
+	if err != nil {
+		t.Fatalf("read resp: %v", err)
+	}
+	if !strings.Contains(string(resp), sum) {
+		t.Fatalf("body corrupted after lane kill: target saw %q, want sha %s", string(resp), sum)
+	}
 }

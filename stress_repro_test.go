@@ -171,8 +171,8 @@ func TestStressReorderOverflowResetsOnlyTheStream(t *testing.T) {
 	if !closed {
 		t.Fatal("stream not marked closed after reorder overflow")
 	}
-	if frames := windowFrames + 1; frames <= laneCapMax {
-		t.Fatalf("model invalid: %d buffered frames <= laneCapMax=%d", frames, laneCapMax)
+	if frames := windowFrames + 1; frames <= 1 {
+		t.Fatalf("model invalid: only %d buffered frames", frames)
 	}
 }
 
@@ -250,31 +250,24 @@ func stressNewClientApp(t *testing.T, lanes int) *clientApp {
 	return a
 }
 
-// TestStressClientLaneCreditIsStaticWindow pins the v0.10 credit contract: the
-// per-lane window is a large constant (laneCapInit/Min/Max equal), because the
-// old out-based AIMD self-limited to ~24 frames (384KiB), clocking one lane to
-// ~2.5Mbps on a 200ms path and forcing the (now disabled) 16-lane spread.
-func TestStressClientLaneCreditIsStaticWindow(t *testing.T) {
-	if laneCapInit != laneCapMin || laneCapMin != laneCapMax {
-		t.Fatalf("credit window is not static: init=%d min=%d max=%d",
-			laneCapInit, laneCapMin, laneCapMax)
-	}
-	if laneCapMin < ackEvery {
-		t.Fatalf("invariant broken: laneCapMin=%d < ackEvery=%d", laneCapMin, ackEvery)
-	}
-
-	const lanes = 2
+// TestStressUploadWindowAndRetransmit pins the v0.11 (route A) upload contract:
+//   - the send window is byte-based and only released by the server's DELIVERED
+//     prefix, never by mere lane arrivals;
+//   - a lane that stops making progress has its pending frames retransmitted
+//     over the other lanes without disturbing the window accounting;
+//   - frames stay accounted exactly once across the whole stream lifetime.
+func TestStressUploadWindowAndRetransmit(t *testing.T) {
+	const lanes = 3
+	const chunk = 1000
+	frameLen := int64(chunk + 4) // 4B seq prefix
 	a := stressNewClientApp(t, lanes)
 	const sid = 1
 	s := &cStream{
-		app:      a,
-		id:       1,
-		sid:      sid,
-		home:     a.conns[0],
-		conns:    append([]*cConn(nil), a.conns...),
-		laneSent: map[*cConn]uint32{},
-		laneAck:  map[*cConn]uint32{},
-		laneCap:  map[*cConn]int{},
+		app:   a,
+		id:    1,
+		sid:   sid,
+		home:  a.conns[0],
+		conns: append([]*cConn(nil), a.conns...),
 	}
 	s.attached = lanes - 1
 	for _, cn := range a.conns {
@@ -282,36 +275,94 @@ func TestStressClientLaneCreditIsStaticWindow(t *testing.T) {
 		cn.members[s.id] = s
 		cn.sessMap[sid] = s
 	}
+	a.mu.Lock()
+	a.streams[s.id] = s
+	a.mu.Unlock()
 
-	// A drained fast lane keeps the full window: applyAck must not shrink it.
-	for _, cn := range a.conns {
-		for i := uint32(1); i <= 4; i++ {
-			s.laneSent[cn] = i
-			s.laneAck[cn] = i - 1
-			s.applyAck(cn, i, 0)
-		}
-		if got := s.laneCap[cn]; got != laneCapMax {
-			t.Fatalf("lane %d credit = %d, want %d", cn.idx, got, laneCapMax)
+	// 30 frames must be balanced across the 3 lanes by pending bytes.
+	for i := uint32(1); i <= 30; i++ {
+		if !s.sendFrame(i, stressDataPayload(i, chunk)) {
+			t.Fatalf("sendFrame(%d) failed", i)
 		}
 	}
-
-	// With a full window a lane still consumes exactly laneCapMax frames.
-	frames := 0
-	for {
-		cn, live := s.pickLane()
-		if cn == nil {
-			if !live {
-				t.Fatal("all lanes lost liveness")
-			}
-			break
-		}
-		frames++
-		if frames > lanes*laneCapMax*2 {
-			t.Fatalf("runaway credit: %d frames", frames)
+	a.mu.Lock()
+	if want := 30 * frameLen; s.inflightBytes != want || a.inflightBytes != want {
+		t.Fatalf("window accounting: stream=%d global=%d want %d", s.inflightBytes, a.inflightBytes, want)
+	}
+	for _, cn := range s.conns {
+		if s.laneBytes[cn] != 10*frameLen {
+			t.Fatalf("lane %d pending=%d want %d", cn.idx, s.laneBytes[cn], 10*frameLen)
 		}
 	}
-	if want := lanes * laneCapMax; frames != want {
-		t.Fatalf("frames handed out = %d, want %d", frames, want)
+	a.mu.Unlock()
+
+	// The server reports delivered prefix 10: release exactly frames 1..10.
+	s.applyAck(a.conns[0], 10, 10)
+	a.mu.Lock()
+	if s.ackedSeq != 10 {
+		t.Fatalf("ackedSeq=%d want 10", s.ackedSeq)
+	}
+	if len(s.sentq) != 20 || s.sentq[0].seq != 11 {
+		t.Fatalf("sentq len=%d firstSeq=%d want 20/11", len(s.sentq), s.sentq[0].seq)
+	}
+	if want := 20 * frameLen; s.inflightBytes != want {
+		t.Fatalf("inflight after release=%d want %d", s.inflightBytes, want)
+	}
+	lane0Before := s.laneBytes[a.conns[0]]
+	if lane0Before <= 0 {
+		t.Fatalf("lane0 pending=%d, expected frames 11..30 still assigned", lane0Before)
+	}
+	a.mu.Unlock()
+
+	// Fast hole retransmit: the front frame (seq 11) blocks ALL delivery, so
+	// once it has been undelivered for holeResendTO it must be re-sent on a
+	// different lane; a live-but-slow lane is deliberately NOT migrated (that
+	// caused the moving-hole livelock). Window accounting must stay balanced.
+	a.mu.Lock()
+	s.frontSince = time.Now().Add(-2 * holeResendTO)
+	frontBefore := s.sentq[0]
+	frontLane := frontBefore.lane
+	totalBefore := s.inflightBytes
+	a.mu.Unlock()
+	s.checkStalls()
+	a.mu.Lock()
+	totalAfter := s.inflightBytes
+	frontLaneAfter := frontBefore.lane
+	a.mu.Unlock()
+	if frontLaneAfter == frontLane {
+		t.Fatalf("front hole frame not retransmitted: still on lane %v", frontLane)
+	}
+	if totalAfter != totalBefore || totalAfter != 20*frameLen {
+		t.Fatalf("window drifted by retransmit: %d -> %d (want %d)", totalBefore, totalAfter, 20*frameLen)
+	}
+
+	// A DEAD lane (session gone) is still migrated: its frames must move to
+	// the remaining lanes and the lane gets detached once empty.
+	deadLane := a.conns[2]
+	a.mu.Lock()
+	deadLane.sess = nil
+	deadPending := s.laneBytes[deadLane]
+	a.mu.Unlock()
+	if deadPending <= 0 {
+		t.Fatalf("test setup: dead lane has no pending frames")
+	}
+	s.checkStalls()
+	a.mu.Lock()
+	deadAfter := s.laneBytes[deadLane]
+	lanesAfter := len(s.conns)
+	totalAfter = s.inflightBytes
+	a.mu.Unlock()
+	if deadAfter != 0 {
+		t.Fatalf("dead lane still owns %d pending bytes", deadAfter)
+	}
+	if lanesAfter != 2 {
+		t.Fatalf("dead lane not detached: %d lanes", lanesAfter)
+	}
+	if totalAfter != 20*frameLen {
+		t.Fatalf("window drifted by dead-lane migration: %d", totalAfter)
+	}
+	if streamWindowBytes < 2<<20 || globalWindowBytes < streamWindowBytes {
+		t.Fatalf("window constants look wrong: stream=%d global=%d", streamWindowBytes, globalWindowBytes)
 	}
 }
 
@@ -339,18 +390,16 @@ func TestStressDownlinkQueueFullFailsStream(t *testing.T) {
 	cn := a.conns[0]
 
 	s := &cStream{
-		app:      a,
-		id:       42,
-		sid:      4242,
-		home:     cn,
-		conns:    []*cConn{cn},
-		local:    nopConn{},
-		rq:       make(chan []byte, 2),
-		done:     make(chan struct{}),
-		laneSent: map[*cConn]uint32{},
-		laneAck:  map[*cConn]uint32{},
-		laneCap:  map[*cConn]int{},
+		app:   a,
+		id:    42,
+		sid:   4242,
+		home:  cn,
+		conns: []*cConn{cn},
+		local: nopConn{},
+		rq:    make(chan []byte, 2),
+		done:  make(chan struct{}),
 	}
+	s.ensureLaneLocked(cn)
 	a.mu.Lock()
 	a.streams[s.id] = s
 	cn.members[s.id] = s
