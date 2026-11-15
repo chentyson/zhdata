@@ -26,14 +26,14 @@ type serverApp struct {
 	cfg serverConfig
 	ks  *keyStore
 
-	lns     []net.Listener
-	mu      sync.Mutex
-	conns   map[string]*sSession // uuid(+slot) -> current session
-	active  int
-	estab   atomic.Uint64 // sessions established (for tests/observability)
+	lns    []net.Listener
+	mu     sync.Mutex
+	conns  map[string]*sSession // uuid(+slot) -> current session
+	active int
+	estab  atomic.Uint64 // sessions established (for tests/observability)
 
-	stmMu   sync.Mutex           // guards streams map + sStream.members
-	streams map[string]*sStream  // "uuid#sid" -> stream (GLOBAL per uuid: one app stream may span sessions)
+	stmMu   sync.Mutex          // guards streams map + sStream.members
+	streams map[string]*sStream // "uuid#sid" -> stream (GLOBAL per uuid: one app stream may span sessions)
 
 	failMu sync.Mutex
 	fails  map[string]*failWin
@@ -60,16 +60,17 @@ type sStream struct {
 	uuid  string
 	sid   uint16
 
-	mu       sync.Mutex // reassembler + backend fields
-	backend  net.Conn
-	upq      chan []byte   // async upstream write queue (dispatch never blocks on a slow backend)
-	dialDone chan struct{} // closed when backend is set and pre-dial frames flushed
-	rx       reassembler
-	rxWake   chan struct{} // fires when stream state advances (wakes parked dispatch lanes)
-	laneHi   map[*sSession]*laneAckState // per-member upload frame counts (tAck credit)
-	written  int64 // forensic: bytes written upstream for this stream
-	closed   bool
-	finDone  bool // CloseWrite already issued to backend
+	mu          sync.Mutex // reassembler + backend fields
+	backend     net.Conn
+	upq         chan []byte   // async upstream write queue (dispatch never blocks on a slow backend)
+	dialDone    chan struct{} // closed when backend is set and pre-dial frames flushed
+	rx          reassembler
+	rxWake      chan struct{}               // fires when stream state advances (wakes parked dispatch lanes)
+	laneHi      map[*sSession]*laneAckState // per-member upload frame counts (tAck credit)
+	written     int64                       // forensic: bytes written upstream for this stream
+	lastParkLog time.Time                   // rate-limit park logging (st.mu)
+	closed      bool
+	finDone     bool // CloseWrite already issued to backend
 
 	members map[*sSession]bool // sessions carrying this stream's frames (guarded by stmMu)
 }
@@ -318,6 +319,7 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 	case tOpen:
 		atyp, addr, port, err := decodeAddrPort(f.Payload)
 		if err != nil {
+			a.logf("tReset sid=%d reason=bad-topen (%v)", f.SID, err)
 			sh.sess.sendCtrl(Frame{Typ: tReset, SID: f.SID})
 			return
 		}
@@ -325,6 +327,7 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 		a.stmMu.Lock()
 		if sh.closed {
 			a.stmMu.Unlock()
+			a.logf("tReset sid=%d reason=session-closed", f.SID)
 			sh.sess.sendCtrl(Frame{Typ: tReset, SID: f.SID})
 			return
 		}
@@ -332,19 +335,20 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 		if st == nil {
 			if len(a.streams) >= maxStreams {
 				a.stmMu.Unlock()
+				a.logf("tReset sid=%d reason=max-streams", f.SID)
 				sh.sess.sendCtrl(Frame{Typ: tReset, SID: f.SID})
 				return
 			}
 			st = &sStream{
-				owner:   sh,
-				uuid:    sh.uuid,
-				sid:     f.SID,
-				upq:     make(chan []byte, 128),
+				owner:    sh,
+				uuid:     sh.uuid,
+				sid:      f.SID,
+				upq:      make(chan []byte, 128),
 				dialDone: make(chan struct{}),
-				rx:      reassembler{next: 1, buf: map[uint32][]byte{}},
-				rxWake:  make(chan struct{}, maxSlots),
-				laneHi:  map[*sSession]*laneAckState{sh: {}},
-				members: map[*sSession]bool{sh: true},
+				rx:       reassembler{next: 1, buf: map[uint32][]byte{}},
+				rxWake:   make(chan struct{}, maxSlots),
+				laneHi:   map[*sSession]*laneAckState{sh: {}},
+				members:  map[*sSession]bool{sh: true},
 			}
 			a.streams[key] = st
 			a.stmMu.Unlock()
@@ -369,6 +373,7 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 			return // v0.8 training padding: not a stream, discard silently
 		}
 		if len(f.Payload) < 4 {
+			a.logf("tReset sid=%d reason=short-tdata", f.SID)
 			sh.sess.sendCtrl(Frame{Typ: tReset, SID: f.SID})
 			return
 		}
@@ -378,6 +383,7 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 		st := sh.streams[f.SID]
 		sh.smu.Unlock()
 		if st == nil {
+			a.logf("tReset sid=%d reason=unknown-stream (tdata for closed/unopened sid) seq=%d", f.SID, seq)
 			sh.sess.sendCtrl(Frame{Typ: tReset, SID: f.SID})
 			return
 		}
@@ -441,6 +447,10 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 			// the stream (our TCP window closes toward the client -> true
 			// per-stream flow control across spread lanes).
 			parked := seq >= rx.next && rx.bufN > maxReorderBytes
+			if parked && time.Since(st.lastParkLog) > 5*time.Second {
+				st.lastParkLog = time.Now()
+				a.logf("reorder park sid=%d bufN=%d next=%d (session reader blocked: HOL for all streams on this session)", f.SID, rx.bufN, rx.next)
+			}
 			ackBufN := rx.bufN // reorder pressure feedback for client lane credit
 			upq := st.upq
 			bc := st.backend
@@ -678,6 +688,9 @@ func (a *serverApp) closeStream(st *sStream, sendReset bool) {
 	st.wakeAll() // release any parked dispatch lanes
 	if bc != nil {
 		bc.Close()
+	}
+	if sendReset {
+		a.logf("closeStream sid=%d RESET sent written=%d members=%d", st.sid, st.written, len(members))
 	}
 	for _, m := range members {
 		m.smu.Lock()

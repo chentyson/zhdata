@@ -20,7 +20,7 @@ const (
 	localWriteTO       = 30 * time.Second
 	maxSlots           = 64 // client-side parallel session slots (handshake byte)
 	maxStreams         = 1024
-	maxReorderBytes    = 8 * 1024 * 1024 // per-stream reassembly window (v0.4 spread)
+	maxReorderBytes    = 16 * 1024 * 1024 // v0.8.1: per-stream reassembly window. 8MB parked constantly on desynced lines (harsh-hour TCP shaping skews lanes -> silent park storms -> tunnel hits 0 while raw keeps ~5M); 16MB absorbs skew; bound = active bulk streams x 16MB.
 	gapSkip            = 4096            // tolerate lost frames after owner-session death
 	gapWaitTO          = 15 * time.Second // park a fast lane this long waiting for a slow lane's gap
 	spreadThreshold    = 128 * 1024      // client: attach one more session per N bytes sent

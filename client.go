@@ -459,6 +459,7 @@ func (cn *cConn) dispatch(gen uint64, f *Frame) {
 		}
 	case tReset:
 		if s != nil {
+			s.app.logf("tReset received sid=%d slot=%d -> teardown local conn", f.SID, cn.idx)
 			s.teardown()
 		}
 	case tAck:
