@@ -703,6 +703,72 @@ func TestParallelBulkUpload(t *testing.T) {
 	wg.Wait()
 }
 
+func TestSpreadRebalanceFairness(t *testing.T) {
+	// Whitebox early-hogging regression: one stream hogs every lane while it
+	// is the only bulk stream; when latecomers arrive, rebalanceLocked must
+	// trim it toward the fair share (detaching only fully-acked lanes) and
+	// keep attached/lanes/members bookkeeping consistent. (The end-to-end
+	// variant was nondeterministic on loopback: streams finish before the
+	// waiter can observe the mid-flight transient.)
+	a, err := newClientApp(clientConfig{
+		listen: "127.0.0.1:0",
+		server: "127.0.0.1:1", // never dials successfully; sessions stay nil
+		uuid:   "rebal-user",
+		conns:  8,
+		spread: 8,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer a.Close()
+
+	a.mu.Lock()
+	s := &cStream{
+		app:      a,
+		id:       1,
+		sid:      1,
+		bulk:     true, // rebalanceLocked only trims bulk streams
+		laneSent: map[*cConn]uint32{},
+		laneAck:  map[*cConn]uint32{},
+		laneCap:  map[*cConn]int{},
+	}
+	s.home = a.conns[0]
+	s.conns = append(s.conns, a.conns...) // home + 7 attached: hogging the pool
+	s.attached = len(s.conns) - 1
+	for _, cn := range s.conns {
+		cn.members[s.id] = s
+		s.laneSent[cn] = 40
+		s.laneAck[cn] = 40 // fully drained: detachable
+	}
+	a.streams[s.id] = s
+	a.bulk = 1
+	a.lanes = s.attached
+	a.mu.Unlock()
+
+	a.mu.Lock()
+	a.bulk = 4 // three latecomers became bulk
+	a.rebalanceLocked(2)
+	leftover := len(s.conns)
+	lanes := a.lanes
+	members := 0
+	for _, cn := range a.conns {
+		if _, ok := cn.members[s.id]; ok {
+			members++
+		}
+	}
+	a.mu.Unlock()
+
+	if leftover > 2 {
+		t.Fatalf("hog not trimmed: conns=%d want <=2", leftover)
+	}
+	if lanes != leftover-1 {
+		t.Fatalf("lane accounting drift: lanes=%d attached=%d", lanes, leftover-1)
+	}
+	if members != leftover {
+		t.Fatalf("member bookkeeping drift: members=%d conns=%d", members, leftover)
+	}
+}
+
 func TestProbeGetRejected(t *testing.T) {
 	const uuid = "88888888-0000-0000-0000-000000000000"
 	srv, err := newServerApp(serverConfig{

@@ -606,11 +606,53 @@ func (s *cStream) waitOpenAny() bool {
 // may fan across all slots, but when a speedtest floods 15+ big streams
 // each stream keeps a dedicated lane (spreading would just slice every
 // lane into unusable crumbs). Adds one slot per spreadThreshold bytes sent.
+// detachLastDrainedLocked trims one spread lane (searching newest-first)
+// whose frames are fully acked. Pure client-side op: the lane is drained,
+// so the server simply stops seeing frames for this sid on that session;
+// its stale laneHi entry is reclaimed at stream end. No wire signal and
+// no fin semantics involved.
+func (s *cStream) detachLastDrainedLocked() bool {
+	for i := len(s.conns) - 1; i >= 1; i-- {
+		cn := s.conns[i]
+		if s.laneSent[cn] == s.laneAck[cn] {
+			delete(cn.members, s.id)
+			s.conns = append(s.conns[:i], s.conns[i+1:]...)
+			s.attached--
+			if s.attached < 0 {
+				s.attached = 0
+			}
+			s.app.lanes--
+			if s.app.lanes < 0 {
+				s.app.lanes = 0
+			}
+			s.app.logf("stream %d rebalance: detach slot %d (lanes now %d)", s.id, cn.idx, s.app.lanes)
+			return true
+		}
+	}
+	return false
+}
+
+// rebalanceLocked enforces the fair per-stream lane budget against EARLY
+// HOGGING: a stream that spread while few bulk streams existed keeps its
+// lanes when new bulk streams arrive, starving them (latecomers find the
+// global lane pool exhausted). Trim everyone toward the current budget.
+func (a *clientApp) rebalanceLocked(budget int) {
+	for _, st := range a.streams {
+		for st.bulk && len(st.conns) > budget {
+			if !st.detachLastDrainedLocked() {
+				break
+			}
+		}
+	}
+}
+
 func (s *cStream) trySpread(sent int64) {
 	s.app.mu.Lock()
+	marked := false
 	if sent >= spreadThreshold && !s.bulk {
 		s.bulk = true
 		s.app.bulk++
+		marked = true
 	}
 	budget := s.app.cfg.spread
 	if s.app.bulk > 0 {
@@ -620,6 +662,12 @@ func (s *cStream) trySpread(sent int64) {
 	}
 	if budget < 1 {
 		budget = 1
+	}
+	if marked {
+		s.app.rebalanceLocked(budget) // fair share just shrank: trim hogs immediately
+	}
+	if len(s.conns) < budget && s.app.lanes >= s.app.cfg.conns {
+		s.app.rebalanceLocked(budget) // pool saturated: take from over-budget streams first
 	}
 	if sent >= spreadThreshold*int64(len(s.conns)) && len(s.conns) < budget && s.app.lanes < s.app.cfg.conns {
 		// pick the least-loaded slot not yet carrying this stream
