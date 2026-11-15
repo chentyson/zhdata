@@ -93,6 +93,7 @@ type cStream struct {
 	frontSince    time.Time         // when sentq[0] became the front (fast hole-retransmit timer)
 	laneAck       map[*cConn]uint32 // per-lane arrival counter (liveness)
 	laneBytes     map[*cConn]int64  // pending bytes currently assigned to a lane
+	laneSent      map[*cConn]uint32 // frames sent on this lane (for true in-TCP backlog = laneSent-laneAck)
 	// v0.11 pacing: in-order delivery of ONE app stream over N lanes can only
 	// advance as fast as the lane carrying the next sequence number, so a
 	// naive round-robin caps a stream at N x slowest-lane rate. Assign each
@@ -123,6 +124,7 @@ func (s *cStream) ensureLaneLocked(cn *cConn) {
 	if s.laneAck == nil {
 		s.laneAck = map[*cConn]uint32{}
 		s.laneBytes = map[*cConn]int64{}
+		s.laneSent = map[*cConn]uint32{}
 		s.laneRate = map[*cConn]float64{}
 		s.laneCnt = map[*cConn]uint32{}
 		s.laneT = map[*cConn]time.Time{}
@@ -135,6 +137,9 @@ func (s *cStream) ensureLaneLocked(cn *cConn) {
 	}
 	if _, ok := s.laneBytes[cn]; !ok {
 		s.laneBytes[cn] = 0
+	}
+	if _, ok := s.laneSent[cn]; !ok {
+		s.laneSent[cn] = 0
 	}
 }
 
@@ -446,6 +451,7 @@ func (cn *cConn) sessionLoop() {
 			s.ensureLaneLocked(cn)
 			// Fresh session: the server restarts this lane's arrival counter and
 			// the old rate estimate says nothing about the new TCP connection.
+			s.laneSent[cn] = 0
 			s.laneAck[cn] = 0
 			s.laneCnt[cn] = 0
 			s.laneT[cn] = time.Now()
@@ -467,7 +473,13 @@ func (cn *cConn) sessionLoop() {
 			log.Printf("[client] session established slot=%d (gen=%d, reopen streams=%d)", cn.idx, gen, nstreams)
 		}
 		estStart := time.Now()
-		err = sess.run(func(f *Frame) { cn.dispatch(gen, f) })
+		err = sess.run(func(f *Frame) {
+			t0 := time.Now()
+			cn.dispatch(gen, f)
+			if d := time.Since(t0); d > 500*time.Millisecond && a.cfg.verbose {
+				log.Printf("[client] dispatch slow slot=%d typ=%d sid=%d took=%v", cn.idx, f.Typ, f.SID, d.Round(time.Millisecond))
+			}
+		})
 		a.mu.Lock()
 		if cn.gen == gen {
 			cn.sess = nil
@@ -568,6 +580,16 @@ func (cn *cConn) dispatch(gen uint64, f *Frame) {
 			select {
 			case s.rq <- nil:
 			case <-s.done:
+			default:
+				// Bounded wait like DATA: a slow app reader must not stall the
+				// whole session reader (peer write timeout -> session death).
+				select {
+				case s.rq <- nil:
+				case <-s.done:
+				case <-time.After(2 * time.Second):
+					a.logf("downlink close queue full sid=%d slot=%d for 2s -> fail stream", f.SID, cn.idx)
+					s.teardown()
+				}
 			}
 		}
 	case tReset:
@@ -652,7 +674,7 @@ func (s *cStream) dbgLog(sent, frames int64, t0 time.Time) {
 	s.app.mu.Lock()
 	var b strings.Builder
 	for _, cn := range s.conns {
-		fmt.Fprintf(&b, " s%d:pend%dB/ack%d/r%.0f", cn.idx, s.laneBytes[cn], s.laneAck[cn], s.laneRate[cn])
+		fmt.Fprintf(&b, " s%d:pend%dB/ack%d/sent%d/r%.0f", cn.idx, s.laneBytes[cn], s.laneAck[cn], s.laneSent[cn], s.laneRate[cn])
 	}
 	lanes := len(s.conns)
 	inflight, acked := s.inflightBytes, s.ackedSeq
@@ -666,10 +688,14 @@ func (s *cStream) dbgLog(sent, frames int64, t0 time.Time) {
 }
 
 // pickLaneSendLocked picks the live lane whose backlog will drain first:
-// score = (pending frames + 1) / measured lane rate. Slow lanes get
-// proportionally fewer frames, so an in-order multi-lane stream advances at
-// ~sum(lane rates) instead of N x min(lane rate) (the round-robin trap: every
-// N-th frame sits on the slowest lane and blocks delivery of the rest).
+// score = (true in-TCP backlog frames + 1) / measured lane rate. The backlog is
+// laneSent-laneAck (frames handed to the lane's TCP minus frames it has
+// already delivered to the server): this is the queue delay a frame assigned
+// now will actually experience. (A lane's "unreleased" window bytes are NOT a
+// good score: when one hole stalls stream delivery, every lane's frames stay
+// unreleased, so that metric would deprioritise the healthy lanes exactly when
+// they are needed.) Slow lanes get proportionally fewer frames, so an in-order
+// multi-lane stream advances at ~sum(lane rates) instead of N x min(lane rate).
 // Returns (nil, true) when lanes exist but none is usable yet.
 // Caller must hold app.mu.
 func (s *cStream) pickLaneSendLocked() (*cConn, bool) {
@@ -677,7 +703,6 @@ func (s *cStream) pickLaneSendLocked() (*cConn, bool) {
 	bestETA := float64(1 << 62)
 	live := false
 	now := time.Now()
-	const frameBytes = 12 * 1024 // rough average; only the ratio matters
 	for _, cn := range s.conns {
 		if cn.sess == nil || cn.currentSidLocked(s) == 0 {
 			continue
@@ -693,8 +718,11 @@ func (s *cStream) pickLaneSendLocked() (*cConn, bool) {
 		if r < laneRateMin {
 			r = laneRateMin
 		}
-		pending := float64(s.laneBytes[cn]) / frameBytes
-		eta := (pending + 1) / r
+		backlog := int64(s.laneSent[cn]) - int64(s.laneAck[cn])
+		if backlog < 0 {
+			backlog = 0
+		}
+		eta := (float64(backlog) + 1) / r
 		if eta < bestETA {
 			best, bestETA = cn, eta
 		}
@@ -795,6 +823,7 @@ func (s *cStream) sendFrame(seq uint32, payload []byte) bool {
 		s.inflightBytes += n
 		s.app.inflightBytes += n
 		s.laneBytes[cn] += n
+		s.laneSent[cn]++
 		fr.lane = cn
 		wasEmpty := len(s.sentq) == 0
 		s.sentq = append(s.sentq, fr)
@@ -815,6 +844,7 @@ func (s *cStream) sendFrame(seq uint32, payload []byte) bool {
 		s.inflightBytes -= n
 		s.app.inflightBytes -= n
 		s.laneBytes[cn] -= n
+		s.laneSent[cn]--
 		fr.lane = nil
 		s.app.mu.Unlock()
 		if !sleepSelect(s.done, time.Millisecond) {
@@ -930,7 +960,6 @@ func (s *cStream) resendFrame(fr *sentFrame) {
 	}
 	old := fr.lane
 	now := time.Now()
-	const frameBytes = 12 * 1024
 	var best *cConn
 	bestETA := float64(1 << 62)
 	for _, cn := range s.conns {
@@ -944,7 +973,11 @@ func (s *cStream) resendFrame(fr *sentFrame) {
 		if r < laneRateMin {
 			r = laneRateMin
 		}
-		eta := (float64(s.laneBytes[cn])/frameBytes + 1) / r
+		backlog := int64(s.laneSent[cn]) - int64(s.laneAck[cn])
+		if backlog < 0 {
+			backlog = 0
+		}
+		eta := (float64(backlog) + 1) / r
 		if eta < bestETA {
 			best, bestETA = cn, eta
 		}
@@ -955,6 +988,7 @@ func (s *cStream) resendFrame(fr *sentFrame) {
 	}
 	s.laneBytes[old] -= n
 	s.laneBytes[best] += n
+	s.laneSent[best]++
 	fr.lane = best
 	s.app.mu.Unlock()
 	if best.sess.trySendData(Frame{Typ: tData, SID: s.sid, Payload: fr.payload}) {
@@ -964,6 +998,7 @@ func (s *cStream) resendFrame(fr *sentFrame) {
 	s.app.mu.Lock()
 	s.laneBytes[best] -= n
 	s.laneBytes[old] += n
+	s.laneSent[best]--
 	fr.lane = old
 	s.app.mu.Unlock()
 }
@@ -989,6 +1024,7 @@ func (s *cStream) detachLane(cn *cConn) {
 				s.app.lanes = 0
 			}
 			delete(s.laneAck, cn)
+			delete(s.laneSent, cn)
 			delete(s.laneBytes, cn)
 			delete(s.laneRate, cn)
 			delete(s.laneCnt, cn)
@@ -1029,7 +1065,7 @@ func (s *cStream) waitOpenAny() bool {
 
 // trySpread grows the set of slots carrying this stream so a single bulk
 // upload fills multiple per-flow shaping buckets. The lane budget is
-// AUTO: min(cfg.spread, conns / live bulk streams) 閳?a lone bulk stream
+// AUTO: min(cfg.spread, conns / live bulk streams) 闂?a lone bulk stream
 // may fan across all slots, but when a speedtest floods 15+ big streams
 // each stream keeps a dedicated lane (spreading would just slice every
 // lane into unusable crumbs). Adds one slot per spreadThreshold bytes sent.
@@ -1051,6 +1087,7 @@ func (s *cStream) detachLastDrainedLocked() bool {
 				s.app.lanes = 0
 			}
 			delete(s.laneAck, cn)
+			delete(s.laneSent, cn)
 			delete(s.laneBytes, cn)
 			delete(s.laneRate, cn)
 			delete(s.laneCnt, cn)
@@ -1131,13 +1168,20 @@ func (s *cStream) trySpread(sent int64) {
 func (s *cStream) sendFin(finSeq uint32) {
 	payload := make([]byte, 4)
 	binary.BigEndian.PutUint32(payload, finSeq)
+	// Collect targets under app.mu, but enqueue OUTSIDE the lock: a blocking
+	// send on a congested lane used to hold app.mu (and with it every session
+	// reader / ack handler) for the socket write timeout.
 	s.app.mu.Lock()
+	targets := make([]*session, 0, len(s.conns))
 	for _, cn := range s.conns {
 		if cn.sess != nil && cn.currentSidLocked(s) != 0 {
-			cn.sess.sendOrdered(Frame{Typ: tClose, SID: s.sid, Payload: payload})
+			targets = append(targets, cn.sess)
 		}
 	}
 	s.app.mu.Unlock()
+	for _, sess := range targets {
+		sess.sendOrderedTimeout(Frame{Typ: tClose, SID: s.sid, Payload: payload}, 2*time.Second)
+	}
 }
 
 // pumpUp: local -> remote. One goroutine per stream for its whole life;
@@ -1240,7 +1284,12 @@ func (s *cStream) pumpDown() {
 				return
 			}
 			s.local.SetWriteDeadline(deadline(localWriteTO))
-			if _, err := s.local.Write(chunk); err != nil {
+			w0 := time.Now()
+			_, werr := s.local.Write(chunk)
+			if d := time.Since(w0); d > 2*time.Second && s.app.cfg.verbose {
+				log.Printf("[client] pumpDown slow sid=%d len=%d took=%v", s.sid, len(chunk), d.Round(time.Millisecond))
+			}
+			if werr != nil {
 				s.app.mu.Lock()
 				sess := s.home.sess
 				sid := s.sid

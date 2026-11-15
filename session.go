@@ -13,7 +13,7 @@ type cipherStream = cipher.Stream
 const (
 	pingInterval       = 30 * time.Second
 	idleTimeout        = 90 * time.Second
-	writeTimeout       = 15 * time.Second
+	writeTimeout       = 30 * time.Second
 	handshakeTimeout   = 10 * time.Second
 	backendDialTimeout = 10 * time.Second
 	backendWriteTO     = 30 * time.Second
@@ -24,7 +24,13 @@ const (
 	maxReorderBytes    = 16 * 1024 * 1024 // v0.8.1: per-stream reassembly window. 8MB parked constantly on desynced lines (harsh-hour TCP shaping skews lanes -> silent park storms -> tunnel hits 0 while raw keeps ~5M); 16MB absorbs skew; bound = active bulk streams x 16MB.
 	gapSkip            = 4096             // tolerate lost frames after owner-session death
 	holeTimeout        = 12 * time.Second // v0.11: reset a stream whose reorder hole is not filled by retransmission
-	spreadThreshold    = 128 * 1024       // client: attach one more session per N bytes sent
+	// v0.11.4: per-stream DOWNLINK window (server -> client). A LAN-speed backend
+	// (fsrv, CDN) hands 50MB in <1s; without a window the server dumps it into a
+	// 200ms WAN TCP (16MB loQ + kernel buffers) -> bufferbloat -> loss -> RTO
+	// backoff freezes (observed 15s stall + session write-timeout kills). The
+	// pump reads the backend only while this many bytes are still unwritten.
+	downWindowBytes = 1 << 20
+	spreadThreshold = 128 * 1024 // client: attach one more session per N bytes sent
 	// v0.11 (route A): uploads use a byte-based sliding window over the server's
 	// *delivered* sequence (tAck carries rx.next-1), and a per-stream retransmit
 	// buffer. The old per-lane frame-count credit is gone: it could not express
@@ -66,6 +72,9 @@ type session struct {
 	done      chan struct{}
 	closeOnce sync.Once
 	writerEnd chan struct{}
+	// onData, when set, is called by writer() after a tData frame has been
+	// written to the socket (server: downlink window credit).
+	onData func(f Frame)
 }
 
 func newSession(name string, c net.Conn, tx, rx cipherStream) *session {
@@ -99,10 +108,18 @@ func (s *session) close() {
 	})
 }
 
+// sendCtrl enqueues a control frame. Callers include openStreamLocked(), which
+// runs while the client's app.mu is held, so this must never block: a ctrlQ
+// full for 256 tiny frames means the writer is stuck on a 15s socket write
+// (peer not reading), i.e. the session is dead. Closing it releases every
+// reader instead of freezing all streams under app.mu for the write timeout.
 func (s *session) sendCtrl(f Frame) {
 	select {
 	case s.ctrlQ <- f:
 	case <-s.done:
+	default:
+		log.Printf("[session] %s ctrl queue jammed (writer stuck) -> close", s.name)
+		s.close()
 	}
 }
 
@@ -143,6 +160,21 @@ func (s *session) sendOrdered(f Frame) {
 	}
 }
 
+// sendOrderedTimeout is sendOrdered with a deadline, for callers that must not
+// hold or stall shared state indefinitely (stream FIN on a congested lane).
+func (s *session) sendOrderedTimeout(f Frame, d time.Duration) bool {
+	t := time.NewTimer(d)
+	defer t.Stop()
+	select {
+	case s.loQ <- f:
+		return true
+	case <-s.done:
+		return false
+	case <-t.C:
+		return false
+	}
+}
+
 func (s *session) writer() {
 	defer close(s.writerEnd)
 	for {
@@ -176,6 +208,11 @@ func (s *session) writer() {
 				s.name, time.Since(t0).Round(time.Millisecond), f.Typ, f.SID, len(f.Payload), err)
 			s.close()
 			return
+		}
+		if f.Typ == tData && s.onData != nil {
+			// Server sets this to credit per-stream downlink window once a
+			// frame is actually handed to the socket.
+			s.onData(f)
 		}
 	}
 }

@@ -82,8 +82,14 @@ type sStream struct {
 	written     int64                       // forensic: bytes written upstream for this stream
 	lastParkLog time.Time                   // rate-limit park logging (st.mu)
 	holeSince   time.Time                   // first moment rx.next made no progress while rx.buf had data (st.mu); v0.11 retransmit watchdog
-	closed      bool
-	finDone     bool // CloseWrite already issued to backend
+	// v0.11.4: downlink flow control. dlPending = bytes enqueued toward the
+	// owner session but not yet handed to the socket (guarded by st.mu). This
+	// keeps at most ~1MB of a stream in the tunnel+kernel, so a LAN-speed
+	// backend cannot bury a WAN TCP under a 50MB burst (bufferbloat freeze).
+	dlPending int64
+	dlWake    chan struct{} // fired when dlPending frees or the stream closes
+	closed    bool
+	finDone   bool // CloseWrite already issued to backend
 
 	members map[*sSession]bool // sessions carrying this stream's frames (guarded by stmMu)
 }
@@ -171,7 +177,7 @@ func (a *serverApp) gapWatchLoop() {
 		a.stmMu.Lock()
 		for _, st := range a.streams {
 			st.mu.Lock()
-			hit := !st.holeSince.IsZero() && now.Sub(st.holeSince) > holeTimeout && !st.closed
+			hit := !st.holeSince.IsZero() && now.Sub(st.holeSince) > holeTimeout && st.rx.bufN > 0 && !st.closed
 			if hit {
 				hi := holeInfo{next: st.rx.next, bufN: st.rx.bufN, members: len(st.members)}
 				for sq := range st.rx.buf {
@@ -419,6 +425,7 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 				sid:      f.SID,
 				upq:      make(chan []byte, 128),
 				dialDone: make(chan struct{}),
+				dlWake:   make(chan struct{}, 1),
 				rx:       reassembler{next: 1, buf: map[uint32][]byte{}},
 				rxWake:   make(chan struct{}, maxSlots),
 				laneHi:   map[*sSession]*laneAckState{sh: {}},
@@ -502,9 +509,12 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 			// v0.11: track hole age for the retransmit watchdog. A hole that
 			// survives holeTimeout means the client could not resend those
 			// frames; the stream is then reset instead of hanging forever.
+			// Only count real holes: frames buffered while the backend is still
+			// dialing are NOT a hole (they are flushed in order by openBackend),
+			// and treating them as one reset every multi-frame request 12s in.
 			if len(ready) > 0 {
 				st.holeSince = time.Time{}
-			} else if rx.bufN > 0 && st.holeSince.IsZero() {
+			} else if st.backend != nil && rx.bufN > 0 && st.holeSince.IsZero() {
 				st.holeSince = time.Now()
 			}
 			finNow := st.backend != nil && rx.fin != 0 && rx.next >= rx.fin && !st.finDone
@@ -769,6 +779,9 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 		st.finDone = true
 	}
 	close(st.dialDone) // after this, dispatch enqueues to upq; no orphan frames
+	// The pre-dial flush delivered everything buffered before the backend was
+	// ready: any hole tracker started meanwhile is stale.
+	st.holeSince = time.Time{}
 	// Report delivery progress from the pre-dial flush: without this the client
 	// keeps the flushed frames unacked until more traffic arrives (sparse
 	// request/response streams would retransmit them needlessly).
@@ -805,6 +818,29 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 	go a.pumpUp(st, sh)
 
 	// pump backend -> client (downlink flows through the owner session)
+	// v0.11.4: writer credits the stream's downlink window once a frame has
+	// actually reached the socket, so the pump below stops reading the backend
+	// when ~1MB is already in flight. Without this a LAN-speed backend (fsrv,
+	// CDN) floods a 200ms WAN TCP with tens of MB (loQ 16MB + kernel), causing
+	// bufferbloat, loss, RTO backoff freezes (15s) and write-timeout kills.
+	sh.sess.onData = func(f Frame) {
+		sh.smu.Lock()
+		t := sh.streams[f.SID]
+		sh.smu.Unlock()
+		if t == nil {
+			return
+		}
+		t.mu.Lock()
+		t.dlPending -= int64(len(f.Payload))
+		if t.dlPending < 0 {
+			t.dlPending = 0
+		}
+		t.mu.Unlock()
+		select {
+		case t.dlWake <- struct{}{}:
+		default:
+		}
+	}
 	buf := make([]byte, maxPayload)
 	total := 0
 	var rerr error
@@ -815,6 +851,24 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 			total += n
 			payload := make([]byte, n)
 			copy(payload, buf[:n])
+			st.mu.Lock()
+			for !st.closed && st.dlPending+int64(len(payload)) > downWindowBytes {
+				st.mu.Unlock()
+				select {
+				case <-st.dlWake:
+				case <-time.After(100 * time.Millisecond):
+				}
+				st.mu.Lock()
+			}
+			open := !st.closed
+			if open {
+				st.dlPending += int64(len(payload))
+			}
+			st.mu.Unlock()
+			if !open {
+				rerr = fmt.Errorf("stream gone")
+				break
+			}
 			sh.sess.sendData(Frame{Typ: tData, SID: st.sid, Payload: payload})
 		}
 		if err != nil {
@@ -901,6 +955,10 @@ func (a *serverApp) closeStream(st *sStream, sendReset bool) {
 	bc := st.backend
 	st.backend = nil
 	st.mu.Unlock()
+	select {
+	case st.dlWake <- struct{}{}: // wake a downlink pump parked on the window
+	default:
+	}
 	st.wakeAll() // release any parked dispatch lanes
 	if bc != nil {
 		bc.Close()

@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"syscall"
@@ -24,6 +26,7 @@ func main() {
 	conns := flag.Int("conns", 1, "parallel tunnel sessions 1-64 (client; independent slots/buckets)")
 	spread := flag.Int("spread", 8, "max lanes one bulk upload stream may fan across (client; v0.11 retransmit makes fan-out safe; auto-capped to conns/live-bulk-streams, set 1 to disable)")
 	train := flag.Int("train", 0, "seconds between per-session idle training frames; 0 = off (v0.8 experiment: keep ISP shaping buckets warm)")
+	pprofAddr := flag.String("pprof", "", "enable net/http/pprof (goroutine/heap dumps) on this address, e.g. 127.0.0.1:6060; empty = off")
 	showVer := flag.Bool("version", false, "print version")
 	flag.Parse()
 
@@ -32,6 +35,14 @@ func main() {
 		return
 	}
 	log.SetFlags(log.LstdFlags)
+	if *pprofAddr != "" {
+		go func() {
+			log.Printf("[pprof] listening on http://%s/debug/pprof/", *pprofAddr)
+			if err := http.ListenAndServe(*pprofAddr, nil); err != nil {
+				log.Printf("[pprof] server: %v", err)
+			}
+		}()
+	}
 
 	switch *mode {
 	case "server":
