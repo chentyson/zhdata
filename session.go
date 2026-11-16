@@ -43,7 +43,7 @@ const (
 	//     (the server dedupes by seq). A live-but-slow lane is NOT migrated;
 	//   - spread is safe again, so few-connection apps can still fill many
 	//     per-flow shaping buckets.
-	streamWindowBytes = 2 << 20                // per-stream unacked ceiling (server reorder <=2MB; smaller window = faster hole recovery)
+	streamWindowBytes = 6 << 20                // per-stream unacked ceiling; v0.11.5: 2MB pinned at 200ms RTT (12-14Mbps/stream needs ~2.5MB); 6MB still < maxReorderBytes and global 64MB bounds totals
 	globalWindowBytes = 64 << 20               // client-wide unacked ceiling across all upload streams
 	holeResendTO      = 400 * time.Millisecond // front frame still undelivered -> fast-retransmit it (a hole blocks ALL delivery)
 	holeResendBurst   = 4                      // frames resent per fast hole-retransmit sweep

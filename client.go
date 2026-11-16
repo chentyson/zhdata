@@ -709,18 +709,21 @@ func (s *cStream) pickLaneSendLocked() (*cConn, bool) {
 		}
 		live = true
 		r := s.laneRate[cn]
-		// A lane that has not delivered anything for a while is treated as
-		// slow regardless of its last measurement: an unmeasured stalled lane
-		// must not keep the seed weight and attract frames into a hole.
-		if now.Sub(s.laneT[cn]) > 400*time.Millisecond {
+		backlog := int64(s.laneSent[cn]) - int64(s.laneAck[cn])
+		if backlog < 0 {
+			backlog = 0
+		}
+		// A lane is suspect only when it has frames IN FLIGHT that have not
+		// been delivered for a while. An idle lane (nothing outstanding) is
+		// NOT slow: v0.11.1 demoted any lane without recent ack progress, so
+		// every lane not currently loaded starved (no frames -> no acks ->
+		// stale laneT -> min rate -> no frames), collapsing an 8-lane stream
+		// to ~1 lane (tunnel x1 12.6M vs raw x1 20.4M).
+		if backlog > 0 && now.Sub(s.laneT[cn]) > 400*time.Millisecond {
 			r = laneRateMin
 		}
 		if r < laneRateMin {
 			r = laneRateMin
-		}
-		backlog := int64(s.laneSent[cn]) - int64(s.laneAck[cn])
-		if backlog < 0 {
-			backlog = 0
 		}
 		eta := (float64(backlog) + 1) / r
 		if eta < bestETA {
@@ -967,15 +970,17 @@ func (s *cStream) resendFrame(fr *sentFrame) {
 			continue
 		}
 		r := s.laneRate[cn]
-		if now.Sub(s.laneT[cn]) > 400*time.Millisecond {
+		backlog := int64(s.laneSent[cn]) - int64(s.laneAck[cn])
+		if backlog < 0 {
+			backlog = 0
+		}
+		// Idle lanes stay eligible (see pickLaneSendLocked): only a lane with
+		// outstanding frames and no delivery progress is suspect.
+		if backlog > 0 && now.Sub(s.laneT[cn]) > 400*time.Millisecond {
 			r = laneRateMin
 		}
 		if r < laneRateMin {
 			r = laneRateMin
-		}
-		backlog := int64(s.laneSent[cn]) - int64(s.laneAck[cn])
-		if backlog < 0 {
-			backlog = 0
 		}
 		eta := (float64(backlog) + 1) / r
 		if eta < bestETA {
