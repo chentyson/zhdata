@@ -927,6 +927,13 @@ func (a *clientApp) sessionRecycleLoop() {
 			if cn.sess == nil {
 				continue
 			}
+			// v0.11.9: only FULLY EMPTY sessions may be recycled. Recycling
+			// sessions that still map streams (browser keep-alives / half-idle
+			// conns) failed 246 homed streams in 20min (RST mid-browse) and
+			// the idle-pool rotation storm disturbed fresh test connections.
+			if len(cn.members) > 0 {
+				continue
+			}
 			tt := time.Unix(0, cn.lastAct.Load())
 			if now.Sub(tt) < sessionIdleRecycle {
 				continue
@@ -937,7 +944,7 @@ func (a *clientApp) sessionRecycleLoop() {
 		}
 		idle := 0
 		for _, cn := range a.conns {
-			if cn.sess != nil && now.Sub(time.Unix(0, cn.lastAct.Load())) >= sessionIdleRecycle {
+			if cn.sess != nil && len(cn.members) == 0 && now.Sub(time.Unix(0, cn.lastAct.Load())) >= sessionIdleRecycle {
 				idle++
 			}
 		}
