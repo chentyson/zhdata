@@ -22,6 +22,8 @@ type clientConfig struct {
 	conns   int // parallel tunnel sessions (1..maxSlots)
 	spread  int // max lanes one bulk stream may use (1 disables in-stream spread)
 	train   int // seconds between per-session training frames; 0 = off (v0.8 experiment)
+	migrate int // v0.11.12: stalled-lane whole-backlog migration; 0 = off (default, download parity with v0.11.7), 1 = on
+	dlconns int // v0.11.13 split pools: last N sessions carry ONLY downloads (home/owner), first conns-N carry ONLY upload lanes; 0 = shared (v0.11.12)
 	verbose bool
 }
 
@@ -48,6 +50,8 @@ type clientApp struct {
 	lanes         int                 // total spread lanes attached across all streams; hard cap = cfg.conns (never oversubscribe the slot pool)
 	rr            uint32              // rotating cursor for home-slot selection (spreads streams over all slots)
 	inflightBytes int64               // v0.11: bytes enqueued to sessions but not yet DELIVERED by the server, all upload streams (cap globalWindowBytes)
+	dlStart       int                 // v0.11.13 split pools: sessions with idx >= dlStart are download-only (home); below are upload-only lanes; =len(conns) when disabled
+	split         bool                // v0.11.13: split pools active (guards hand-built clientApp zero values)
 
 	stopCh  chan struct{}
 	stopped atomic.Bool
@@ -167,6 +171,22 @@ func newClientApp(cfg clientConfig) (*clientApp, error) {
 	if cfg.spread > cfg.conns {
 		cfg.spread = cfg.conns
 	}
+	// v0.11.13 split pools: last dlconns sessions ONLY own streams (download +
+	// control), first conns-dlconns sessions ONLY carry upload lanes/spares.
+	// Upload bursts, hole resends and migrations can no longer queue in front
+	// of a download session's TCP ACKs (measured: shared-pool NEW instance dl
+	// 0.1-0.5MB/s vs idle-pool OLD 1.6-6.6MB/s at identical minutes).
+	if cfg.dlconns < 0 {
+		cfg.dlconns = 0
+	}
+	if cfg.dlconns > cfg.conns-1 {
+		cfg.dlconns = cfg.conns - 1
+	}
+	dlStart := cfg.conns
+	if cfg.dlconns > 0 {
+		dlStart = cfg.conns - cfg.dlconns
+	}
+	split := cfg.dlconns > 0
 	ln, err := net.Listen("tcp", cfg.listen)
 	if err != nil {
 		return nil, err
@@ -181,6 +201,8 @@ func newClientApp(cfg clientConfig) (*clientApp, error) {
 		servers:  servers,
 		streams:  map[uint32]*cStream{},
 		stopCh:   make(chan struct{}),
+		dlStart:  dlStart,
+		split:    split,
 	}
 	for i := 0; i < cfg.conns; i++ {
 		a.conns = append(a.conns, &cConn{
@@ -300,6 +322,10 @@ func (a *clientApp) acceptLoop() {
 	}
 }
 
+// dlPool reports whether cn is a download-only session (v0.11.13 split pools).
+// Read-only field, no lock needed.
+func (a *clientApp) dlPool(cn *cConn) bool { return a.split && int(cn.idx) >= a.dlStart }
+
 // pickConnLocked chooses the slot with the fewest assigned streams, breaking
 // ties with a rotating cursor. Without the rotation every new stream picked
 // conns[0] while all slots were idle, so a browser's 4-6 streams all landed on
@@ -313,6 +339,19 @@ func (a *clientApp) pickConnLocked() *cConn {
 	n := len(a.conns)
 	start := int(a.rr % uint32(n))
 	a.rr++
+	// v0.11.13: with split pools homes come only from the download pool.
+	if lo := a.dlStart; a.split && lo < n {
+		span := n - lo
+		c0 := lo + start%span
+		best := a.conns[c0]
+		for i := 1; i < span; i++ {
+			cn := a.conns[lo+(c0-lo+i)%span]
+			if len(cn.members) < len(best.members) {
+				best = cn
+			}
+		}
+		return best
+	}
 	best := a.conns[start]
 	for i := 1; i < n; i++ {
 		cn := a.conns[(start+i)%n]
@@ -719,6 +758,12 @@ func (s *cStream) pickLaneSendLocked() (*cConn, bool) {
 		if cn.sess == nil || cn.currentSidLocked(s) == 0 {
 			continue
 		}
+		// v0.11.13: split pools — upload frames avoid download-pool
+		// sessions; only home stays eligible (carries the tiny request
+		// frames of streams that have no upload lanes yet).
+		if cn != s.home && s.app.dlPool(cn) {
+			continue
+		}
 		live = true
 		r := s.laneRate[cn]
 		backlog := int64(s.laneSent[cn]) - int64(s.laneAck[cn])
@@ -992,7 +1037,12 @@ func (s *cStream) checkStalls() {
 	// to already-closed server streams: 227 tReset unknown-stream + finish
 	// slow x9 per minute vs baseline, and the browser saw "download test
 	// error". Small streams keep the v0.11.7 hole logic untouched.
-	if len(s.sentq) >= 64 {
+	// v0.11.12: OFF by default (-migrate 1 to enable). Migration re-injects up
+	// to a whole 6MB window onto sessions shared with concurrent downloads;
+	// on the shaped uplink that delays those downloads' TCP ACKs and users
+	// measured pure-download slower than v0.11.7. Burst(8) hole drain alone
+	// already lifts stuck-lane recovery 0.4->2MB/s.
+	if s.app.cfg.migrate > 0 && len(s.sentq) >= 64 {
 		for _, cn := range s.conns {
 			if cn.sess == nil {
 				continue
@@ -1072,6 +1122,9 @@ func (a *clientApp) attachSpareLaneLocked(s *cStream) bool {
 	var best *cConn
 	for _, cn := range a.conns {
 		if _, has := cn.members[s.id]; has {
+			continue
+		}
+		if a.dlPool(cn) { // v0.11.13: spares only from the upload pool
 			continue
 		}
 		if best == nil || len(cn.members) < len(best.members) {
@@ -1292,6 +1345,9 @@ func (s *cStream) trySpread(sent int64) {
 		var best *cConn
 		for _, cn := range s.app.conns {
 			if _, has := cn.members[s.id]; has {
+				continue
+			}
+			if s.app.dlPool(cn) { // v0.11.13: spread lanes only from upload pool
 				continue
 			}
 			if best == nil || len(cn.members) < len(best.members) {

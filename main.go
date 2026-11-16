@@ -26,6 +26,8 @@ func main() {
 	conns := flag.Int("conns", 1, "parallel tunnel sessions 1-64 (client; independent slots/buckets)")
 	spread := flag.Int("spread", 8, "max lanes one bulk upload stream may fan across (client; v0.11 retransmit makes fan-out safe; auto-capped to conns/live-bulk-streams, set 1 to disable)")
 	train := flag.Int("train", 0, "seconds between per-session idle training frames; 0 = off (v0.8 experiment: keep ISP shaping buckets warm)")
+	migrate := flag.Int("migrate", 0, "v0.11.12 stalled-lane whole-backlog migration: 0 = off (default; keeps download at v0.11.7 parity), 1 = on (faster bulk-upload recovery, may delay concurrent downloads on shared sessions)")
+	dlconns := flag.Int("dlconns", 0, "v0.11.13 split pools: last N sessions are download-only homes, the rest upload-only lanes (0 = shared, v0.11.12 behavior)")
 	pprofAddr := flag.String("pprof", "", "enable net/http/pprof (goroutine/heap dumps) on this address, e.g. 127.0.0.1:6060; empty = off")
 	showVer := flag.Bool("version", false, "print version")
 	flag.Parse()
@@ -73,6 +75,8 @@ func main() {
 			conns:   *conns,
 			spread:  *spread,
 			train:   *train,
+			migrate: *migrate,
+			dlconns: *dlconns,
 			verbose: *verbose,
 		})
 		if err != nil {
