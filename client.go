@@ -101,6 +101,7 @@ type cStream struct {
 	ackedSeq      uint32               // server delivered prefix (last in-order frame)
 	inflightBytes int64                // bytes in sentq
 	frontSince    time.Time            // when sentq[0] became the front (fast hole-retransmit timer)
+	finSent       bool                 // v0.11.15: local EOF seen, tClose sent (tail resend exemption)
 	laneAck       map[*cConn]uint32    // per-lane arrival counter (liveness)
 	laneBytes     map[*cConn]int64     // pending bytes currently assigned to a lane
 	laneSent      map[*cConn]uint32    // frames sent on this lane (for true in-TCP backlog = laneSent-laneAck)
@@ -1042,22 +1043,33 @@ func (s *cStream) checkStalls() {
 	// on the shaped uplink that delays those downloads' TCP ACKs and users
 	// measured pure-download slower than v0.11.7. Burst(8) hole drain alone
 	// already lifts stuck-lane recovery 0.4->2MB/s.
-	if s.app.cfg.migrate > 0 && len(s.sentq) >= 64 {
+	// v0.11.14: the gate is per-STREAM volume, not just current queue size:
+	// bulk streams finishing (sentq drained to 1-63 frames) still park tails
+	// on dead lanes (finish slow ackedSeq=1651/1671 waited=20s). A stream is
+	// "bulk" once its lifetime sent total >= 64 frames; GET-sized streams
+	// (1-3 frames total) never qualify.
+	if s.app.cfg.migrate > 0 && len(s.sentq) >= 2 {
+		total := uint32(0)
 		for _, cn := range s.conns {
-			if cn.sess == nil {
-				continue
-			}
-			backlog := int64(s.laneSent[cn]) - int64(s.laneAck[cn])
-			if backlog <= 0 || now.Sub(s.laneT[cn]) < 600*time.Millisecond {
-				continue
-			}
-			if now.Sub(s.laneMigT[cn]) < 2*time.Second {
-				continue
-			}
-			s.laneMigT[cn] = now
-			for _, fr := range s.sentq {
-				if fr.lane == cn {
-					frames = append(frames, fr)
+			total += s.laneSent[cn]
+		}
+		if total >= 64 {
+			for _, cn := range s.conns {
+				if cn.sess == nil {
+					continue
+				}
+				backlog := int64(s.laneSent[cn]) - int64(s.laneAck[cn])
+				if backlog <= 0 || now.Sub(s.laneT[cn]) < 600*time.Millisecond {
+					continue
+				}
+				if now.Sub(s.laneMigT[cn]) < 2*time.Second {
+					continue
+				}
+				s.laneMigT[cn] = now
+				for _, fr := range s.sentq {
+					if fr.lane == cn {
+						frames = append(frames, fr)
+					}
 				}
 			}
 		}
@@ -1067,7 +1079,15 @@ func (s *cStream) checkStalls() {
 	// Only when frames are queued BEHIND the front: a lone pending frame that
 	// the backend has not delivered yet is not a hole, and blindly re-sending
 	// it every sweep just floods duplicates.
-	if len(s.sentq) > 1 && now.Sub(s.frontSince) > holeResendTO {
+	// v0.11.15: the old fast-hole rule ("only re-send when frames are queued
+	// BEHIND the front") starves stream TAILS: the last frames of a stream
+	// have nothing behind them, so a dead lane parking them is drained only
+	// by migration — which needs the 600ms+2s gate — and if the whole upload
+	// pool goes quiet (speedtest gap at 23:29) even that stalls behind
+	// ETA/lane liveness. Measured: finish slow sid=7 ackedSeq=20/394 waited
+	// 20s (94% of a stream's tail stuck). Tails resend unconditionally on
+	// the 400ms timer; a mid-stream lone front keeps the old suppression.
+	if (len(s.sentq) > 1 || s.finSent) && now.Sub(s.frontSince) > holeResendTO {
 		n := holeResendBurst
 		for i := 0; i < len(s.sentq) && n > 0; i++ {
 			if s.sentq[i].lane != nil {
@@ -1379,6 +1399,7 @@ func (s *cStream) sendFin(finSeq uint32) {
 	// send on a congested lane used to hold app.mu (and with it every session
 	// reader / ack handler) for the socket write timeout.
 	s.app.mu.Lock()
+	s.finSent = true // v0.11.15: tails resend without the "frames behind" suppression
 	targets := make([]*session, 0, len(s.conns))
 	for _, cn := range s.conns {
 		if cn.sess != nil && cn.currentSidLocked(s) != 0 {
