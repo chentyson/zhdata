@@ -930,6 +930,23 @@ func (s *cStream) checkStalls() {
 			}
 		}
 		s.frontSince = now
+		// v0.11.6: a hole on a SINGLE-lane stream (small browser upload stuck
+		// behind another stream's backlog on its one session) can never be
+		// filled by retransmitting on the same FIFO session. Attach one spare
+		// lane so the hole copy leaves over a different session; without this
+		// such streams stalled until the 12s hole watchdog reset them (log
+		// showed "retransmit ... lanes=1 total=0" loops every sweep).
+		if len(frames) > 0 {
+			live := 0
+			for _, cn := range s.conns {
+				if cn.sess != nil && cn.currentSidLocked(s) != 0 {
+					live++
+				}
+			}
+			if live < 2 {
+				s.app.attachSpareLaneLocked(s)
+			}
+		}
 	}
 	s.app.mu.Unlock()
 
@@ -948,6 +965,36 @@ func (s *cStream) checkStalls() {
 			s.detachLane(cn)
 		}
 	}
+}
+
+// attachSpareLaneLocked attaches the least-loaded session not yet carrying this
+// stream so a hole has somewhere to be retransmitted. Caller holds app.mu.
+func (a *clientApp) attachSpareLaneLocked(s *cStream) bool {
+	if a.lanes >= a.cfg.conns {
+		return false
+	}
+	var best *cConn
+	for _, cn := range a.conns {
+		if _, has := cn.members[s.id]; has {
+			continue
+		}
+		if best == nil || len(cn.members) < len(best.members) {
+			best = cn
+		}
+	}
+	if best == nil {
+		return false
+	}
+	s.conns = append(s.conns, best)
+	s.attached++
+	a.lanes++
+	best.members[s.id] = s
+	s.ensureLaneLocked(best)
+	if best.sess != nil {
+		best.openStreamLocked(s)
+	}
+	a.logf("stream %d hole: spare lane attached (lanes now %d, sid=%d)", s.id, len(s.conns), s.sid)
+	return true
 }
 
 // resendFrame retransmits one pending frame on the live lane that is expected

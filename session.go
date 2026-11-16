@@ -27,9 +27,13 @@ const (
 	// v0.11.4: per-stream DOWNLINK window (server -> client). A LAN-speed backend
 	// (fsrv, CDN) hands 50MB in <1s; without a window the server dumps it into a
 	// 200ms WAN TCP (16MB loQ + kernel buffers) -> bufferbloat -> loss -> RTO
-	// backoff freezes (observed 15s stall + session write-timeout kills). The
-	// pump reads the backend only while this many bytes are still unwritten.
-	downWindowBytes = 1 << 20
+	// backoff freezes (observed 15s stall + session write-timeout kills).
+	// v0.11.6: 1MB starves BBR at 200ms RTT — BBR's inflight target is roughly
+	// bandwidth*RTT (5MB+ at 40Mbps) and its periodic bandwidth probe briefly
+	// halves delivery; a 1MB app window drains the socket, BBR reads the app
+	// limit and collapses (tun dl 1.38MB/s vs raw 5.24 same window, 15:24).
+	// BBR paces on its own; the window only bounds bufferbloat, so use 8MB.
+	downWindowBytes = 8 << 20
 	spreadThreshold = 128 * 1024 // client: attach one more session per N bytes sent
 	// v0.11 (route A): uploads use a byte-based sliding window over the server's
 	// *delivered* sequence (tAck carries rx.next-1), and a per-stream retransmit
