@@ -987,21 +987,28 @@ func (s *cStream) checkStalls() {
 	// took 22-31s with tails stuck (ackedSeq 443/511 for 20s). Once a lane
 	// shows no delivery progress for a while, move its entire pending backlog
 	// to the faster lanes at once (server dedupes by seq).
-	for _, cn := range s.conns {
-		if cn.sess == nil {
-			continue
-		}
-		backlog := int64(s.laneSent[cn]) - int64(s.laneAck[cn])
-		if backlog <= 0 || now.Sub(s.laneT[cn]) < 600*time.Millisecond {
-			continue
-		}
-		if now.Sub(s.laneMigT[cn]) < 2*time.Second {
-			continue
-		}
-		s.laneMigT[cn] = now
-		for _, fr := range s.sentq {
-			if fr.lane == cn {
-				frames = append(frames, fr)
+	// v0.11.11 gate: BULK streams only (queue >= 64 frames ~ 1MB). Applying
+	// migration to 1-2 frame streams (GET request frames etc.) re-sent frames
+	// to already-closed server streams: 227 tReset unknown-stream + finish
+	// slow x9 per minute vs baseline, and the browser saw "download test
+	// error". Small streams keep the v0.11.7 hole logic untouched.
+	if len(s.sentq) >= 64 {
+		for _, cn := range s.conns {
+			if cn.sess == nil {
+				continue
+			}
+			backlog := int64(s.laneSent[cn]) - int64(s.laneAck[cn])
+			if backlog <= 0 || now.Sub(s.laneT[cn]) < 600*time.Millisecond {
+				continue
+			}
+			if now.Sub(s.laneMigT[cn]) < 2*time.Second {
+				continue
+			}
+			s.laneMigT[cn] = now
+			for _, fr := range s.sentq {
+				if fr.lane == cn {
+					frames = append(frames, fr)
+				}
 			}
 		}
 	}
