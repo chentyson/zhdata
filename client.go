@@ -93,13 +93,14 @@ type cStream struct {
 	// second word = rx.next-1), so the server reassembler can never be fed
 	// more than streamWindowBytes out of order. Frames on a lane that stops
 	// acking are retransmitted over the other lanes; the server dedupes by seq.
-	sentq         []*sentFrame      // pending frames, ascending seq
-	ackedSeq      uint32            // server delivered prefix (last in-order frame)
-	inflightBytes int64             // bytes in sentq
-	frontSince    time.Time         // when sentq[0] became the front (fast hole-retransmit timer)
-	laneAck       map[*cConn]uint32 // per-lane arrival counter (liveness)
-	laneBytes     map[*cConn]int64  // pending bytes currently assigned to a lane
-	laneSent      map[*cConn]uint32 // frames sent on this lane (for true in-TCP backlog = laneSent-laneAck)
+	sentq         []*sentFrame         // pending frames, ascending seq
+	ackedSeq      uint32               // server delivered prefix (last in-order frame)
+	inflightBytes int64                // bytes in sentq
+	frontSince    time.Time            // when sentq[0] became the front (fast hole-retransmit timer)
+	laneAck       map[*cConn]uint32    // per-lane arrival counter (liveness)
+	laneBytes     map[*cConn]int64     // pending bytes currently assigned to a lane
+	laneSent      map[*cConn]uint32    // frames sent on this lane (for true in-TCP backlog = laneSent-laneAck)
+	laneMigT      map[*cConn]time.Time // last whole-backlog migration time (v0.11.8 stalled-lane fix)
 	// v0.11 pacing: in-order delivery of ONE app stream over N lanes can only
 	// advance as fast as the lane carrying the next sequence number, so a
 	// naive round-robin caps a stream at N x slowest-lane rate. Assign each
@@ -131,6 +132,7 @@ func (s *cStream) ensureLaneLocked(cn *cConn) {
 		s.laneAck = map[*cConn]uint32{}
 		s.laneBytes = map[*cConn]int64{}
 		s.laneSent = map[*cConn]uint32{}
+		s.laneMigT = map[*cConn]time.Time{}
 		s.laneRate = map[*cConn]float64{}
 		s.laneCnt = map[*cConn]uint32{}
 		s.laneT = map[*cConn]time.Time{}
@@ -461,6 +463,7 @@ func (cn *cConn) sessionLoop() {
 			s.laneSent[cn] = 0
 			s.laneAck[cn] = 0
 			s.laneCnt[cn] = 0
+			s.laneMigT[cn] = time.Time{}
 			s.laneT[cn] = time.Now()
 			s.laneRate[cn] = laneRateInit
 			cn.openStreamLocked(s)
@@ -977,6 +980,31 @@ func (s *cStream) checkStalls() {
 		}
 		dead = append(dead, cn)
 	}
+	// v0.11.8: stalled-lane migration. A session that stays connected but whose
+	// TCP delivers nothing (one flow shaped to ~0 by the ISP) parks a backlog
+	// that blocks deliveredPrefix for the WHOLE stream; the 4-frame hole burst
+	// then drains it at ~4 frames/400ms (~0.4MB/s) — measured Ookla uploads
+	// took 22-31s with tails stuck (ackedSeq 443/511 for 20s). Once a lane
+	// shows no delivery progress for a while, move its entire pending backlog
+	// to the faster lanes at once (server dedupes by seq).
+	for _, cn := range s.conns {
+		if cn.sess == nil {
+			continue
+		}
+		backlog := int64(s.laneSent[cn]) - int64(s.laneAck[cn])
+		if backlog <= 0 || now.Sub(s.laneT[cn]) < 600*time.Millisecond {
+			continue
+		}
+		if now.Sub(s.laneMigT[cn]) < 2*time.Second {
+			continue
+		}
+		s.laneMigT[cn] = now
+		for _, fr := range s.sentq {
+			if fr.lane == cn {
+				frames = append(frames, fr)
+			}
+		}
+	}
 	// Fast hole recovery: re-send the front burst as soon as it has been
 	// undelivered for ~2 RTT; if both copies were lost the next sweep retries.
 	// Only when frames are queued BEHIND the front: a lone pending frame that
@@ -1139,6 +1167,7 @@ func (s *cStream) detachLane(cn *cConn) {
 			}
 			delete(s.laneAck, cn)
 			delete(s.laneSent, cn)
+			delete(s.laneMigT, cn)
 			delete(s.laneBytes, cn)
 			delete(s.laneRate, cn)
 			delete(s.laneCnt, cn)
@@ -1202,6 +1231,7 @@ func (s *cStream) detachLastDrainedLocked() bool {
 			}
 			delete(s.laneAck, cn)
 			delete(s.laneSent, cn)
+			delete(s.laneMigT, cn)
 			delete(s.laneBytes, cn)
 			delete(s.laneRate, cn)
 			delete(s.laneCnt, cn)
