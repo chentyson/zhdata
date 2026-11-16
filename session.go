@@ -50,7 +50,7 @@ const (
 	streamWindowBytes = 6 << 20                // per-stream unacked ceiling; v0.11.5: 2MB pinned at 200ms RTT (12-14Mbps/stream needs ~2.5MB); 6MB still < maxReorderBytes and global 64MB bounds totals
 	globalWindowBytes = 64 << 20               // client-wide unacked ceiling across all upload streams
 	holeResendTO      = 400 * time.Millisecond // front frame still undelivered -> fast-retransmit it (a hole blocks ALL delivery)
-	holeResendBurst   = 16                     // frames resent per fast hole-retransmit sweep (v0.11.8: 4 drained a stuck lane at ~0.4MB/s)
+	holeResendBurst   = 4                      // frames resent per fast hole-retransmit sweep
 	laneRateInit      = 50.0                   // frames/s seed for an unmeasured lane (~6.5Mbps at 16KB frames)
 	laneRateMin       = 0.5                    // floor used for completion-time scoring
 	ackEvery          = 8                      // tAck at least every N frames per lane
