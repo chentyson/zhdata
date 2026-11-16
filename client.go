@@ -102,6 +102,8 @@ type cStream struct {
 	inflightBytes int64                // bytes in sentq
 	frontSince    time.Time            // when sentq[0] became the front (fast hole-retransmit timer)
 	finSent       bool                 // v0.11.15: local EOF seen, tClose sent (tail resend exemption)
+	finSeqVal     uint32               // v0.11.16: fin seq carried by tClose (for fin re-send)
+	finT          time.Time            // v0.11.16: last tClose send time (re-send if unprocessed)
 	laneAck       map[*cConn]uint32    // per-lane arrival counter (liveness)
 	laneBytes     map[*cConn]int64     // pending bytes currently assigned to a lane
 	laneSent      map[*cConn]uint32    // frames sent on this lane (for true in-TCP backlog = laneSent-laneAck)
@@ -930,7 +932,12 @@ func (a *clientApp) stallSweepLoop() {
 		a.mu.Lock()
 		sts := make([]*cStream, 0, len(a.streams))
 		for _, s := range a.streams {
-			if s.inflightBytes > 0 {
+			// v0.11.16: also sweep streams whose data is fully acked but the
+			// FIN is unprocessed (inflightBytes==0): the fin frame sat in a
+			// dead lane for 20s (finish slow ackedSeq==lastSeq) and the
+			// server eventually reset the stream (hole unfilled -> Ookla
+			// stream aborted). Tails must be kept alive by resend/migration.
+			if s.inflightBytes > 0 || s.finSent {
 				sts = append(sts, s)
 			}
 		}
@@ -968,13 +975,23 @@ func (a *clientApp) sessionRecycleLoop() {
 		now := time.Now()
 		var victim *cConn
 		var vt time.Time
+		// v0.11.17: upload-pool sessions recycle on a SHORTER idle timer (10s):
+		// speedtest-style gaps (10-25s) left the whole upload pool on decayed
+		// buckets while raw baselines dialed fresh flows (deep-valley raw x4
+		// 13.1M vs tunnel 2.1M, streams 26s vs raw 8s). Downloads keep 25s.
+		idleTO := func(cn *cConn) time.Duration {
+			if a.split && !a.dlPool(cn) {
+				return 10 * time.Second
+			}
+			return sessionIdleRecycle
+		}
 		a.mu.Lock()
 		for _, cn := range a.conns {
 			if cn.sess == nil {
 				continue
 			}
 			tt := time.Unix(0, cn.lastAct.Load())
-			if now.Sub(tt) < sessionIdleRecycle {
+			if now.Sub(tt) < idleTO(cn) {
 				continue
 			}
 			if victim == nil || tt.Before(vt) {
@@ -983,7 +1000,7 @@ func (a *clientApp) sessionRecycleLoop() {
 		}
 		idle := 0
 		for _, cn := range a.conns {
-			if cn.sess != nil && now.Sub(time.Unix(0, cn.lastAct.Load())) >= sessionIdleRecycle {
+			if cn.sess != nil && now.Sub(time.Unix(0, cn.lastAct.Load())) >= idleTO(cn) {
 				idle++
 			}
 		}
@@ -1059,7 +1076,18 @@ func (s *cStream) checkStalls() {
 					continue
 				}
 				backlog := int64(s.laneSent[cn]) - int64(s.laneAck[cn])
-				if backlog <= 0 || now.Sub(s.laneT[cn]) < 600*time.Millisecond {
+				if backlog <= 0 {
+					continue
+				}
+				// v0.11.16: migration also fires on SLOW lanes, not only dead
+				// ones: deep-valley lanes keep trickling acks (laneT stays
+				// fresh) yet drain a 37-frame backlog in 30s+ (finish slow
+				// ackedSeq=89/389). If the lane's measured rate cannot clear
+				// its backlog within ~2s, move the backlog. Healthy lane:
+				// rate 50/s, backlog 37 -> 100 > 37 -> untouched.
+				stalled := now.Sub(s.laneT[cn]) > 600*time.Millisecond
+				slow := s.laneRate[cn]*2.0 < float64(backlog)
+				if !stalled && !slow {
 					continue
 				}
 				if now.Sub(s.laneMigT[cn]) < 2*time.Second {
@@ -1118,6 +1146,18 @@ func (s *cStream) checkStalls() {
 
 	for _, fr := range frames {
 		s.resendFrame(fr)
+	}
+	// v0.11.16: tClose itself is a single send; if it lands on a lane whose
+	// TCP is shaped to ~0 the server never sees fin (ackedSeq==lastSeq,
+	// finish slow 20s, then "hole unfilled -> reset stream" aborts the
+	// speedtest stream). Re-send fin every ~1.5s while unprocessed; the
+	// server dedupes tClose.
+	s.app.mu.Lock()
+	redoFin := s.finSent && s.finSeqVal > 0 && now.Sub(s.finT) > 1500*time.Millisecond
+	fv := s.finSeqVal
+	s.app.mu.Unlock()
+	if redoFin {
+		s.sendFin(fv)
 	}
 	if len(frames) > 0 && os.Getenv("ZHD_DEBUG2") != "" {
 		log.Printf("[client] retransmit sid=%d frames=%d lanes=%d total=%d",
@@ -1400,6 +1440,8 @@ func (s *cStream) sendFin(finSeq uint32) {
 	// reader / ack handler) for the socket write timeout.
 	s.app.mu.Lock()
 	s.finSent = true // v0.11.15: tails resend without the "frames behind" suppression
+	s.finSeqVal = finSeq
+	s.finT = time.Now() // v0.11.16: tClose re-send timer (a fin lost on a dead lane used to wedge completion 20s until the server's hole watchdog reset the stream)
 	targets := make([]*session, 0, len(s.conns))
 	for _, cn := range s.conns {
 		if cn.sess != nil && cn.currentSidLocked(s) != 0 {
