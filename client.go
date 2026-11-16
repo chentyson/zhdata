@@ -65,6 +65,12 @@ type cConn struct {
 	gen     uint64
 	sessMap map[uint16]*cStream // sid -> stream (this session's namespace)
 	members map[uint32]*cStream // streams that use this slot (home or spread)
+
+	// lastAct = unix nano of last USER-data frame (dispatch/send; PING/PONG do
+	// not count). Idle sessions are recycled because long-lived TCP flows get
+	// their shaping bucket degraded by the ISP (measured: stale-session
+	// download 0.07MB/s vs fresh-session 5.17MB/s, evening, 2026-11-16).
+	lastAct atomic.Int64
 }
 
 type cStream struct {
@@ -184,6 +190,7 @@ func newClientApp(cfg clientConfig) (*clientApp, error) {
 	}
 	go a.acceptLoop()
 	go a.stallSweepLoop()
+	go a.sessionRecycleLoop()
 	for _, cn := range a.conns {
 		go cn.sessionLoop()
 	}
@@ -473,7 +480,9 @@ func (cn *cConn) sessionLoop() {
 			log.Printf("[client] session established slot=%d (gen=%d, reopen streams=%d)", cn.idx, gen, nstreams)
 		}
 		estStart := time.Now()
+		cn.lastAct.Store(estStart.UnixNano())
 		err = sess.run(func(f *Frame) {
+			cn.lastAct.Store(time.Now().UnixNano())
 			t0 := time.Now()
 			cn.dispatch(gen, f)
 			if d := time.Since(t0); d > 500*time.Millisecond && a.cfg.verbose {
@@ -827,6 +836,7 @@ func (s *cStream) sendFrame(seq uint32, payload []byte) bool {
 		s.app.inflightBytes += n
 		s.laneBytes[cn] += n
 		s.laneSent[cn]++
+		cn.lastAct.Store(time.Now().UnixNano())
 		fr.lane = cn
 		wasEmpty := len(s.sentq) == 0
 		s.sentq = append(s.sentq, fr)
@@ -883,6 +893,57 @@ func (a *clientApp) stallSweepLoop() {
 			default:
 			}
 			s.checkStalls()
+		}
+	}
+}
+
+// sessionIdleRecycle: how long a session may carry no user data before we
+// re-dial it. ISP shapers degrade long-lived TCP flows (evenings: stale
+// sessions delivered 0.07MB/s downloads while a fresh TCP did 6MB/s; hy2 UDP
+// untouched). Idle -> close -> sessionLoop reconnects (1s backoff). PING/PONG
+// are handled inside session.run and deliberately do NOT refresh lastAct.
+const sessionIdleRecycle = 25 * time.Second
+
+// sessionRecycleLoop closes the single most-idle established session every
+// sweep so the pool continuously refreshes its TCP flows without ever
+// disrupting sessions that are actively transferring.
+func (a *clientApp) sessionRecycleLoop() {
+	t := time.NewTicker(5 * time.Second)
+	defer t.Stop()
+	for {
+		select {
+		case <-a.stopCh:
+			return
+		case <-t.C:
+		}
+		now := time.Now()
+		var victim *cConn
+		var vt time.Time
+		a.mu.Lock()
+		for _, cn := range a.conns {
+			if cn.sess == nil {
+				continue
+			}
+			tt := time.Unix(0, cn.lastAct.Load())
+			if now.Sub(tt) < sessionIdleRecycle {
+				continue
+			}
+			if victim == nil || tt.Before(vt) {
+				victim, vt = cn, tt
+			}
+		}
+		idle := 0
+		for _, cn := range a.conns {
+			if cn.sess != nil && now.Sub(time.Unix(0, cn.lastAct.Load())) >= sessionIdleRecycle {
+				idle++
+			}
+		}
+		a.mu.Unlock()
+		if victim != nil {
+			if a.cfg.verbose {
+				log.Printf("[client] recycle: slot %d idle %v -> redial (%d idle sessions)", victim.idx, now.Sub(vt).Round(time.Second), idle)
+			}
+			victim.sess.close() // sessionLoop reconnects with backoff
 		}
 	}
 }
@@ -1041,6 +1102,7 @@ func (s *cStream) resendFrame(fr *sentFrame) {
 	s.laneBytes[old] -= n
 	s.laneBytes[best] += n
 	s.laneSent[best]++
+	best.lastAct.Store(time.Now().UnixNano())
 	fr.lane = best
 	s.app.mu.Unlock()
 	if best.sess.trySendData(Frame{Typ: tData, SID: s.sid, Payload: fr.payload}) {
