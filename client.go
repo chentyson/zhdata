@@ -179,8 +179,9 @@ func newClientApp(cfg clientConfig) (*clientApp, error) {
 	// Upload bursts, hole resends and migrations can no longer queue in front
 	// of a download session's TCP ACKs (measured: shared-pool NEW instance dl
 	// 0.1-0.5MB/s vs idle-pool OLD 1.6-6.6MB/s at identical minutes).
+	// v0.11.18: -1 (unset) = auto half-and-half split (conns/2).
 	if cfg.dlconns < 0 {
-		cfg.dlconns = 0
+		cfg.dlconns = cfg.conns / 2
 	}
 	if cfg.dlconns > cfg.conns-1 {
 		cfg.dlconns = cfg.conns - 1
