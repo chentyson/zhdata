@@ -102,6 +102,7 @@ type cStream struct {
 	inflightBytes int64                // bytes in sentq
 	frontSince    time.Time            // when sentq[0] became the front (fast hole-retransmit timer)
 	finSent       bool                 // v0.11.15: local EOF seen, tClose sent (tail resend exemption)
+	reset         bool                 // v0.11.19: server tReset seen; suppress all retransmit for this stream
 	finSeqVal     uint32               // v0.11.16: fin seq carried by tClose (for fin re-send)
 	finT          time.Time            // v0.11.16: last tClose send time (re-send if unprocessed)
 	laneAck       map[*cConn]uint32    // per-lane arrival counter (liveness)
@@ -650,6 +651,14 @@ func (cn *cConn) dispatch(gen uint64, f *Frame) {
 	case tReset:
 		if s != nil {
 			s.app.logf("tReset received sid=%d slot=%d -> teardown local conn", f.SID, cn.idx)
+			// v0.11.19: the server reclaimed this stream (hole watchdog /
+			// backend death). Stop ALL retransmit/migration/fin re-sends for
+			// it: before this the tail resend + redoFin looped every sweep
+			// against a dead sid, burning uplink on tReset unknown-stream
+			// storms (118 in 10 min during one speedtest).
+			s.app.mu.Lock()
+			s.reset = true
+			s.app.mu.Unlock()
 			s.teardown()
 		}
 	case tAck:
@@ -1027,6 +1036,12 @@ func (a *clientApp) sessionRecycleLoop() {
 // whole windows onto one lane / create a moving hole (livelock). Only lost
 // frames (dead session) or an actual hole need action.
 func (s *cStream) checkStalls() {
+	s.app.mu.Lock()
+	if s.reset { // v0.11.19: server reclaimed the stream; nothing to salvage
+		s.app.mu.Unlock()
+		return
+	}
+	s.app.mu.Unlock()
 	now := time.Now()
 	var frames []*sentFrame
 	var dead []*cConn
