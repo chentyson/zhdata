@@ -28,6 +28,7 @@ func main() {
 	train := flag.Int("train", 0, "seconds between per-session idle training frames; 0 = off (v0.8 experiment: keep ISP shaping buckets warm)")
 	migrate := flag.Int("migrate", 1, "stalled/slow-lane whole-backlog migration: 1 = on (v0.11.18 default; confined to upload lanes when split pools active), 0 = off")
 	dlconns := flag.Int("dlconns", -1, "split pools: last N sessions are download-only homes, rest upload-only lanes (-1 = auto conns/2 (v0.11.18 default), 0 = shared)")
+	slotbase := flag.Int("slotbase", 0, "first slot index for this instance (v0.11.20; run two clients side by side, e.g. -conns 32 -slotbase 32, without takeover conflicts)")
 	pprofAddr := flag.String("pprof", "", "enable net/http/pprof (goroutine/heap dumps) on this address, e.g. 127.0.0.1:6060; empty = off")
 	showVer := flag.Bool("version", false, "print version")
 	flag.Parse()
@@ -69,15 +70,16 @@ func main() {
 			fatal("client mode requires -listen, -server and -uuid")
 		}
 		app, err := newClientApp(clientConfig{
-			listen:  *listen,
-			server:  *server,
-			uuid:    *uuid,
-			conns:   *conns,
-			spread:  *spread,
-			train:   *train,
-			migrate: *migrate,
-			dlconns: *dlconns,
-			verbose: *verbose,
+			listen:   *listen,
+			server:   *server,
+			uuid:     *uuid,
+			conns:    *conns,
+			spread:   *spread,
+			train:    *train,
+			migrate:  *migrate,
+			dlconns:  *dlconns,
+			slotbase: *slotbase,
+			verbose:  *verbose,
 		})
 		if err != nil {
 			fatal("client: %v", err)

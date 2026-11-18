@@ -16,15 +16,16 @@ import (
 )
 
 type clientConfig struct {
-	listen  string // local socks5 listen addr
-	server  string // zhdata server host:port; comma separated for multi-port
-	uuid    string
-	conns   int // parallel tunnel sessions (1..maxSlots)
-	spread  int // max lanes one bulk stream may use (1 disables in-stream spread)
-	train   int // seconds between per-session training frames; 0 = off (v0.8 experiment)
-	migrate int // v0.11.12: stalled-lane whole-backlog migration; 0 = off (default, download parity with v0.11.7), 1 = on
-	dlconns int // v0.11.13 split pools: last N sessions carry ONLY downloads (home/owner), first conns-N carry ONLY upload lanes; 0 = shared (v0.11.12)
-	verbose bool
+	listen   string // local socks5 listen addr
+	server   string // zhdata server host:port; comma separated for multi-port
+	uuid     string
+	conns    int // parallel tunnel sessions (1..maxSlots)
+	spread   int // max lanes one bulk stream may use (1 disables in-stream spread)
+	train    int // seconds between per-session training frames; 0 = off (v0.8 experiment)
+	migrate  int // v0.11.12: stalled-lane whole-backlog migration; 0 = off (default, download parity with v0.11.7), 1 = on
+	slotbase int // v0.11.20: first slot index (pure addressing; run a second client instance beside the first without server-side takeover conflicts)
+	dlconns  int // v0.11.13 split pools: last N sessions carry ONLY downloads (home/owner), first conns-N carry ONLY upload lanes; 0 = shared (v0.11.12)
+	verbose  bool
 }
 
 // clientApp keeps cfg.conns parallel zhdata sessions (slots 0..conns-1) to
@@ -184,6 +185,16 @@ func newClientApp(cfg clientConfig) (*clientApp, error) {
 	if cfg.dlconns < 0 {
 		cfg.dlconns = cfg.conns / 2
 	}
+	// v0.11.20: slot addressing window (two instances must not share slots).
+	if cfg.slotbase < 0 {
+		cfg.slotbase = 0
+	}
+	if cfg.slotbase+cfg.conns > 64 {
+		cfg.slotbase = 64 - cfg.conns
+		if cfg.slotbase < 0 {
+			cfg.slotbase = 0
+		}
+	}
 	if cfg.dlconns > cfg.conns-1 {
 		cfg.dlconns = cfg.conns - 1
 	}
@@ -212,7 +223,7 @@ func newClientApp(cfg clientConfig) (*clientApp, error) {
 	for i := 0; i < cfg.conns; i++ {
 		a.conns = append(a.conns, &cConn{
 			app:     a,
-			idx:     byte(i),
+			idx:     byte(i + cfg.slotbase),
 			sessMap: map[uint16]*cStream{},
 			members: map[uint32]*cStream{},
 		})
