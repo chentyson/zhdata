@@ -11,7 +11,7 @@ import (
 	"syscall"
 )
 
-const version = "0.12.1" // + dual-stack loopback SOCKS listen (localhost/::1 works like 127.0.0.1)
+const version = "0.12.3" // + fix HTTPS regression: peekHTTPCL no longer blocks on non-HTTP (TLS ClientHello) first payloads
 
 func main() {
 	mode := flag.String("mode", "client", "client | server")

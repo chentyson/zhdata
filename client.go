@@ -1627,13 +1627,47 @@ func (a *clientApp) pickUpConnLocked() *cConn {
 // decides whether the body is worth bucketing (POST/PUT/PATCH, Content-Length
 // between 2*bucketMin and bucketMaxCL). Returns the raw bytes read, the
 // header end offset, Content-Length and eligibility.
+// httpReqPrefix reports whether b plausibly begins an HTTP request line.
+// Used by peekHTTPCL so it only buffers for a Content-Length sniff on real
+// HTTP; TLS records (HTTPS ClientHello) and other binary payloads return
+// false and are forwarded upstream immediately.
+func httpReqPrefix(b []byte) bool {
+	for _, m := range []string{"GET ", "POST ", "PUT ", "PATCH ", "HEAD ", "OPTIONS ", "DELETE ", "CONNECT ", "TRACE "} {
+		if bytes.HasPrefix(b, []byte(m)) {
+			return true
+		}
+	}
+	// Not enough bytes yet to tell (b shorter than the longest method token):
+	// keep sniffing only while b could still become a method token.
+	if len(b) < 8 {
+		for _, m := range []string{"GET", "POST", "PUT", "PATCH", "HEAD", "OPTIONS", "DELETE", "CONNECT", "TRACE"} {
+			if strings.HasPrefix(m, string(b)) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func (s *cStream) peekHTTPCL(buf []byte) (raw []byte, hdrEnd int, cl uint64, ok bool) {
+	// We only buffer to sniff an HTTP Content-Length while the buffered
+	// prefix still looks like an HTTP request line. A TLS handshake (HTTPS)
+	// or any non-HTTP first payload must NOT stall here: the ClientHello has
+	// no CRLF CRLF, and holding it from the backend while we keep Read-ing
+	// for a header that will never come deadlocks the handshake (the peer
+	// won't send more until it gets the ClientHello) until the read deadline
+	// — which made every HTTPS connection time out (~10-15 s). Non-HTTP and
+	// HTTP split across slow segments degrade to the legacy path, still
+	// correct, just not bucketed.
 	for len(raw) < 32*1024 {
 		if idx := bytes.Index(raw, crlfcrlf); idx >= 0 {
 			hdrEnd = idx + 4
 			break
 		}
-		s.local.SetReadDeadline(deadline(15 * time.Second))
+		if len(raw) > 0 && !httpReqPrefix(raw) {
+			return raw, 0, 0, false
+		}
+		s.local.SetReadDeadline(deadline(300 * time.Millisecond))
 		n, err := s.local.Read(buf)
 		if n > 0 {
 			raw = append(raw, buf[:n]...)
