@@ -11,7 +11,7 @@ import (
 	"syscall"
 )
 
-const version = "0.12.0" // zhv5: bucketed bulk upload (per-range members, independent failure + retry/split)
+const version = "0.12.1" // + dual-stack loopback SOCKS listen (localhost/::1 works like 127.0.0.1)
 
 func main() {
 	mode := flag.String("mode", "client", "client | server")

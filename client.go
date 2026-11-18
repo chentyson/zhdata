@@ -41,8 +41,10 @@ type clientConfig struct {
 // reorders by seq before replaying to the backend. Stream ids (sid) are
 // globally unique per uuid so one sid can appear on multiple sessions.
 type clientApp struct {
-	cfg      clientConfig
-	listener net.Listener
+	cfg       clientConfig
+	listener  net.Listener   // primary SOCKS listener (Addr()/Close reference)
+	listeners []net.Listener // primary + dual-stack loopback companions; accept runs on all
+	streamID  uint32         // global cStream id counter, shared across all listeners
 
 	mu            sync.Mutex
 	conns         []*cConn
@@ -246,7 +248,7 @@ func newClientApp(cfg clientConfig) (*clientApp, error) {
 		dlStart = cfg.conns - cfg.dlconns
 	}
 	split := cfg.dlconns > 0
-	ln, err := net.Listen("tcp", cfg.listen)
+	lns, err := socksListeners(cfg.listen)
 	if err != nil {
 		return nil, err
 	}
@@ -255,13 +257,14 @@ func newClientApp(cfg clientConfig) (*clientApp, error) {
 		return nil, fmt.Errorf("no server address")
 	}
 	a := &clientApp{
-		cfg:      cfg,
-		listener: ln,
-		servers:  servers,
-		streams:  map[uint32]*cStream{},
-		stopCh:   make(chan struct{}),
-		dlStart:  dlStart,
-		split:    split,
+		cfg:       cfg,
+		listener:  lns[0],
+		listeners: lns,
+		servers:   servers,
+		streams:   map[uint32]*cStream{},
+		stopCh:    make(chan struct{}),
+		dlStart:   dlStart,
+		split:     split,
 	}
 	for i := 0; i < cfg.conns; i++ {
 		a.conns = append(a.conns, &cConn{
@@ -271,7 +274,9 @@ func newClientApp(cfg clientConfig) (*clientApp, error) {
 			members: map[uint32]*cStream{},
 		})
 	}
-	go a.acceptLoop()
+	for _, ln := range a.listeners {
+		go a.acceptLoop(ln)
+	}
 	go a.stallSweepLoop()
 	go a.sessionRecycleLoop()
 	for _, cn := range a.conns {
@@ -316,10 +321,46 @@ func (a *clientApp) trainLoop() {
 
 func (a *clientApp) Addr() string { return a.listener.Addr().String() }
 
+// socksListeners binds the SOCKS endpoint and, for loopback/wildcard hosts,
+// also binds the companion IP family so that clients using `localhost`
+// (which Windows often resolves to IPv6 ::1) connect just like 127.0.0.1.
+// The primary address must bind; companion binds are best-effort (skipped if
+// that family is unavailable) so the client never fails to start over them.
+func socksListeners(addr string) ([]net.Listener, error) {
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		return nil, err
+	}
+	lns := []net.Listener{ln}
+	host, port, perr := net.SplitHostPort(addr)
+	if perr != nil {
+		return lns, nil
+	}
+	var companion string
+	switch host {
+	case "127.0.0.1":
+		companion = net.JoinHostPort("::1", port)
+	case "::1":
+		companion = net.JoinHostPort("127.0.0.1", port)
+	case "", "0.0.0.0":
+		companion = net.JoinHostPort("::", port)
+	}
+	if companion != "" {
+		if ln2, err := net.Listen("tcp", companion); err == nil {
+			lns = append(lns, ln2)
+		} else {
+			log.Printf("[client] companion listen %s unavailable: %v", companion, err)
+		}
+	}
+	return lns, nil
+}
+
 func (a *clientApp) Close() {
 	if a.stopped.CompareAndSwap(false, true) {
 		close(a.stopCh)
-		a.listener.Close()
+		for _, ln := range a.listeners {
+			ln.Close()
+		}
 		a.mu.Lock()
 		for _, cn := range a.conns {
 			if cn.sess != nil {
@@ -338,10 +379,9 @@ func (a *clientApp) logf(format string, v ...any) {
 
 // ---------------- local socks side ----------------
 
-func (a *clientApp) acceptLoop() {
-	var nextID uint32
+func (a *clientApp) acceptLoop(ln net.Listener) {
 	for {
-		c, err := a.listener.Accept()
+		c, err := ln.Accept()
 		if err != nil {
 			if !a.stopped.Load() {
 				log.Printf("[client] accept: %v", err)
@@ -358,7 +398,7 @@ func (a *clientApp) acceptLoop() {
 		}
 		s := &cStream{
 			app:   a,
-			id:    atomic.AddUint32(&nextID, 1),
+			id:    atomic.AddUint32(&a.streamID, 1),
 			local: c,
 			atyp:  atyp, addr: addr, port: port,
 			rq:   make(chan []byte, 64),
