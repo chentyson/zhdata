@@ -849,8 +849,8 @@ func TestRetransmitSurvivesSessionKill(t *testing.T) {
 	defer cli.Close()
 	waitFor(t, func() bool { return srv.estab.Load() >= 2 }, "2 sessions")
 
-	const chunk = 4096
-	const nchunks = 240 // ~960KB: below 2*bucketMin so peekHTTPCL leaves this stream on the legacy path
+	const chunk = 2048
+	const nchunks = 460 // ~920KB: below 2*bucketMin (legacy path); paced ~460ms so a spread lane is reliably observed
 	seed := make([]byte, chunk)
 	for i := range seed {
 		seed[i] = byte(i*13 + 7)

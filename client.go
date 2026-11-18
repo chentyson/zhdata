@@ -1745,20 +1745,25 @@ func (a *clientApp) bktDone(leader *cStream, br *bktRange, ok bool) {
 		g.left--
 	} else {
 		br.retries++
+		// Under session-recycle churn a range's member can be reset several
+		// times in quick succession; failing the whole upload on the 3rd is
+		// far too eager. Retry generously and re-split so ranges shrink until
+		// they fit surviving lanes; only a range that shrinks below half a
+		// bucket AND exhausts its retries fails the upload.
 		switch {
-		case br.retries == 1, br.retries == 3:
-			g.queue = append(g.queue, br)
-		case br.retries == 2 && br.ln >= bucketMin/2:
-			h := br.ln / 2
-			g.left++ // one dead range replaced by two smaller ones
-			g.queue = append(g.queue,
-				&bktRange{off: br.off, ln: h, data: br.data[:h]},
-				&bktRange{off: br.off + h, ln: br.ln - h, data: br.data[h:], final: br.final, retries: 3})
-		default:
+		case br.retries >= 8:
 			if !g.failed {
 				a.logf("bucket range dead leader=%d off=%d len=%d -> upload fails", leader.sid, br.off, br.ln)
 			}
 			g.failed = true
+		case br.ln >= bucketMin/2 && (br.retries == 2 || br.retries == 4 || br.retries == 6):
+			h := br.ln / 2
+			g.left++ // one range replaced by two smaller ones
+			g.queue = append(g.queue,
+				&bktRange{off: br.off, ln: h, data: br.data[:h]},
+				&bktRange{off: br.off + h, ln: br.ln - h, data: br.data[h:], final: br.final})
+		default:
+			g.queue = append(g.queue, br)
 		}
 	}
 	for g.active < g.maxActive && len(g.queue) > 0 {
