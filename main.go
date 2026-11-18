@@ -11,7 +11,7 @@ import (
 	"syscall"
 )
 
-const version = "0.12.3" // + fix HTTPS regression: peekHTTPCL no longer blocks on non-HTTP (TLS ClientHello) first payloads
+const version = "0.12.4" // + fix download regression: drop sessMap recycle-pin (flows decayed, 60M->15M); bump session activity on stream-open instead
 
 func main() {
 	mode := flag.String("mode", "client", "client | server")

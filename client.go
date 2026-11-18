@@ -492,6 +492,14 @@ func (cn *cConn) openStreamLocked(s *cStream) {
 		return
 	}
 	cn.sessMap[s.sid] = s
+	// Opening a stream is activity: keep this session off the idle-recycle
+	// victim list long enough for the stream's handshake to complete, so a
+	// brand-new connection is not torn down mid-open (the SOCKS "-1" stall).
+	// Idle streams past the idle timeout are still recycled, which refreshes
+	// decayed TCP flows and keeps downloads fast (the sessMap-based "never
+	// recycle a stream-attached session" guard pinned idle sessions, their
+	// flows decayed, and downloads dropped ~4x: 60M -> 15M).
+	cn.lastAct.Store(time.Now().UnixNano())
 	if s.bkt != nil { // zhv5 member stream: range descriptor instead of address
 		cn.sess.sendCtrl(Frame{Typ: tOpen, SID: s.sid, Payload: encodeBucketMember(s.bkt.leaderSID, s.bkt.off, s.bkt.ln, s.bkt.final)})
 		return
@@ -1100,14 +1108,6 @@ func (a *clientApp) sessionRecycleLoop() {
 			if cn.sess == nil {
 				continue
 			}
-			// A session with live streams attached is in use even if a small
-			// stream has not pushed many bytes yet (its lastAct looks stale).
-			// Recycling it would tear the session out from under those streams
-			// (server then tResets the sid -> the connection stalls and the
-			// SOCKS latency test shows -1). Only refresh stream-less sessions.
-			if len(cn.sessMap) > 0 {
-				continue
-			}
 			tt := time.Unix(0, cn.lastAct.Load())
 			if now.Sub(tt) < idleTO(cn) {
 				continue
@@ -1118,7 +1118,7 @@ func (a *clientApp) sessionRecycleLoop() {
 		}
 		idle := 0
 		for _, cn := range a.conns {
-			if cn.sess != nil && len(cn.sessMap) == 0 && now.Sub(time.Unix(0, cn.lastAct.Load())) >= idleTO(cn) {
+			if cn.sess != nil && now.Sub(time.Unix(0, cn.lastAct.Load())) >= idleTO(cn) {
 				idle++
 			}
 		}
