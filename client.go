@@ -1100,6 +1100,14 @@ func (a *clientApp) sessionRecycleLoop() {
 			if cn.sess == nil {
 				continue
 			}
+			// A session with live streams attached is in use even if a small
+			// stream has not pushed many bytes yet (its lastAct looks stale).
+			// Recycling it would tear the session out from under those streams
+			// (server then tResets the sid -> the connection stalls and the
+			// SOCKS latency test shows -1). Only refresh stream-less sessions.
+			if len(cn.sessMap) > 0 {
+				continue
+			}
 			tt := time.Unix(0, cn.lastAct.Load())
 			if now.Sub(tt) < idleTO(cn) {
 				continue
@@ -1110,7 +1118,7 @@ func (a *clientApp) sessionRecycleLoop() {
 		}
 		idle := 0
 		for _, cn := range a.conns {
-			if cn.sess != nil && now.Sub(time.Unix(0, cn.lastAct.Load())) >= idleTO(cn) {
+			if cn.sess != nil && len(cn.sessMap) == 0 && now.Sub(time.Unix(0, cn.lastAct.Load())) >= idleTO(cn) {
 				idle++
 			}
 		}

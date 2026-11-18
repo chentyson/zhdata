@@ -910,28 +910,55 @@ func (a *serverApp) lookupHost(host string) ([]string, error) {
 		return e.ips, nil
 	}
 	var lastErr error
-	for _, rs := range []string{"8.8.8.8:53", "1.1.1.1:53", "223.5.5.5:53"} {
+	collect := func(rs string, useDefault bool, to time.Duration) ([]string, error) {
 		r := &net.Resolver{PreferGo: true, Dial: func(ctx context.Context, proto, addr string) (net.Conn, error) {
 			d := net.Dialer{Timeout: 3 * time.Second}
 			return d.DialContext(ctx, "udp", rs)
 		}}
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		if useDefault {
+			r = net.DefaultResolver
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), to)
 		ips, err := r.LookupHost(ctx, host)
 		cancel()
-		if err == nil && len(ips) > 0 {
-			a.dnsMu.Lock()
-			if len(a.dns) > 4096 {
-				for k, old := range a.dns {
-					if old.expA < now {
-						delete(a.dns, k)
-					}
+		return ips, err
+	}
+	// Try the host's system resolver first: on this box it resolves public
+	// domains (google, cloudflare) in milliseconds and returns IPv4. The
+	// public UDP resolvers below are anti-poisoning fallbacks for CN/CDN
+	// domains, but their queries intermittently time out (~5 s each), which
+	// stalls the FIRST resolution of every domain (cold) to 10-15 s — long
+	// enough that SOCKS CONNECT latency tests time out. System-first removes
+	// that stall; public resolvers still cover a poisoned/empty system answer.
+	ips, derr := collect("", true, 2*time.Second)
+	if derr != nil {
+		lastErr = derr
+	}
+	for _, rs := range []string{"8.8.8.8:53", "1.1.1.1:53", "223.5.5.5:53"} {
+		if len(ips) > 0 {
+			break
+		}
+		got, err := collect(rs, false, 5*time.Second)
+		if err == nil && len(got) > 0 {
+			ips = got
+			break
+		}
+		if err != nil {
+			lastErr = err
+		}
+	}
+	if len(ips) > 0 {
+		a.dnsMu.Lock()
+		if len(a.dns) > 4096 {
+			for k, old := range a.dns {
+				if old.expA < now {
+					delete(a.dns, k)
 				}
 			}
-			a.dns[host] = dnsEntry{ips: ips, expA: now + int64(5*time.Minute)}
-			a.dnsMu.Unlock()
-			return ips, nil
 		}
-		lastErr = err
+		a.dns[host] = dnsEntry{ips: ips, expA: now + int64(5*time.Minute)}
+		a.dnsMu.Unlock()
+		return ips, nil
 	}
 	return nil, lastErr
 }
@@ -967,11 +994,31 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 			a.closeStream(st, true)
 			return
 		}
-		for _, ip := range ips {
-			bc, err = net.DialTimeout("tcp", net.JoinHostPort(ip, fmt.Sprint(port)), backendDialTimeout)
-			if err == nil {
-				break
+		// Prefer IPv4 before IPv6. Many VPS hosts (this one included) have no
+		// working IPv6 egress: a resolver that returns AAAA records first
+		// (google, cloudflare, …) would make us SYN-send to unreachable IPv6
+		// and stall backendDialTimeout per address, so domain backends time
+		// out even though the same host is reachable over IPv4. IPv6 stays as
+		// a fallback for IPv6-only targets.
+		dial := func(list []string) {
+			for _, ip := range list {
+				bc, err = net.DialTimeout("tcp", net.JoinHostPort(ip, fmt.Sprint(port)), backendDialTimeout)
+				if err == nil {
+					return
+				}
 			}
+		}
+		var v4, v6 []string
+		for _, ip := range ips {
+			if strings.ContainsRune(ip, ':') {
+				v6 = append(v6, ip)
+			} else {
+				v4 = append(v4, ip)
+			}
+		}
+		dial(v4)
+		if err != nil {
+			dial(v6)
 		}
 	} else {
 		bc, err = socksDial(a.cfg.backend, atyp, addr, port)
