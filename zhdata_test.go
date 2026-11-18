@@ -811,6 +811,10 @@ func splitHostPort(t *testing.T, url string) (string, uint16) {
 // them on the surviving lane and the target must receive the exact body.
 // Without retransmission this test fails (hole -> reset / truncated body).
 func TestRetransmitSurvivesSessionKill(t *testing.T) {
+	// This guards the LEGACY per-stream send-window / retransmit path that
+	// still carries small and interactive uploads (Content-Length below the
+	// bucket threshold, so the body is NOT bucketed). Keep the body under
+	// 2*bucketMin so peekHTTPCL leaves this stream on the legacy spread path.
 	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -837,7 +841,7 @@ func TestRetransmitSurvivesSessionKill(t *testing.T) {
 		server: srv.Addr(),
 		uuid:   uuid,
 		conns:  2,
-		spread: 2,
+		spread: 4,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -845,8 +849,8 @@ func TestRetransmitSurvivesSessionKill(t *testing.T) {
 	defer cli.Close()
 	waitFor(t, func() bool { return srv.estab.Load() >= 2 }, "2 sessions")
 
-	const chunk = 16384
-	const nchunks = 512 // 8MB
+	const chunk = 4096
+	const nchunks = 240 // ~960KB: below 2*bucketMin so peekHTTPCL leaves this stream on the legacy path
 	seed := make([]byte, chunk)
 	for i := range seed {
 		seed[i] = byte(i*13 + 7)
@@ -874,16 +878,20 @@ func TestRetransmitSurvivesSessionKill(t *testing.T) {
 	}()
 
 	killed := false
+	// Kill a non-owner SPREAD lane of the single legacy stream mid-upload:
+	// the frames in that lane's TCP are lost; the client must retransmit them
+	// on the surviving lane (per-stream send window) and the body must arrive
+	// byte-exact. grpKey=="" ensures we target the legacy (non-bucketed) path.
 	waitFor(t, func() bool {
 		srv.stmMu.Lock()
 		defer srv.stmMu.Unlock()
 		for _, st := range srv.streams {
-			if st.owner == nil || len(st.members) < 2 {
-				continue
+			if st.grpKey != "" || st.owner == nil || len(st.members) < 2 {
+				continue // legacy stream spread over >=2 lanes
 			}
 			for sh := range st.members {
 				if sh == st.owner {
-					continue
+					continue // kill a non-owner spread lane, not the home
 				}
 				st.mu.Lock()
 				n := uint32(0)
@@ -894,7 +902,7 @@ func TestRetransmitSurvivesSessionKill(t *testing.T) {
 				if n < 8 {
 					continue
 				}
-				sh.sess.close() // the lane's TCP dies mid-upload
+				sh.sess.close() // the spread lane's TCP dies mid-upload
 				killed = true
 				return true
 			}
@@ -913,6 +921,6 @@ func TestRetransmitSurvivesSessionKill(t *testing.T) {
 		t.Fatalf("read resp: %v", err)
 	}
 	if !strings.Contains(string(resp), sum) {
-		t.Fatalf("body corrupted after lane kill: target saw %q, want sha %s", string(resp), sum)
+		t.Fatalf("body corrupted after member-lane kill: target saw %q, want sha %s", string(resp), sum)
 	}
 }

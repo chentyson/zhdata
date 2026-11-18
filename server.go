@@ -33,8 +33,9 @@ type serverApp struct {
 	active int
 	estab  atomic.Uint64 // sessions established (for tests/observability)
 
-	stmMu   sync.Mutex          // guards streams map + sStream.members
+	stmMu   sync.Mutex          // guards streams map + sStream.members + groups map
 	streams map[string]*sStream // "uuid#sid" -> stream (GLOBAL per uuid: one app stream may span sessions)
+	groups  map[string]*upGroup // zhv5: leader streamKey -> bucket reassembly group
 
 	failMu sync.Mutex
 	fails  map[string]*failWin
@@ -82,6 +83,21 @@ type sStream struct {
 	written     int64                       // forensic: bytes written upstream for this stream
 	lastParkLog time.Time                   // rate-limit park logging (st.mu)
 	holeSince   time.Time                   // first moment rx.next made no progress while rx.buf had data (st.mu); v0.11 retransmit watchdog
+
+	// zhv5 bucket upload. Member streams (grpKey != "") carry one byte range
+	// of the leader's body: ordered bytes accumulate in rangeBuf and are
+	// handed to the group on member completion; they have no backend of their
+	// own. Leader streams hold post-header upload chunks in holdBuf while a
+	// group is open, so backend writes stay in byte order.
+	grpKey   string
+	grpOff   uint64
+	grpLen   uint64
+	grpFinal bool
+	grp      *upGroup // leader: current bucket group (st.mu)
+	grpDone  bool     // leader: current group finished (st.mu)
+	rangeBuf []byte
+	hold     bool
+	holdBuf  [][]byte
 	// v0.11.4: downlink flow control. dlPending = bytes enqueued toward the
 	// owner session but not yet handed to the socket (guarded by st.mu). This
 	// keeps at most ~1MB of a stream in the tunnel+kernel, so a LAN-speed
@@ -134,6 +150,7 @@ func newServerApp(cfg serverConfig) (*serverApp, error) {
 		lns:     lns,
 		conns:   map[string]*sSession{},
 		streams: map[string]*sStream{},
+		groups:  map[string]*upGroup{},
 		fails:   map[string]*failWin{},
 		dns:     map[string]dnsEntry{},
 		rst:     map[string]int64{},
@@ -291,7 +308,7 @@ func (a *serverApp) handle(c net.Conn) {
 		ctr := newCTR(u, salt)
 		pt := make([]byte, 32)
 		ctr.XORKeyStream(pt, enc)
-		if string(pt[:4]) == magic {
+		if string(pt[:4]) == magic || string(pt[:4]) == "zhv4" { // zhv5 = bucket upload; zhv4 stays compatible (never opens bucket members)
 			uuid, rx = u, ctr
 			slot = pt[4] // handshake slot byte (0 = single-session legacy)
 			break
@@ -394,9 +411,188 @@ type laneAckState struct {
 	lastDelivered uint32
 }
 
+// upGroup reassembles zhv5 bucket uploads: byte ranges of the leader's
+// upload delivered by member streams are written to the leader's backend in
+// offset order. A stalled or reset range kills only that range (the client
+// retries/splits it); the leader and the other ranges are unaffected.
+// Guarded by its own mu; the groups map itself lives under stmMu.
+type upGroup struct {
+	mu       sync.Mutex
+	leader   *sStream
+	bodyLen  uint64 // total body bytes (known once the final range is attached)
+	doneOff  uint64
+	pending  map[uint64][]byte // off -> complete range bytes, not yet written
+	complete bool
+}
+
+func (a *serverApp) attachBucketMember(sh *sSession, sid, lsid uint16, off, ln uint64, fin bool) {
+	lkey := streamKey(sh.uuid, lsid)
+	a.stmMu.Lock()
+	if sh.closed {
+		a.stmMu.Unlock()
+		sh.sess.sendCtrl(Frame{Typ: tReset, SID: sid})
+		return
+	}
+	leader := a.streams[lkey]
+	if leader == nil || leader.closed {
+		a.stmMu.Unlock()
+		if a.resetOnce(lkey) {
+			a.logf("tReset sid=%d reason=unknown-leader (%d)", sid, lsid)
+		}
+		sh.sess.sendCtrl(Frame{Typ: tReset, SID: sid})
+		return
+	}
+	g := a.groups[lkey]
+	if g == nil || g.complete {
+		g = &upGroup{leader: leader, pending: map[uint64][]byte{}}
+		a.groups[lkey] = g
+	}
+	if fin && off+ln > g.bodyLen {
+		g.bodyLen = off + ln
+	}
+	if existing := a.streams[streamKey(sh.uuid, sid)]; existing != nil {
+		// member sid re-opened on this session (reconnect): re-attach only
+		existing.members[sh] = true
+		a.stmMu.Unlock()
+		existing.mu.Lock()
+		existing.laneHi[sh] = &laneAckState{}
+		existing.mu.Unlock()
+		sh.smu.Lock()
+		sh.streams[sid] = existing
+		sh.smu.Unlock()
+		return
+	}
+	st := &sStream{
+		owner:    sh,
+		uuid:     sh.uuid,
+		sid:      sid,
+		upq:      make(chan []byte, 128),
+		dialDone: make(chan struct{}),
+		dlWake:   make(chan struct{}, 1),
+		rx:       reassembler{next: 1, buf: map[uint32][]byte{}},
+		rxWake:   make(chan struct{}, maxSlots),
+		laneHi:   map[*sSession]*laneAckState{sh: {}},
+		members:  map[*sSession]bool{sh: true},
+		grpKey:   lkey,
+		grpOff:   off,
+		grpLen:   ln,
+		grpFinal: fin,
+	}
+	close(st.dialDone) // members have no backend dial
+	a.streams[streamKey(sh.uuid, sid)] = st
+	a.stmMu.Unlock()
+	leader.mu.Lock()
+	if leader.grp == nil || leader.grpDone {
+		leader.grp = g
+		leader.grpDone = false
+	}
+	leader.hold = true // post-header leader bytes wait for range order
+	leader.mu.Unlock()
+	sh.smu.Lock()
+	sh.streams[sid] = st
+	sh.smu.Unlock()
+	sh.sess.sendCtrl(Frame{Typ: tOpenAck, SID: sid})
+	a.logf("bucket member sid=%d leader=%d off=%d len=%d final=%v attached", sid, lsid, off, ln, fin)
+}
+
+// completeMember hands a finished member range to its group, then closes the
+// member stream quietly (no reset).
+func (a *serverApp) completeMember(st *sStream) {
+	st.mu.Lock()
+	if st.closed || st.finDone || st.grpKey == "" {
+		st.mu.Unlock()
+		return
+	}
+	st.finDone = true
+	buf := st.rangeBuf
+	st.rangeBuf = nil
+	key, off := st.grpKey, st.grpOff
+	st.mu.Unlock()
+	a.stmMu.Lock()
+	g := a.groups[key]
+	a.stmMu.Unlock()
+	if g == nil {
+		return
+	}
+	a.grpDeliver(g, off, buf)
+	a.closeStream(st, false)
+}
+
+func (a *serverApp) grpDeliver(g *upGroup, off uint64, buf []byte) {
+	var flush [][]byte
+	var finish bool
+	g.mu.Lock()
+	if !g.complete && off >= g.doneOff {
+		if _, have := g.pending[off]; !have {
+			g.pending[off] = buf
+		}
+		for {
+			b, ok := g.pending[g.doneOff]
+			if !ok {
+				break
+			}
+			delete(g.pending, g.doneOff)
+			g.doneOff += uint64(len(b))
+			if len(b) > 0 {
+				flush = append(flush, b)
+			}
+		}
+		if g.bodyLen > 0 && g.doneOff >= g.bodyLen {
+			g.complete = true
+			finish = true
+		}
+	}
+	leader := g.leader
+	g.mu.Unlock()
+
+	for _, b := range flush {
+		select {
+		case leader.upq <- b:
+		case <-time.After(streamStallTO):
+			// Backend stalled: same contract as the legacy path — reset this
+			// stream only, never silently drop ordered bytes.
+			a.logf("bucket group backend stalled leader=%d", leader.sid)
+			a.closeStream(leader, true)
+			return
+		}
+	}
+	if finish {
+		a.logf("bucket group done leader=%d body=%d", leader.sid, g.doneOff)
+		leader.mu.Lock()
+		leader.hold = false
+		leader.grpDone = true
+		hb := leader.holdBuf
+		leader.holdBuf = nil
+		eofNow := leader.rx.fin != 0 && leader.rx.next >= leader.rx.fin && !leader.finDone
+		bc := leader.backend
+		if eofNow {
+			leader.finDone = true
+		}
+		leader.mu.Unlock()
+		for _, b := range hb {
+			select {
+			case leader.upq <- b:
+			case <-time.After(streamStallTO):
+				a.logf("bucket group hold-flush stalled leader=%d", leader.sid)
+				a.closeStream(leader, true)
+				return
+			}
+		}
+		if eofNow && bc != nil {
+			if tc, ok := bc.(*net.TCPConn); ok {
+				tc.CloseWrite()
+			}
+		}
+	}
+}
+
 func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 	switch f.Typ {
 	case tOpen:
+		if lsid, off, ln, fin, ok := decodeBucketMember(f.Payload); ok {
+			a.attachBucketMember(sh, f.SID, lsid, off, ln, fin)
+			return
+		}
 		atyp, addr, port, err := decodeAddrPort(f.Payload)
 		if err != nil {
 			a.logf("tReset sid=%d reason=bad-topen (%v)", f.SID, err)
@@ -490,7 +686,7 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 				rx.bufN += len(data)
 			}
 			var ready [][]byte
-			if st.backend != nil {
+			if st.backend != nil || st.grpKey != "" {
 				for {
 					b, ok := rx.buf[rx.next]
 					if !ok {
@@ -514,12 +710,31 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 			// and treating them as one reset every multi-frame request 12s in.
 			if len(ready) > 0 {
 				st.holeSince = time.Time{}
-			} else if st.backend != nil && rx.bufN > 0 && st.holeSince.IsZero() {
+			} else if (st.backend != nil || st.grpKey != "") && rx.bufN > 0 && st.holeSince.IsZero() {
 				st.holeSince = time.Now()
 			}
-			finNow := st.backend != nil && rx.fin != 0 && rx.next >= rx.fin && !st.finDone
-			if finNow {
+			finNow := (st.backend != nil || st.grpKey != "") && rx.fin != 0 && rx.next >= rx.fin && !st.finDone && (st.grp == nil || st.grpDone)
+			if finNow && st.grpKey == "" {
 				st.finDone = true
+			}
+			// zhv5 leader hold: while a bucket group is open, leader bytes
+			// past the header wait for the ranges to reach byte order.
+			if st.grpKey == "" && st.hold && len(ready) > 0 {
+				st.holdBuf = append(st.holdBuf, ready...)
+				ready = nil
+			}
+			// zhv5 member: ordered range bytes accumulate in rangeBuf (bounded
+			// by the announced range + slack); the group receives them on fin.
+			memberOverflow := false
+			if st.grpKey != "" {
+				for _, b := range ready {
+					if int64(len(st.rangeBuf))+int64(len(b)) > int64(st.grpLen)+64*1024 {
+						memberOverflow = true
+						break
+					}
+					st.rangeBuf = append(st.rangeBuf, b...)
+				}
+				ready = nil
 			}
 			// v0.11 accounting: lane arrival counter (liveness detection on the
 			// client) plus the stream's DELIVERED prefix (rx.next-1). The client
@@ -574,6 +789,18 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 				// flowing even when the session's downlink loQ is congested.
 				sh.sess.sendCtrl(Frame{Typ: tAck, SID: f.SID, Payload: p})
 			}
+			if memberOverflow {
+				a.logf("bucket member overflow sid=%d want=%d", f.SID, st.grpLen)
+				a.closeStream(st, true)
+				return
+			}
+			if st.grpKey != "" {
+				// zhv5 member: no backend write path here; completion by fin.
+				if finNow {
+					a.completeMember(st)
+				}
+				return
+			}
 			stalled := false
 			for _, b := range ready {
 				select {
@@ -627,10 +854,11 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 		if st.rx.fin == 0 {
 			st.rx.fin = fin
 		}
-		finNow := st.backend != nil && st.rx.next >= st.rx.fin && !st.finDone
-		if finNow {
+		finNow := (st.backend != nil || st.grpKey != "") && st.rx.next >= st.rx.fin && !st.finDone && (st.grp == nil || st.grpDone)
+		if finNow && st.grpKey == "" {
 			st.finDone = true
 		}
+		memberDone := st.grpKey != "" && finNow
 		bc := st.backend
 		la := st.laneHi[sh]
 		if la == nil {
@@ -646,7 +874,10 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 		binary.BigEndian.PutUint32(p, ackCount)
 		binary.BigEndian.PutUint32(p[4:], ackDelivered)
 		sh.sess.sendCtrl(Frame{Typ: tAck, SID: f.SID, Payload: p})
-		if finNow && bc != nil {
+		if memberDone {
+			a.completeMember(st)
+		}
+		if finNow && !memberDone && bc != nil {
 			if tc, ok := bc.(*net.TCPConn); ok {
 				tc.CloseWrite()
 			}
@@ -764,6 +995,13 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 		if !ok {
 			break
 		}
+		if st.hold { // zhv5: a bucket group opened while the dial was running
+			delete(st.rx.buf, st.rx.next)
+			st.rx.bufN -= len(b)
+			st.rx.next++
+			st.holdBuf = append(st.holdBuf, b)
+			continue
+		}
 		bc.SetWriteDeadline(deadline(backendWriteTO))
 		if _, err = bc.Write(b); err != nil {
 			werr = err
@@ -774,8 +1012,8 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 		st.rx.bufN -= len(b)
 		st.rx.next++
 	}
-	finNow := werr == nil && st.rx.fin != 0 && st.rx.next >= st.rx.fin && !st.finDone
-	if finNow {
+	finNow := werr == nil && st.rx.fin != 0 && st.rx.next >= st.rx.fin && !st.finDone && (st.grp == nil || st.grpDone)
+	if finNow && st.grpKey == "" {
 		st.finDone = true
 	}
 	close(st.dialDone) // after this, dispatch enqueues to upq; no orphan frames
@@ -939,6 +1177,9 @@ func (a *serverApp) closeStream(st *sStream, sendReset bool) {
 		return // already replaced/closed
 	}
 	delete(a.streams, streamKey(st.uuid, st.sid))
+	if st.grpKey == "" {
+		delete(a.groups, streamKey(st.uuid, st.sid)) // leader death ends the bucket group
+	}
 	members := make([]*sSession, 0, len(st.members))
 	for m := range st.members {
 		members = append(members, m)

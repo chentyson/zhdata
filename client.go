@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -124,7 +126,48 @@ type cStream struct {
 	done    chan struct{}
 	doneOne sync.Once
 
+	bkt    *bktOpen // zhv5: non-nil for bucket member streams (tOpen payload variant)
+	grp    *bgrp    // zhv5: leader's bucket tracker (leader streams only)
+	noPump bool     // zhv5: member created without a local socket (memory-fed)
+
 	resendCount atomic.Int64 // diagnostics: frames retransmitted on another lane
+}
+
+// bktOpen describes a zhv5 bucket member stream: byte range [off,off+ln) of
+// the leader stream's upload, keyed by the leader's sid. Sent as tOpen
+// payload instead of the address; identical payload on every re-attach so a
+// reconnect re-opens the same range.
+type bktOpen struct {
+	leaderSID uint16
+	off       uint64
+	ln        uint64
+	final     bool
+}
+
+// bgrp tracks one bucketed upload on the leader side (guarded by mu).
+type bgrp struct {
+	mu      sync.Mutex
+	ranges  []*bktRange   // remaining unfinalized ranges (ordered)
+	total   uint64        // body length (Content-Length)
+	doneCnt int           // ranges fully delivered
+	left    int           // ranges not yet done
+	wake    chan struct{} // buffered 1: progress/fail signal to pumpUpBuckets
+	failed  bool
+
+	// Concurrency cap: opening K members at once (K can be 16) swamps the
+	// shared send window, so a range that fails and retries/splits can get
+	// zero credit (acked=0) behind the wall of in-flight members. Bound
+	// active members to ~2x upload lanes; queue the rest and drain on finish.
+	maxActive int
+	active    int
+	queue     []*bktRange
+}
+
+type bktRange struct {
+	off, ln uint64
+	data    []byte
+	retries int
+	final   bool
 }
 
 // sentFrame is one upload DATA frame kept for retransmission until delivered.
@@ -409,6 +452,10 @@ func (cn *cConn) openStreamLocked(s *cStream) {
 		return
 	}
 	cn.sessMap[s.sid] = s
+	if s.bkt != nil { // zhv5 member stream: range descriptor instead of address
+		cn.sess.sendCtrl(Frame{Typ: tOpen, SID: s.sid, Payload: encodeBucketMember(s.bkt.leaderSID, s.bkt.off, s.bkt.ln, s.bkt.final)})
+		return
+	}
 	cn.sess.sendCtrl(Frame{Typ: tOpen, SID: s.sid, Payload: encodeAddrPort(s.atyp, s.addr, s.port)})
 }
 
@@ -690,7 +737,9 @@ func (cn *cConn) dispatch(gen uint64, f *Frame) {
 func (s *cStream) teardown() {
 	s.doneOne.Do(func() {
 		close(s.done)
-		s.local.Close()
+		if s.local != nil { // zhv5 bucket members are memory-fed (no local socket)
+			s.local.Close()
+		}
 		s.app.mu.Lock()
 		// Release the upload window accounting held by pending frames.
 		for _, fr := range s.sentq {
@@ -1483,6 +1532,422 @@ func (s *cStream) sendFin(finSeq uint32) {
 
 // pumpUp: local -> remote. One goroutine per stream for its whole life;
 // chunks are sequence-numbered and fanned out across attached sessions.
+// ---------------- zhv5 bucket upload (client) ----------------
+
+const (
+	bucketMin   = 512 << 10 // min bucket range size
+	bucketMaxK  = 16        // max concurrent ranges per request
+	bucketMaxCL = 512 << 20 // don't bucket bodies above this
+)
+
+var bktNextID uint32 = 1 << 30 // member stream ids (kept clear of socks-side ids)
+
+var crlfcrlf = []byte("\r\n\r\n")
+
+// pickUpConnLocked picks the least-loaded upload-pool session for a member.
+// Caller holds a.mu.
+func (a *clientApp) pickUpConnLocked() *cConn {
+	n := len(a.conns)
+	start := int(a.rr % uint32(n))
+	a.rr++
+	var best, bestAny *cConn
+	for i := 0; i < n; i++ {
+		cn := a.conns[(start+i)%n]
+		if a.dlPool(cn) {
+			continue
+		}
+		if bestAny == nil || len(cn.members) < len(bestAny.members) {
+			bestAny = cn
+		}
+		if cn.sess == nil { // reconnecting: least-preferred retry home
+			continue
+		}
+		if best == nil || len(cn.members) < len(best.members) {
+			best = cn
+		}
+	}
+	if best != nil {
+		return best
+	}
+	if bestAny != nil {
+		return bestAny
+	}
+	return a.conns[start] // no split pools: any session may carry a member
+}
+
+// peekHTTPCL buffers the request headers of a keep-alive connection and
+// decides whether the body is worth bucketing (POST/PUT/PATCH, Content-Length
+// between 2*bucketMin and bucketMaxCL). Returns the raw bytes read, the
+// header end offset, Content-Length and eligibility.
+func (s *cStream) peekHTTPCL(buf []byte) (raw []byte, hdrEnd int, cl uint64, ok bool) {
+	for len(raw) < 32*1024 {
+		if idx := bytes.Index(raw, crlfcrlf); idx >= 0 {
+			hdrEnd = idx + 4
+			break
+		}
+		s.local.SetReadDeadline(deadline(15 * time.Second))
+		n, err := s.local.Read(buf)
+		if n > 0 {
+			raw = append(raw, buf[:n]...)
+		}
+		if err != nil {
+			break
+		}
+	}
+	if hdrEnd == 0 {
+		return
+	}
+	hdr := raw[:hdrEnd]
+	sp := bytes.IndexByte(hdr, ' ')
+	if sp <= 0 {
+		return
+	}
+	switch string(hdr[:sp]) {
+	case "POST", "PUT", "PATCH":
+	default:
+		return
+	}
+	for _, line := range bytes.Split(hdr, []byte("\r\n")) {
+		if len(line) >= 15 && bytes.EqualFold(line[:15], []byte("Content-Length:")) {
+			if v, err := strconv.ParseUint(strings.TrimSpace(string(line[15:])), 10, 64); err == nil {
+				cl = v
+			}
+			break
+		}
+	}
+	if cl >= 2*bucketMin && cl <= bucketMaxCL {
+		ok = true
+	}
+	return
+}
+
+// bktSchedule enqueues a range and starts as many as the active-member cap
+// allows (queue drained further in bktDone as members finish).
+func (a *clientApp) bktSchedule(leader *cStream, br *bktRange) {
+	g := leader.grp
+	if g == nil {
+		return
+	}
+	g.mu.Lock()
+	g.queue = append(g.queue, br)
+	var start []*bktRange
+	for g.active < g.maxActive && len(g.queue) > 0 {
+		r := g.queue[0]
+		g.queue = g.queue[1:]
+		g.active++
+		start = append(start, r)
+	}
+	g.mu.Unlock()
+	for _, r := range start {
+		a.bktLaunch(leader, r)
+	}
+}
+
+// bktLaunch opens one member stream carrying [off,off+ln) of the leader's
+// body over the upload pool, and pumps it from memory.
+func (a *clientApp) bktLaunch(leader *cStream, br *bktRange) {
+	a.mu.Lock()
+	sid := a.allocSidLocked()
+	if sid == 0 {
+		a.mu.Unlock()
+		a.bktDone(leader, br, false)
+		return
+	}
+	cn := a.pickUpConnLocked()
+	m := &cStream{
+		app:  a,
+		id:   atomic.AddUint32(&bktNextID, 1),
+		sid:  sid,
+		home: cn, conns: []*cConn{cn},
+		rq:   make(chan []byte, 1),
+		done: make(chan struct{}),
+		bkt:  &bktOpen{leaderSID: leader.sid, off: br.off, ln: br.ln, final: br.final},
+	}
+	a.streams[m.id] = m
+	cn.members[m.id] = m
+	m.ensureLaneLocked(cn)
+	if cn.sess != nil {
+		cn.openStreamLocked(m)
+	}
+	a.mu.Unlock()
+	go m.pumpMember(leader, br)
+}
+
+func (m *cStream) pumpMember(leader *cStream, br *bktRange) {
+	var seq uint32
+	var i int
+	for i < len(br.data) {
+		n := maxPayload
+		if len(br.data)-i < n {
+			n = len(br.data) - i
+		}
+		seq++
+		payload := make([]byte, n+4)
+		binary.BigEndian.PutUint32(payload[:4], seq)
+		copy(payload[4:], br.data[i:i+n])
+		if !m.sendFrame(seq, payload) {
+			m.app.bktDone(leader, br, false)
+			m.teardown()
+			return
+		}
+		i += n
+		m.trySpread(int64(i))
+	}
+	m.sendFin(seq + 1)
+	if m.app.cfg.verbose {
+		m.app.logf("BUCKET member done sid=%d off=%d len=%d seq=%d", m.sid, br.off, br.ln, seq)
+	}
+	deadlineT := time.Now().Add(90 * time.Second)
+	ok := false
+	var acked uint32
+	for {
+		m.app.mu.Lock()
+		acked = m.ackedSeq
+		rs := m.reset
+		m.app.mu.Unlock()
+		if acked >= seq {
+			ok = true
+			break
+		}
+		if rs {
+			break
+		}
+		select {
+		case <-m.done:
+		case <-time.After(10 * time.Millisecond):
+		}
+		if time.Now().After(deadlineT) {
+			break
+		}
+	}
+	if !ok {
+		m.app.logf("bucket member fail sid=%d off=%d len=%d acked=%d/%d", m.sid, br.off, br.ln, acked, seq)
+	}
+	m.app.bktDone(leader, br, ok)
+	m.teardown()
+}
+
+// bktDone records a member outcome, frees its active slot, re-prioritizes
+// failed ranges (retry same range, then split it across two smaller ones),
+// and drains the queue up to the active cap so retries get send-window credit
+// instead of starve-behind-the-wall failures.
+func (a *clientApp) bktDone(leader *cStream, br *bktRange, ok bool) {
+	g := leader.grp
+	if g == nil {
+		return
+	}
+	var start []*bktRange
+	g.mu.Lock()
+	if g.active > 0 {
+		g.active--
+	}
+	if ok {
+		g.left--
+	} else {
+		br.retries++
+		switch {
+		case br.retries == 1, br.retries == 3:
+			g.queue = append(g.queue, br)
+		case br.retries == 2 && br.ln >= bucketMin/2:
+			h := br.ln / 2
+			g.left++ // one dead range replaced by two smaller ones
+			g.queue = append(g.queue,
+				&bktRange{off: br.off, ln: h, data: br.data[:h]},
+				&bktRange{off: br.off + h, ln: br.ln - h, data: br.data[h:], final: br.final, retries: 3})
+		default:
+			if !g.failed {
+				a.logf("bucket range dead leader=%d off=%d len=%d -> upload fails", leader.sid, br.off, br.ln)
+			}
+			g.failed = true
+		}
+	}
+	for g.active < g.maxActive && len(g.queue) > 0 {
+		r := g.queue[0]
+		g.queue = g.queue[1:]
+		g.active++
+		start = append(start, r)
+	}
+	g.mu.Unlock()
+	for _, r := range start {
+		a.bktLaunch(leader, r)
+	}
+	select {
+	case g.wake <- struct{}{}:
+	default:
+	}
+}
+
+// pumpUpBuckets handles one bucketed upload on a connection: the leader
+// carries only the request header (and the downlink); the body [0,cl) is
+// split into byte ranges, each carried by an independent member stream over
+// the upload pool. A stalled/reset range kills only that range (retried, then
+// split) while the others keep flowing. Once every range is delivered the
+// leader sends fin (backend now sees the complete body); the stream is then
+// kept alive draining the local socket until EOF so the response can flow
+// back on the downlink, exactly like the legacy single-request tail.
+func (s *cStream) pumpUpBuckets(raw []byte, hdrEnd int, cl uint64) {
+	a := s.app
+	var seq uint32
+	t0 := time.Now()
+	seq++
+	payload := make([]byte, hdrEnd+4)
+	binary.BigEndian.PutUint32(payload[:4], seq)
+	copy(payload[4:], raw[:hdrEnd])
+	if !s.sendFrame(seq, payload) {
+		s.teardown()
+		return
+	}
+	K := int((cl + bucketMin - 1) / bucketMin)
+	if K > bucketMaxK {
+		K = bucketMaxK
+	}
+	if K < 1 {
+		K = 1
+	}
+	B := (cl + uint64(K) - 1) / uint64(K)
+	g := &bgrp{total: cl, wake: make(chan struct{}, 1)}
+	upLanes := a.dlStart
+	if !a.split {
+		upLanes = len(a.conns)
+	}
+	if upLanes < 1 {
+		upLanes = 1
+	}
+	g.maxActive = 2 * upLanes
+	if g.maxActive > K {
+		g.maxActive = K
+	}
+	s.grp = g
+	a.logf("bucket up sid=%d cl=%d ranges=%d size=%d", s.sid, cl, K, B)
+	var off uint64
+	data := raw[hdrEnd:]
+	readFail := false
+	for off < cl && !readFail {
+		ln := B
+		if cl-off < ln {
+			ln = cl - off
+		}
+		for uint64(len(data)) < ln {
+			if !s.waitOpenAny() {
+				readFail = true
+				break
+			}
+			s.local.SetReadDeadline(deadline(2 * time.Minute))
+			b := make([]byte, maxPayload)
+			n, err := s.local.Read(b)
+			data = append(data, b[:n]...)
+			if os.Getenv("ZHD_BUCKET") != "" {
+				a.logf("BUCKET read sid=%d off=%d got=%d have=%d err=%v", s.sid, off, n, len(data), err)
+			}
+			if err != nil {
+				readFail = true
+				break
+			}
+		}
+		if readFail || uint64(len(data)) < ln {
+			break
+		}
+		br := &bktRange{off: off, ln: ln, data: data[:ln], final: off+ln == cl}
+		g.mu.Lock()
+		g.left++
+		g.mu.Unlock()
+		a.bktSchedule(s, br)
+		data = data[ln:] // carry any overshoot into the next range
+		off += ln
+	}
+	if readFail && off < cl {
+		a.logf("bucket up read fail sid=%d at off=%d/%d", s.sid, off, cl)
+		s.teardown()
+		return
+	}
+	// Wait for every range to be delivered to the server (members run in
+	// parallel; a failed range is retried/split inside bktDone).
+	for {
+		g.mu.Lock()
+		done := g.left == 0
+		failed := g.failed
+		g.mu.Unlock()
+		if done || failed {
+			break
+		}
+		select {
+		case <-s.done:
+			s.teardown()
+			return
+		case <-g.wake:
+		case <-time.After(2 * time.Second):
+		}
+	}
+	if g.failed {
+		s.teardown()
+		return
+	}
+	if a.cfg.verbose {
+		log.Printf("[client] bucket done sid=%d cl=%d dur=%s", s.sid, cl, time.Since(t0).Round(time.Millisecond))
+	}
+	// All body bytes are at the backend in order. Close the upload so a
+	// backend that keys on EOF sees the complete request, then keep the
+	// stream alive draining local until EOF so the response flows back.
+	s.sendFin(seq + 1)
+	buf := make([]byte, maxPayload)
+	for {
+		if !s.waitOpenAny() {
+			return
+		}
+		s.local.SetReadDeadline(deadline(2 * time.Minute))
+		n, err := s.local.Read(buf)
+		if n > 0 {
+			seq++
+			p := make([]byte, n+4)
+			binary.BigEndian.PutUint32(p[:4], seq)
+			copy(p[4:], buf[:n])
+			if !s.sendFrame(seq, p) {
+				return
+			}
+		}
+		if err != nil {
+			break
+		}
+	}
+	s.pumpUpTailEOF(&seq, t0, int64(cl), int64(K))
+}
+
+// pumpUpTailEOF: the fin/finish/teardown tail shared with the bucketed path
+// after the last bucket group completes.
+func (s *cStream) pumpUpTailEOF(seq *uint32, t0 time.Time, sent, frames int64) {
+	if s.app.cfg.verbose && sent >= spreadThreshold {
+		avg := int64(0)
+		if frames > 0 {
+			avg = sent / frames
+		}
+		log.Printf("[client] pumpUp done sid=%d sent=%d frames=%d avg=%dB dur=%s",
+			s.sid, sent, frames, avg, time.Since(t0).Round(time.Millisecond))
+	}
+	s.sendFin(*seq + 1)
+	deadlineT := time.Now().Add(20 * time.Second)
+	waitStart := time.Now()
+	var acked uint32
+	for {
+		s.app.mu.Lock()
+		acked = s.ackedSeq
+		delivered := acked >= *seq
+		s.app.mu.Unlock()
+		if delivered || time.Now().After(deadlineT) {
+			break
+		}
+		select {
+		case <-s.done:
+			return
+		case <-time.After(10 * time.Millisecond):
+		}
+	}
+	if waited := time.Since(waitStart); waited > 2*time.Second && s.app.cfg.verbose {
+		log.Printf("[client] pumpUp finish slow sid=%d lastSeq=%d ackedSeq=%d waited=%v",
+			s.sid, *seq, acked, waited.Round(time.Millisecond))
+	}
+	s.teardown()
+}
+
 func (s *cStream) pumpUp() {
 	buf := make([]byte, maxPayload)
 	var sent int64
@@ -1491,6 +1956,29 @@ func (s *cStream) pumpUp() {
 	dbgOn := os.Getenv("ZHD_DEBUG2") != ""
 	t0 := time.Now()
 	dbgLast := time.Now()
+	// zhv5 bucket upload: if this is a POST/PUT/PATCH with a sizable
+	// Content-Length, the body is split into up to bucketMaxK byte ranges,
+	// each carried by an independent member stream (own window, own server
+	// watchdog, retry/split on failure). The leader keeps headers, ordering
+	// and the downlink. Small requests and non-HTTP streams are untouched.
+	if !s.noPump {
+		raw, hdrEnd, cl, bk := s.peekHTTPCL(buf)
+		if bk {
+			s.pumpUpBuckets(raw, hdrEnd, cl)
+			return
+		}
+		if len(raw) > 0 {
+			sent += int64(len(raw))
+			seq++
+			payload := make([]byte, len(raw)+4)
+			binary.BigEndian.PutUint32(payload[:4], seq)
+			copy(payload[4:], raw)
+			if !s.sendFrame(seq, payload) {
+				return
+			}
+			s.trySpread(sent)
+		}
+	}
 	for {
 		// wait until this stream is OPEN on at least one live session
 		if !s.waitOpenAny() {

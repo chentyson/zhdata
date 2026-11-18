@@ -11,7 +11,7 @@ import (
 	"syscall"
 )
 
-const version = "0.1.0"
+const version = "0.12.0" // zhv5: bucketed bulk upload (per-range members, independent failure + retry/split)
 
 func main() {
 	mode := flag.String("mode", "client", "client | server")

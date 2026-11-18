@@ -25,6 +25,13 @@ const (
 	tOpenAck = 0x08 // server->client: backend dial succeeded
 	tAck     = 0x09 // server->client: this session delivered N upload frames (pull credit)
 
+	// zhv5 bucket upload: a bulk HTTP request body is split into byte-range
+	// "buckets", each carried by an independent member stream attached to the
+	// leader stream (which owns the backend connection). A stalled or reset
+	// bucket kills only that range; the client retries/splits it while the
+	// other ranges keep flowing — no whole-stream head-of-line death.
+	tOpenBucketMember = 0xFE // tOpen payload: FE|leaderSID(2)|off(8)|len(8)|final(1)
+
 	atypIPv4   = 1
 	atypDomain = 3
 	atypIPv6   = 4
@@ -33,8 +40,29 @@ const (
 	smallFrame = 1400 // DATA frames up to this size get priority
 
 	handshakeLen = 48     // 16B salt + 32B encrypted magic block
-	magic        = "zhv4" // v0.11: tAck payload semantics changed (count|deliveredPrefix)
+	magic        = "zhv5" // v0.12: bucket-upload frames (zhv4 clients still accepted by the server)
 )
+
+// bucket member tOpen payload helpers (see tOpenBucketMember).
+func encodeBucketMember(leaderSID uint16, off, ln uint64, final bool) []byte {
+	p := make([]byte, 20)
+	p[0] = tOpenBucketMember
+	binary.BigEndian.PutUint16(p[1:3], leaderSID)
+	binary.BigEndian.PutUint64(p[3:11], off)
+	binary.BigEndian.PutUint64(p[11:19], ln)
+	if final {
+		p[19] = 1
+	}
+	return p
+}
+
+func decodeBucketMember(p []byte) (leaderSID uint16, off, ln uint64, final bool, ok bool) {
+	if len(p) != 20 || p[0] != tOpenBucketMember {
+		return 0, 0, 0, false, false
+	}
+	return binary.BigEndian.Uint16(p[1:3]), binary.BigEndian.Uint64(p[3:11]),
+		binary.BigEndian.Uint64(p[11:19]), p[19] == 1, true
+}
 
 var (
 	errBadFrame      = errors.New("zhdata: bad frame header")
