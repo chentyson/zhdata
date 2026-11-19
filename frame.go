@@ -40,7 +40,14 @@ const (
 	smallFrame = 1400 // DATA frames up to this size get priority
 
 	handshakeLen = 48     // 16B salt + 32B encrypted magic block
-	magic        = "zhv5" // v0.12: bucket-upload frames (zhv4 clients still accepted by the server)
+	magic        = "zhv6" // v0.14: explicit auth response (zhv5/zhv4 clients are still accepted by the server)
+
+	authRespLen       = 32
+	authMagicOK       = "zhok"
+	authRejectPrefix  = "\xff\xfe\xfd\xfc"
+	authErrTimeout    = "zhdata handshake timed out (server did not answer before timeout)"
+	authErrUntrusted  = "zhdata handshake was not completed by a compatible zhdata server"
+	authErrServerFail = "zhdata authentication failed: server rejected this UUID"
 )
 
 // bucket member tOpen payload helpers (see tOpenBucketMember).
@@ -69,6 +76,34 @@ var (
 	errFrameTooLarge = errors.New("zhdata: frame too large")
 	errGoaway        = errors.New("zhdata: goaway (taken over)")
 )
+
+func encodeAuthOK(tx cipherStream) []byte {
+	p := make([]byte, authRespLen)
+	copy(p, authMagicOK)
+	tx.XORKeyStream(p, p)
+	return p
+}
+
+func encodeAuthReject() []byte {
+	p := make([]byte, authRespLen)
+	copy(p, authRejectPrefix)
+	return p
+}
+
+func isAuthReject(p []byte) bool {
+	return len(p) >= 4 && string(p[:4]) == authRejectPrefix
+}
+
+func verifyAuthOK(p []byte, rx cipherStream) bool {
+	if len(p) < authRespLen || isAuthReject(p) {
+		return false
+	}
+	raw := p[:authRespLen]
+	pt := make([]byte, authRespLen)
+	copy(pt, raw)
+	rx.XORKeyStream(pt, pt)
+	return string(pt[:4]) == authMagicOK
+}
 
 type Frame struct {
 	Typ     byte

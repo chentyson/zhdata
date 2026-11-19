@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -62,6 +63,10 @@ type clientApp struct {
 	stopped atomic.Bool
 
 	train []byte // periodic per-session training payload (keeps shaping buckets + congestion state warm)
+
+	dnsMu  sync.Mutex          // server-target resolver cache (not app.mu: resolvers can be slow)
+	dns    map[string]dnsEntry // host:port or host -> cached resolved IPs
+	dnsLog map[string]string   // target -> last IP set logged, to avoid 32 duplicate info lines
 }
 
 // cConn is one tunnel session slot and its stream bookkeeping.
@@ -134,6 +139,13 @@ type cStream struct {
 	noPump bool     // zhv5: member created without a local socket (memory-fed)
 
 	resendCount atomic.Int64 // diagnostics: frames retransmitted on another lane
+}
+
+func (s *cStream) targetString() string {
+	if s == nil || s.atyp == 0 || len(s.addr) == 0 {
+		return "-"
+	}
+	return addrStr(s.atyp, s.addr, s.port)
 }
 
 // bktOpen describes a zhv5 bucket member stream: byte range [off,off+ln) of
@@ -266,6 +278,8 @@ func newClientApp(cfg clientConfig) (*clientApp, error) {
 		stopCh:    make(chan struct{}),
 		dlStart:   dlStart,
 		split:     split,
+		dns:       map[string]dnsEntry{},
+		dnsLog:    map[string]string{},
 	}
 	for i := 0; i < cfg.conns; i++ {
 		a.conns = append(a.conns, &cConn{
@@ -544,10 +558,135 @@ func (cn *cConn) waitOpen(s *cStream) bool {
 	}
 }
 
+func sortIPsPreferIPv4(ips []string) []string {
+	out := make([]string, 0, len(ips))
+	for _, ip := range ips {
+		if !strings.ContainsRune(ip, ':') {
+			out = append(out, ip)
+		}
+	}
+	for _, ip := range ips {
+		if strings.ContainsRune(ip, ':') {
+			out = append(out, ip)
+		}
+	}
+	return out
+}
+
+func (a *clientApp) maybeLogResolvedLocked(target string, ips []string) {
+	if a.dnsLog == nil {
+		a.dnsLog = map[string]string{}
+	}
+	joined := strings.Join(ips, ",")
+	if a.dnsLog[target] == joined {
+		return
+	}
+	a.dnsLog[target] = joined
+	logInfo("client", "server target resolved target=%s ips=%s", target, joined)
+}
+
+func (a *clientApp) lookupHostClient(host string) ([]string, error) {
+	if ip := net.ParseIP(host); ip != nil {
+		return []string{host}, nil
+	}
+	now := time.Now().UnixNano()
+	a.dnsMu.Lock()
+	e, ok := a.dns[host]
+	a.dnsMu.Unlock()
+	if ok && e.expA > now {
+		return e.ips, nil
+	}
+
+	var lastErr error
+	collect := func(rs string, useDefault bool, to time.Duration) ([]string, error) {
+		r := &net.Resolver{PreferGo: true, Dial: func(ctx context.Context, proto, addr string) (net.Conn, error) {
+			d := net.Dialer{Timeout: 3 * time.Second}
+			return d.DialContext(ctx, "udp", rs)
+		}}
+		if useDefault {
+			r = net.DefaultResolver
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), to)
+		ips, err := r.LookupHost(ctx, host)
+		cancel()
+		return ips, err
+	}
+
+	ips, derr := collect("", true, 2*time.Second)
+	if derr != nil {
+		lastErr = derr
+	}
+	for _, rs := range []string{"8.8.8.8:53", "1.1.1.1:53", "223.5.5.5:53"} {
+		if len(ips) > 0 {
+			break
+		}
+		got, err := collect(rs, false, 5*time.Second)
+		if err == nil && len(got) > 0 {
+			ips = got
+			break
+		}
+		if err != nil {
+			lastErr = err
+		}
+	}
+	if len(ips) > 0 {
+		a.dnsMu.Lock()
+		if len(a.dns) > 4096 {
+			for k, old := range a.dns {
+				if old.expA < now {
+					delete(a.dns, k)
+				}
+			}
+		}
+		a.dns[host] = dnsEntry{ips: ips, expA: now + int64(5*time.Minute)}
+		a.dnsMu.Unlock()
+		return ips, nil
+	}
+	return nil, lastErr
+}
+
+func dialTargetWithIPs(a *clientApp, cn *cConn, target string) (net.Conn, error) {
+	host, port, err := net.SplitHostPort(target)
+	if err != nil {
+		host, port = target, ""
+	}
+	if port == "" {
+		return net.DialTimeout("tcp", target, handshakeTimeout)
+	}
+
+	ips, err := a.lookupHostClient(host)
+	if err != nil {
+		a.mu.Lock()
+		a.maybeLogResolvedLocked(target, nil)
+		a.mu.Unlock()
+		return nil, fmt.Errorf("resolve %s: %w", host, err)
+	}
+
+	sorted := sortIPsPreferIPv4(ips)
+	a.mu.Lock()
+	a.maybeLogResolvedLocked(target, sorted)
+	a.mu.Unlock()
+
+	perTO := minDur(5*time.Second, handshakeTimeout)
+	var lastErr error
+	for _, ip := range sorted {
+		addr := net.JoinHostPort(ip, port)
+		c, err := net.DialTimeout("tcp", addr, perTO)
+		if err == nil {
+			return c, nil
+		}
+		lastErr = fmt.Errorf("dial %s (%s): %w", target, addr, err)
+	}
+	if lastErr == nil {
+		lastErr = fmt.Errorf("no resolved address for %s", target)
+	}
+	return nil, lastErr
+}
+
 func (cn *cConn) dialSession() (*session, error) {
 	a := cn.app
 	target := a.servers[int(cn.idx)%len(a.servers)]
-	c, err := net.DialTimeout("tcp", target, handshakeTimeout)
+	c, err := dialTargetWithIPs(a, cn, target)
 	if err != nil {
 		return nil, err
 	}
@@ -562,10 +701,29 @@ func (cn *cConn) dialSession() (*session, error) {
 	tx.XORKeyStream(hp, hp) // tx consumed 32 keystream bytes; frames continue after
 	if _, err = c.Write(append(salt, hp...)); err != nil {
 		c.Close()
-		return nil, err
+		return nil, fmt.Errorf("write zhdata handshake to %s: %w", target, err)
 	}
-	c.SetDeadline(noDeadline())
+
+	auth := make([]byte, authRespLen)
+	if _, err = io.ReadFull(c, auth); err != nil {
+		c.Close()
+		if errors.Is(err, io.EOF) {
+			return nil, fmt.Errorf("%s: %v", authErrUntrusted, err)
+		}
+		return nil, fmt.Errorf("%s: %v", authErrTimeout, err)
+	}
+	if isAuthReject(auth) {
+		c.Close()
+		return nil, errors.New(authErrServerFail)
+	}
+
 	rx := newCTR(a.cfg.uuid, salt)
+	if !verifyAuthOK(auth, rx) {
+		c.Close()
+		return nil, fmt.Errorf("%s: unexpected auth response from %s", authErrUntrusted, target)
+	}
+
+	c.SetDeadline(noDeadline())
 	return newSession("client->"+target, c, tx, rx), nil
 }
 
@@ -581,7 +739,7 @@ func (cn *cConn) sessionLoop() {
 		}
 		sess, err := cn.dialSession()
 		if err != nil {
-			logWarn("client", "slot %d dial: %v (retry in %v)", cn.idx, err, backoff)
+			logWarn("client", "slot %d dial/auth failed: %v (check server address, DNS, port, firewall, UUID; retry in %v)", cn.idx, err, backoff)
 			if !sleepSelect(a.stopCh, backoff) {
 				return
 			}
@@ -769,7 +927,8 @@ func (cn *cConn) dispatch(gen uint64, f *Frame) {
 		}
 	case tReset:
 		if s != nil {
-			s.app.logf("tReset received sid=%d slot=%d -> teardown local conn", f.SID, cn.idx)
+			logWarn("client", "stream reset sid=%d slot=%d target=%s -> local connection closed",
+				f.SID, cn.idx, s.targetString())
 			// v0.11.19: the server reclaimed this stream (hole watchdog /
 			// backend death). Stop ALL retransmit/migration/fin re-sends for
 			// it: before this the tail resend + redoFin looped every sweep

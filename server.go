@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -302,31 +303,34 @@ func (a *serverApp) handle(c net.Conn) {
 	salt, enc := buf[:16], buf[16:48]
 
 	uuid, rx := "", cipherStream(nil)
+	version := ""
 	var slot byte
 	for _, u := range a.ks.snapshot() {
 		ctr := newCTR(u, salt)
 		pt := make([]byte, 32)
 		ctr.XORKeyStream(pt, enc)
-		if string(pt[:4]) == magic || string(pt[:4]) == "zhv4" { // zhv5 = bucket upload; zhv4 stays compatible (never opens bucket members)
+		if string(pt[:4]) == magic || string(pt[:4]) == "zhv5" || string(pt[:4]) == "zhv4" {
 			uuid, rx = u, ctr
+			version = string(pt[:4])
 			slot = pt[4] // handshake slot byte (0 = single-session legacy)
 			break
 		}
 	}
 	if uuid == "" {
-		if !a.allowFail(raddr) {
-			a.logf("handshake rate limited from %s", raddr)
-			c.Close()
-			return
-		}
 		if a.cfg.decoy != "" && looksHTTP(buf[:8]) {
 			a.spliceDecoy(c, buf)
 			return
 		}
-		a.logf("unknown handshake from %s", raddr)
+		if a.allowFail(raddr) {
+			logWarn("server", "auth failed from %s: unknown handshake, wrong UUID, or UUID not in server user list", raddr)
+		} else {
+			logDbg("server", "handshake rate limited from %s", raddr)
+		}
+		writeAuthReject(c)
 		c.Close()
 		return
 	}
+	wantAuth := version == magic
 
 	// takeover + max clients. Sessions are keyed per (uuid,slot): a client
 	// with -conns N holds N independent sessions that never take each other
@@ -341,7 +345,10 @@ func (a *serverApp) handle(c net.Conn) {
 	a.mu.Lock()
 	if a.active >= a.cfg.maxClients {
 		a.mu.Unlock()
-		logWarn("server", "max clients reached, rejecting %s from %s", uuid, raddr)
+		logWarn("server", "max clients reached, rejecting %s from %s", short(uuid), raddr)
+		if wantAuth {
+			writeAuthReject(c)
+		}
 		c.Close()
 		return
 	}
@@ -359,6 +366,16 @@ func (a *serverApp) handle(c net.Conn) {
 	}
 
 	sess := newSession("srv:"+short(uuid), c, newCTR(uuid, salt), rx)
+	if wantAuth {
+		c.SetWriteDeadline(deadline(3 * time.Second))
+		if _, err := c.Write(encodeAuthOK(sess.tx)); err != nil {
+			c.SetWriteDeadline(noDeadline())
+			logWarn("server", "auth ok write failed for uuid=%s slot=%d from %s: %v", short(uuid), slot, raddr, err)
+			sess.close()
+			return
+		}
+		c.SetWriteDeadline(noDeadline())
+	}
 	sh := &sSession{uuid: uuid, sess: sess, streams: map[uint16]*sStream{}}
 	a.mu.Lock()
 	a.conns[connKey] = sh
@@ -989,7 +1006,7 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 		host := addrHost(atyp, addr)
 		ips, lerr := a.lookupHost(host)
 		if lerr != nil {
-			a.logf("backend dial %s failed: lookup: %v", addrStr(atyp, addr, port), lerr)
+			logWarn("server", "backend DNS failed target=%s reason=%v", addrStr(atyp, addr, port), lerr)
 			a.closeStream(st, true)
 			return
 		}
@@ -1023,7 +1040,7 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 		bc, err = socksDial(a.cfg.backend, atyp, addr, port)
 	}
 	if err != nil {
-		a.logf("backend dial %s failed: %v", addrStr(atyp, addr, port), err)
+		logWarn("server", "backend connect failed target=%s reason=%v", addrStr(atyp, addr, port), err)
 		a.closeStream(st, true)
 		return
 	}
@@ -1088,7 +1105,7 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 	// wake any lane parked pre-dial (nothing could emit until now)
 	st.wakeAll()
 	if werr != nil {
-		a.logf("backend pre-flush err sid=%d: %v", st.sid, werr)
+		logWarn("server", "backend pre-write failed sid=%d target=%s reason=%v", st.sid, addrStr(atyp, addr, port), werr)
 		a.closeStream(st, true)
 		return
 	}
@@ -1180,7 +1197,11 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 		sh.sess.sendCtrl(Frame{Typ: tAck, SID: st.sid, Payload: p})
 	}
 	sh.sess.sendOrdered(Frame{Typ: tClose, SID: st.sid})
-	a.logf("backend pump done sid=%d bytes=%d err=%v", st.sid, total, rerr)
+	if (rerr != nil && !errors.Is(rerr, io.EOF)) || total == 0 {
+		logWarn("server", "backend no response sid=%d target=%s bytes=%d reason=%v", st.sid, addrStr(atyp, addr, port), total, rerr)
+	} else {
+		logDbg("server", "backend pump done sid=%d target=%s bytes=%d", st.sid, addrStr(atyp, addr, port), total)
+	}
 	a.closeStream(st, false)
 }
 
@@ -1251,7 +1272,9 @@ func (a *serverApp) closeStream(st *sStream, sendReset bool) {
 		bc.Close()
 	}
 	if sendReset {
-		a.logf("closeStream sid=%d RESET sent written=%d members=%d", st.sid, st.written, len(members))
+		logWarn("server", "stream reset sent sid=%d written=%d members=%d", st.sid, st.written, len(members))
+	} else {
+		logDbg("server", "closeStream sid=%d written=%d members=%d", st.sid, st.written, len(members))
 	}
 	for _, m := range members {
 		m.smu.Lock()
@@ -1351,6 +1374,12 @@ func (a *serverApp) spliceDecoy(c net.Conn, head []byte) {
 }
 
 // ---------------- helpers ----------------
+
+func writeAuthReject(c net.Conn) {
+	c.SetWriteDeadline(deadline(3 * time.Second))
+	_, _ = c.Write(encodeAuthReject())
+	c.SetWriteDeadline(noDeadline())
+}
 
 func addrHost(atyp byte, addr []byte) string {
 	switch atyp {

@@ -22,7 +22,7 @@ zhenhanvn/
 ```text
 zhenhanvn 启动核心：  bin/zhdata/zhdata.exe -c config.json     （cwd = binConfigs）
 本地代理：            127.0.0.1:<listen>  = SOCKS5 + HTTP（mixed）
-远端：                s-ui zhdata inbound 或 zhdata server（协议 zhv5，兼容 zhv4）
+远端：                s-ui zhdata inbound 或 zhdata server（协议 zhv6，兼容 zhv5/zhv4）
 ```
 
 ## 2. 进程与命令行契约
@@ -153,8 +153,8 @@ zhenhanvn 侧解析/过滤正则（可直接用于着色/过滤）：
 | 级别 | 事件 |
 |---|---|
 | `error` | 致命错误（配置错误、启动失败、退出前）；pumpUp 写失败；会话写队列死锁 |
-| `warning` | 拨号失败/退避重试、GOAWAY 接管、max-clients 拒绝、未知握手（探测）、握手限频、流超时重置（hole/overflow/finish slow）、后端拨号失败、队列满、用户源重载异常 |
-| `info` | 核心启动监听（client/server）、会话建立、users 加载/热加载 |
+| `warning` | 拨号失败/退避重试、握手/UUID 认证失败、GOAWAY 接管、max-clients 拒绝、握手限频、流重置、后端 DNS/连接失败、后端无响应、队列满、用户源重载异常 |
+| `info` | 核心启动监听（client/server）、zhdata 服务端目标解析出的 IP 地址、会话建立、users 加载/热加载 |
 | `debug` | 每流生命周期（backend connected/done、session ended、recycle 换新、重传、bucket 细节）、原 `-v` 全部内部日志 |
 
 `loglevel` 门控在**核心侧**完成：默认 `info` 时 debug 行不产生（零开销）；`debug` ≡ 旧 `-v`。环境变量 `ZHD_DEBUG=1` 追加协议帧级 trace（比 debug 更细，调试专用）。
@@ -163,8 +163,9 @@ zhenhanvn 侧解析/过滤正则（可直接用于着色/过滤）：
 
 ```text
 2026-11-19 09:03:47 [server] [info] listening on [127.0.0.1:18555], users=1, backend=direct, max-clients=10
+2026-11-19 09:03:49 [client] [info] server target resolved target=C498.example:49888 ips=1.2.3.4,5.6.7.8
 2026-11-19 09:03:49 [server] [info] session established uuid=smoke-uu slot=0 from 127.0.0.1
-2026-11-19 09:03:52 [client] [warning] slot 2 dial: dial tcp 1.2.3.4:8443: connectex refused (retry in 4s)
+2026-11-19 09:03:52 [client] [warning] slot 2 dial/auth failed: dial 1.2.3.4:8443 (1.2.3.4:8443): connectex refused (check server address, DNS, port, firewall, UUID; retry in 4s)
 2026-11-19 09:03:55 [main] [error] client mode requires -listen, -server and -uuid (or config listen/server/uuid)
 2026-11-19 09:04:01 [client] [debug] bucket done sid=7 cl=20971520 dur=2.113s
 ```
@@ -183,7 +184,7 @@ zhenhanvn 侧解析/过滤正则（可直接用于着色/过滤）：
 | 批量测速"测试全部" | 现只批 xray/sing_box，zhdata 节点被跳过（C# 侧加批量需 `LoadCoreConfigSpeedtest` 支持 zhdata 配置） |
 | TUN | zhdata 无 tun 入站；TUN 模式需走 sing-box 前置 → zhdata socks 的链式方案（框架侧设计） |
 | 组节点（PolicyGroup/ProxyChain） | 白名单只含 Xray/sing_box（框架侧） |
-| 协议兼容 | magic `zhv5`，服务端同时接受 `zhv4`：新核心客户端可连 0.12.x 旧服务端，无需同步升级 |
+| 协议兼容 | magic `zhv6`：握手后服务端显式回认证 OK/reject；服务端同时接受 `zhv5`/`zhv4` 旧客户端。新客户端需配 v0.14.0 服务端。 |
 
 ## 7. zhenhanvn 开发者验收清单
 
