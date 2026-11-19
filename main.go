@@ -12,7 +12,7 @@ import (
 	"syscall"
 )
 
-const version = "0.13.0" // zhenhanvn first-class core: -c config.json (zhenhanvn core contract), -version prints "zhdata <semver>", logs go to stdout, local listener is mixed (SOCKS5+HTTP); protocol magic zhv5 unchanged
+const version = "0.13.1" // zhenhanvn first-class core: -c config.json, stdout logs, mixed SOCKS5+HTTP local listener; abandon pre-open dead short uploads faster to avoid speedtest pumpUp finish-slow contamination
 
 func main() {
 	mode := flag.String("mode", "client", "client | server")

@@ -108,6 +108,7 @@ type cStream struct {
 	frontSince    time.Time            // when sentq[0] became the front (fast hole-retransmit timer)
 	finSent       bool                 // v0.11.15: local EOF seen, tClose sent (tail resend exemption)
 	reset         bool                 // v0.11.19: server tReset seen; suppress all retransmit for this stream
+	openAcked     bool                 // server tOpenAck seen; backend is established (used to abandon dead small streams faster)
 	finSeqVal     uint32               // v0.11.16: fin seq carried by tClose (for fin re-send)
 	finT          time.Time            // v0.11.16: last tClose send time (re-send if unprocessed)
 	laneAck       map[*cConn]uint32    // per-lane arrival counter (liveness)
@@ -714,6 +715,11 @@ func (cn *cConn) dispatch(gen uint64, f *Frame) {
 
 	switch f.Typ {
 	case tOpenAck:
+		if s != nil {
+			a.mu.Lock()
+			s.openAcked = true
+			a.mu.Unlock()
+		}
 		a.logf("open ack slot=%d sid=%d", cn.idx, f.SID)
 	case tData:
 		if s == nil {
@@ -1078,6 +1084,15 @@ func (a *clientApp) stallSweepLoop() {
 		}
 	}
 }
+
+// uploadFinishTimeout controls how long pumpUp keeps a closed local stream
+// alive while waiting for the server's DELIVERED ack prefix to reach the final
+// DATA seq. The 20s hard wait is needed for large uploads, but speedtest-style
+// abandoned short requests must not park 20s each and pollute the next run.
+const (
+	uploadFinishHardTimeout = 20 * time.Second
+	uploadFinishFastTimeout = 5 * time.Second
+)
 
 // sessionIdleRecycle: how long a session may carry no user data before we
 // re-dial it. ISP shapers degrade long-lived TCP flows (evenings: stale
@@ -1584,6 +1599,23 @@ func (s *cStream) sendFin(finSeq uint32) {
 	}
 }
 
+// sendReset tells the server to reclaim this stream. It is used after the
+// client gives up on an upload tail: teardown only closes the local socket,
+// while the server may still hold the sid and keep dialing/retransmitting it.
+func (s *cStream) sendReset() {
+	s.app.mu.Lock()
+	targets := make([]*session, 0, len(s.conns))
+	for _, cn := range s.conns {
+		if cn.sess != nil && cn.currentSidLocked(s) != 0 {
+			targets = append(targets, cn.sess)
+		}
+	}
+	s.app.mu.Unlock()
+	for _, sess := range targets {
+		sess.sendCtrl(Frame{Typ: tReset, SID: s.sid})
+	}
+}
+
 // pumpUp: local -> remote. One goroutine per stream for its whole life;
 // chunks are sequence-numbered and fanned out across attached sessions.
 // ---------------- zhv5 bucket upload (client) ----------------
@@ -2014,16 +2046,27 @@ func (s *cStream) pumpUpTailEOF(seq *uint32, t0 time.Time, sent, frames int64) {
 		logDbg("client", "pumpUp done sid=%d sent=%d frames=%d avg=%dB dur=%s",
 			s.sid, sent, frames, avg, time.Since(t0).Round(time.Millisecond))
 	}
-	s.sendFin(*seq + 1)
-	deadlineT := time.Now().Add(20 * time.Second)
+	s.finishUploadTail(*seq)
+}
+
+// finishUploadTail sends the final half-close and releases the stream only
+// after the server reports delivery, but abandons already-dead short streams
+// quickly enough that they do not contaminate the next speedtest burst.
+func (s *cStream) finishUploadTail(seq uint32) {
+	s.sendFin(seq + 1)
 	waitStart := time.Now()
+	timeout := s.uploadFinishTimeout(seq)
+	deadlineT := waitStart.Add(timeout)
 	var acked uint32
+	var delivered bool
+	var reset bool
 	for {
 		s.app.mu.Lock()
 		acked = s.ackedSeq
-		delivered := acked >= *seq
+		delivered = acked >= seq
+		reset = s.reset
 		s.app.mu.Unlock()
-		if delivered || time.Now().After(deadlineT) {
+		if delivered || reset || time.Now().After(deadlineT) {
 			break
 		}
 		select {
@@ -2032,11 +2075,31 @@ func (s *cStream) pumpUpTailEOF(seq *uint32, t0 time.Time, sent, frames int64) {
 		case <-time.After(10 * time.Millisecond):
 		}
 	}
-	if waited := time.Since(waitStart); waited > 2*time.Second {
-		logWarn("client", "pumpUp finish slow sid=%d lastSeq=%d ackedSeq=%d waited=%v",
-			s.sid, *seq, acked, waited.Round(time.Millisecond))
+
+	waited := time.Since(waitStart)
+	if !delivered && !reset {
+		if timeout <= uploadFinishFastTimeout {
+			logDbg("client", "abandoned pre-open upload sid=%d lastSeq=%d ackedSeq=%d waited=%v",
+				s.sid, seq, acked, waited.Round(time.Millisecond))
+		} else if waited > 2*time.Second {
+			logWarn("client", "pumpUp finish slow sid=%d lastSeq=%d ackedSeq=%d waited=%v",
+				s.sid, seq, acked, waited.Round(time.Millisecond))
+		}
+		s.sendReset()
 	}
 	s.teardown()
+}
+
+// uploadFinishTimeout keeps large uploads protected, but makes short streams
+// that never even produced an tOpenAck die before they can accumulate for
+// seconds and hold upload lanes/window during the next test.
+func (s *cStream) uploadFinishTimeout(seq uint32) time.Duration {
+	s.app.mu.Lock()
+	defer s.app.mu.Unlock()
+	if seq <= 1 && s.ackedSeq == 0 && !s.openAcked {
+		return uploadFinishFastTimeout
+	}
+	return uploadFinishHardTimeout
 }
 
 func (s *cStream) pumpUp() {
@@ -2116,33 +2179,12 @@ func (s *cStream) pumpUp() {
 				logDbg("client", "pumpUp done sid=%d sent=%d frames=%d avg=%dB dur=%s",
 					s.sid, sent, frames, avg, time.Since(t0).Round(time.Millisecond))
 			}
-			s.sendFin(seq + 1)
 			// Wait (bounded) for the tail to be DELIVERED before tearing down:
 			// teardown releases pending frames, so closing immediately would
 			// silently drop the end of the upload. The server also reports
 			// delivery on the FIN path, so this normally settles in one RTT.
-			deadline := time.Now().Add(20 * time.Second)
-			waitStart := time.Now()
-			var acked uint32
-			for {
-				s.app.mu.Lock()
-				acked = s.ackedSeq
-				delivered := acked >= seq
-				s.app.mu.Unlock()
-				if delivered || time.Now().After(deadline) {
-					break
-				}
-				select {
-				case <-s.done:
-					return
-				case <-time.After(10 * time.Millisecond):
-				}
-			}
-			if waited := time.Since(waitStart); waited > 2*time.Second {
-				logWarn("client", "pumpUp finish slow sid=%d lastSeq=%d ackedSeq=%d waited=%v",
-					s.sid, seq, acked, waited.Round(time.Millisecond))
-			}
-			s.teardown()
+			// finishUploadTail shortens the wait for already-dead short streams.
+			s.finishUploadTail(seq)
 			return
 		}
 	}
