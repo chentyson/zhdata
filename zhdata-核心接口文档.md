@@ -68,7 +68,7 @@ new CoreInfo {
 | `backend` | string | `direct` | server 侧：`direct` 或 socks 地址（对接 sing-box socks inbound） |
 | `max_clients` | int | 100 | server 侧全局会话上限 |
 | `decoy` | string | 空 | server 侧：非协议 HTTP 流量 splice 目标 `host:port` |
-| `loglevel` | string | `info` | `error` \| `warning` \| `info` \| `debug`（§5） |
+| `loglevel` | string | `info` | `none` \| `error` \| `warning` \| `info` \| `debug`（§5） |
 | `verbose` | bool | false | 兼容字段：true ≡ `loglevel: "debug"` |
 | `conns` | int | 1 | 并行会话数 1–64（建议 16–32） |
 | `spread` | int | 8 | 单大流 fan-out lane 上限（自动 cap 到 conns） |

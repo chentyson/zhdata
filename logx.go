@@ -21,6 +21,7 @@ import (
 // lifecycle (backend connected/done, session ended, recycle redial) plus a.logf
 // internals. ZHD_DEBUG=1 additionally turns on protocol-frame tracing.
 const (
+	lvlNone  = -1
 	lvlError = 0
 	lvlWarn  = 1
 	lvlInfo  = 2
@@ -29,9 +30,12 @@ const (
 
 var logLevel = lvlInfo
 
-// parseLogLevel accepts error|warning|warn|info|debug (case-insensitive).
+// parseLogLevel accepts none|error|warning|warn|info|debug (case-insensitive).
+// "none" is the zhenhanvn "logging disabled" level: the core stays silent.
 func parseLogLevel(s string) (int, bool) {
 	switch strings.ToLower(strings.TrimSpace(s)) {
+	case "none":
+		return lvlNone, true
 	case "error":
 		return lvlError, true
 	case "warning", "warn":
@@ -47,7 +51,7 @@ func parseLogLevel(s string) (int, bool) {
 var lvlName = []string{"error", "warning", "info", "debug"}
 
 func logAt(lvl int, tag, format string, v ...any) {
-	if lvl > logLevel {
+	if logLevel == lvlNone || lvl > logLevel {
 		return
 	}
 	log.Printf("[%s] [%s] %s", tag, lvlName[lvl], fmt.Sprintf(format, v...))

@@ -12,7 +12,7 @@ import (
 	"syscall"
 )
 
-const version = "0.13.1" // zhenhanvn first-class core: -c config.json, stdout logs, mixed SOCKS5+HTTP local listener; abandon pre-open dead short uploads faster to avoid speedtest pumpUp finish-slow contamination
+const version = "0.13.2" // zhenhanvn first-class core: -c config.json, stdout logs, mixed SOCKS5+HTTP local listener; loglevel now supports zhenhanvn's none/error/warning/info/debug levels
 
 func main() {
 	mode := flag.String("mode", "client", "client | server")
