@@ -18,8 +18,10 @@ func dbg(format string, v ...any) {
 }
 
 // socksAccept performs a SOCKS5 CONNECT handshake as the server side
-// (used by the client tunnel's local listener).
-func socksAccept(c net.Conn) (atyp byte, addr []byte, port uint16, err error) {
+// (used by the client tunnel's local listener). It takes an io.ReadWriter so
+// the mixed local listener can hand it a bufio-backed wrapper (the sniffed
+// first byte must not be lost); a plain net.Conn still satisfies it.
+func socksAccept(c io.ReadWriter) (atyp byte, addr []byte, port uint16, err error) {
 	dbg("socksAccept:enter")
 	var b [2]byte
 	if _, err = io.ReadFull(c, b[:]); err != nil {

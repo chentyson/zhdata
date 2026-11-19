@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/binary"
 	"errors"
@@ -377,8 +378,14 @@ func (a *clientApp) logf(format string, v ...any) {
 	}
 }
 
-// ---------------- local socks side ----------------
+// ---------------- local socks / mixed (socks+http) side ----------------
 
+// acceptLoop runs the Mixed local listener: every accepted connection is
+// sniffed (1 byte, kept in the bufio buffer) and dispatched by localAccept —
+// 0x05 runs the SOCKS5 handshake, an ASCII letter runs the HTTP proxy
+// handshake (CONNECT or absolute-URI/Host-target plain methods), anything
+// else is closed. Both paths hand back a local conn (possibly a wrapper that
+// re-feeds bytes the parser consumed) plus the target (atyp, addr, port).
 func (a *clientApp) acceptLoop(ln net.Listener) {
 	for {
 		c, err := ln.Accept()
@@ -389,17 +396,18 @@ func (a *clientApp) acceptLoop(ln net.Listener) {
 			return
 		}
 		c.SetDeadline(deadline(handshakeTimeout))
-		atyp, addr, port, err := socksAccept(c)
+		br := bufio.NewReader(c)
+		local, atyp, addr, port, err := localAccept(br, c)
 		c.SetDeadline(noDeadline())
 		if err != nil {
-			a.logf("socks accept: %v", err)
+			a.logf("local accept: %v", err)
 			c.Close()
 			continue
 		}
 		s := &cStream{
 			app:   a,
 			id:    atomic.AddUint32(&a.streamID, 1),
-			local: c,
+			local: local,
 			atyp:  atyp, addr: addr, port: port,
 			rq:   make(chan []byte, 64),
 			done: make(chan struct{}),
@@ -832,9 +840,10 @@ func (s *cStream) teardown() {
 
 func (s *cStream) closeWriteLocal() {
 	s.app.logf("stream %d closeWriteLocal", s.id)
-	if tc, ok := s.local.(*net.TCPConn); ok {
-		tc.CloseWrite()
-	} else {
+	// The local side may be a mixed-listener wrapper (bufferedConn/replayConn)
+	// around the TCP conn; the wrappers expose CloseWrite so the half-close
+	// (which lets the server CloseWrite the backend) still works.
+	if err := closeWriteConn(s.local); err != nil {
 		s.teardown()
 	}
 }

@@ -1,0 +1,12 @@
+{
+  "mode": "client",
+  "listen": "127.0.0.1:10808",
+  "server": "example.com:8443,example.com:8444",
+  "uuid": "your-uuid",
+  "conns": 16,
+  "spread": 8,
+  "dlconns": -1,
+  "migrate": 1,
+  "slotbase": 0,
+  "verbose": false
+}

@@ -2,6 +2,7 @@
 *.err
 *.out
 *.json
+!config.*.example.json
 *.exe
 dist/
 big*.bin

@@ -1,0 +1,9 @@
+{
+  "mode": "server",
+  "listen": "8443,8444",
+  "users": "/etc/s-ui/private/s-ui.db,/opt/zhdata/users.txt",
+  "backend": "direct",
+  "max_clients": 100,
+  "decoy": "",
+  "verbose": false
+}

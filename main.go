@@ -11,11 +11,11 @@ import (
 	"syscall"
 )
 
-const version = "0.12.4" // + fix download regression: drop sessMap recycle-pin (flows decayed, 60M->15M); bump session activity on stream-open instead
+const version = "0.13.0" // zhenhanvn first-class core: -c config.json (zhenhanvn core contract), -version prints "zhdata <semver>", logs go to stdout, local listener is mixed (SOCKS5+HTTP); protocol magic zhv5 unchanged
 
 func main() {
 	mode := flag.String("mode", "client", "client | server")
-	listen := flag.String("listen", "", "listen address; comma separated for multi-port (client: local socks5; server: zhdata public ports)")
+	listen := flag.String("listen", "", "listen address; comma separated for multi-port (client: local mixed socks5+http proxy; server: zhdata public ports)")
 	server := flag.String("server", "", "zhdata server host:port, comma separated for multi-port slots (client)")
 	uuid := flag.String("uuid", "", "user uuid (client)")
 	users := flag.String("users", "", "user key sources: comma separated txt/sqlite paths, e.g. /etc/s-ui/private/s-ui.db,/opt/zhdata/users.txt (server)")
@@ -30,35 +30,71 @@ func main() {
 	dlconns := flag.Int("dlconns", -1, "split pools: last N sessions are download-only homes, rest upload-only lanes (-1 = auto conns/2 (v0.11.18 default), 0 = shared)")
 	slotbase := flag.Int("slotbase", 0, "first slot index for this instance (v0.11.20; run two clients side by side, e.g. -conns 32 -slotbase 32, without takeover conflicts)")
 	pprofAddr := flag.String("pprof", "", "enable net/http/pprof (goroutine/heap dumps) on this address, e.g. 127.0.0.1:6060; empty = off")
+	configPath := flag.String("c", "", "JSON config file (zhenhanvn core mode, see config.client.example.json); explicit flags below override it")
 	showVer := flag.Bool("version", false, "print version")
 	flag.Parse()
 
 	if *showVer {
-		fmt.Println("zhdata-tunnel", version)
+		// zhenhanvn UpdateService parses X.Y.Z out of this line.
+		fmt.Println("zhdata", version)
 		return
 	}
 	log.SetFlags(log.LstdFlags)
-	if *pprofAddr != "" {
+	// zhenhanvn core contract: logs on stdout so the GUI shows them.
+	log.SetOutput(os.Stdout)
+
+	flagSet := map[string]bool{}
+	flag.Visit(func(f *flag.Flag) { flagSet[f.Name] = true })
+	var appCfg *appConfig
+	if *configPath != "" {
+		var err error
+		if appCfg, err = loadAppConfig(*configPath); err != nil {
+			fatal("%v", err)
+		}
+	}
+	p, err := resolveParams(coreParams{
+		mode:       *mode,
+		listen:     *listen,
+		server:     *server,
+		uuid:       *uuid,
+		users:      *users,
+		backend:    *backend,
+		decoy:      *decoy,
+		pprof:      *pprofAddr,
+		maxClients: *maxClients,
+		conns:      *conns,
+		spread:     *spread,
+		train:      *train,
+		migrate:    *migrate,
+		dlconns:    *dlconns,
+		slotbase:   *slotbase,
+		verbose:    *verbose,
+	}, flagSet, appCfg)
+	if err != nil {
+		fatal("config: %v", err)
+	}
+
+	if p.pprof != "" {
 		go func() {
-			log.Printf("[pprof] listening on http://%s/debug/pprof/", *pprofAddr)
-			if err := http.ListenAndServe(*pprofAddr, nil); err != nil {
+			log.Printf("[pprof] listening on http://%s/debug/pprof/", p.pprof)
+			if err := http.ListenAndServe(p.pprof, nil); err != nil {
 				log.Printf("[pprof] server: %v", err)
 			}
 		}()
 	}
 
-	switch *mode {
+	switch p.mode {
 	case "server":
-		if *listen == "" || *users == "" {
-			fatal("server mode requires -listen and -users")
+		if p.listen == "" || p.users == "" {
+			fatal("server mode requires -listen and -users (or config listen/users)")
 		}
 		app, err := newServerApp(serverConfig{
-			listen:     *listen,
-			usersPath:  *users,
-			backend:    *backend,
-			maxClients: *maxClients,
-			decoy:      *decoy,
-			verbose:    *verbose,
+			listen:     p.listen,
+			usersPath:  p.users,
+			backend:    p.backend,
+			maxClients: p.maxClients,
+			decoy:      p.decoy,
+			verbose:    p.verbose,
 		})
 		if err != nil {
 			fatal("server: %v", err)
@@ -66,29 +102,29 @@ func main() {
 		waitSignal()
 		app.Close()
 	case "client":
-		if *listen == "" || *server == "" || *uuid == "" {
-			fatal("client mode requires -listen, -server and -uuid")
+		if p.listen == "" || p.server == "" || p.uuid == "" {
+			fatal("client mode requires -listen, -server and -uuid (or config listen/server/uuid)")
 		}
 		app, err := newClientApp(clientConfig{
-			listen:   *listen,
-			server:   *server,
-			uuid:     *uuid,
-			conns:    *conns,
-			spread:   *spread,
-			train:    *train,
-			migrate:  *migrate,
-			dlconns:  *dlconns,
-			slotbase: *slotbase,
-			verbose:  *verbose,
+			listen:   p.listen,
+			server:   p.server,
+			uuid:     p.uuid,
+			conns:    p.conns,
+			spread:   p.spread,
+			train:    p.train,
+			migrate:  p.migrate,
+			dlconns:  p.dlconns,
+			slotbase: p.slotbase,
+			verbose:  p.verbose,
 		})
 		if err != nil {
 			fatal("client: %v", err)
 		}
-		log.Printf("[client] socks5 listening on %s -> %s", app.Addr(), *server)
+		log.Printf("[client] mixed socks5+http listening on %s -> %s", app.Addr(), p.server)
 		waitSignal()
 		app.Close()
 	default:
-		fatal("unknown mode %q", *mode)
+		fatal("unknown mode %q", p.mode)
 	}
 }
 
