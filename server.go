@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"strconv"
 	"strings"
@@ -160,7 +159,7 @@ func newServerApp(cfg serverConfig) (*serverApp, error) {
 	for _, ln := range lns {
 		addrs = append(addrs, ln.Addr().String())
 	}
-	log.Printf("[server] listening on %v, users=%d, backend=%s, max-clients=%d",
+	logInfo("server", "listening on %v, users=%d, backend=%s, max-clients=%d",
 		addrs, len(ks.snapshot()), cfg.backend, cfg.maxClients)
 	for _, ln := range lns {
 		go a.acceptLoop(ln)
@@ -270,10 +269,10 @@ func (a *serverApp) Close() {
 	}
 }
 
+// logf is the server's debug channel: always called, level-gated globally
+// (cfg.verbose stays as an API field but no longer gates logging output).
 func (a *serverApp) logf(format string, v ...any) {
-	if a.cfg.verbose {
-		log.Printf("[server] "+format, v...)
-	}
+	logDbg("server", format, v...)
 }
 
 func (a *serverApp) acceptLoop(ln net.Listener) {
@@ -281,7 +280,7 @@ func (a *serverApp) acceptLoop(ln net.Listener) {
 		c, err := ln.Accept()
 		if err != nil {
 			if !a.stopped.Load() {
-				log.Printf("[server] accept: %v", err)
+				logWarn("server", "accept: %v", err)
 			}
 			return
 		}
@@ -342,7 +341,7 @@ func (a *serverApp) handle(c net.Conn) {
 	a.mu.Lock()
 	if a.active >= a.cfg.maxClients {
 		a.mu.Unlock()
-		log.Printf("[server] max clients reached, rejecting %s from %s", uuid, raddr)
+		logWarn("server", "max clients reached, rejecting %s from %s", uuid, raddr)
 		c.Close()
 		return
 	}
@@ -351,7 +350,7 @@ func (a *serverApp) handle(c net.Conn) {
 	a.mu.Unlock()
 
 	if old != nil {
-		log.Printf("[server] takeover uuid=%s slot=%d (old conn from different client)", short(uuid), slot)
+		logWarn("server", "takeover uuid=%s slot=%d (old conn from different client)", short(uuid), slot)
 		old.sess.sendCtrl(Frame{Typ: tGoaway})
 		go func() {
 			time.Sleep(300 * time.Millisecond)
@@ -365,7 +364,7 @@ func (a *serverApp) handle(c net.Conn) {
 	a.conns[connKey] = sh
 	a.mu.Unlock()
 	a.estab.Add(1)
-	log.Printf("[server] session established uuid=%s slot=%d from %s", short(uuid), slot, raddr)
+	logInfo("server", "session established uuid=%s slot=%d from %s", short(uuid), slot, raddr)
 
 	err := sess.run(func(f *Frame) { a.dispatch(sh, f) })
 	sh.closeAll(a)
@@ -375,7 +374,7 @@ func (a *serverApp) handle(c net.Conn) {
 		delete(a.conns, connKey)
 	}
 	a.mu.Unlock()
-	log.Printf("[server] session ended uuid=%s slot=%d: %v", short(uuid), slot, err)
+	logDbg("server", "session ended uuid=%s slot=%d: %v", short(uuid), slot, err)
 }
 
 func streamKey(uuid string, sid uint16) string {

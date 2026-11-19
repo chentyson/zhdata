@@ -3,17 +3,17 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"os"
-	"time"
 )
 
 var dbgOn = os.Getenv("ZHD_DEBUG") != ""
 
+// dbg is the ZHD_DEBUG=1 protocol-frame trace (on top of -loglevel debug).
+// Timestamps come from the log package itself.
 func dbg(format string, v ...any) {
 	if dbgOn {
-		log.Printf("%s "+format, append([]any{time.Now().Format("15:04:05.000")}, v...)...)
+		logDbg("dbg", format, v...)
 	}
 }
 

@@ -8,6 +8,7 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 )
 
@@ -31,6 +32,7 @@ func main() {
 	slotbase := flag.Int("slotbase", 0, "first slot index for this instance (v0.11.20; run two clients side by side, e.g. -conns 32 -slotbase 32, without takeover conflicts)")
 	pprofAddr := flag.String("pprof", "", "enable net/http/pprof (goroutine/heap dumps) on this address, e.g. 127.0.0.1:6060; empty = off")
 	configPath := flag.String("c", "", "JSON config file (zhenhanvn core mode, see config.client.example.json); explicit flags below override it")
+	logLevelFlag := flag.String("loglevel", "info", "log level: error | warning | info | debug (debug == same detail as -v)")
 	showVer := flag.Bool("version", false, "print version")
 	flag.Parse()
 
@@ -61,6 +63,7 @@ func main() {
 		backend:    *backend,
 		decoy:      *decoy,
 		pprof:      *pprofAddr,
+		loglevel:   *logLevelFlag,
 		maxClients: *maxClients,
 		conns:      *conns,
 		spread:     *spread,
@@ -74,11 +77,30 @@ func main() {
 		fatal("config: %v", err)
 	}
 
+	// log level gate: explicit -loglevel > config loglevel > (-v => debug) > info
+	lvl, lvlOK := parseLogLevel(p.loglevel)
+	switch {
+	case flagSet["loglevel"]:
+		if !lvlOK {
+			fatal("unknown -loglevel %q (want error|warning|info|debug)", p.loglevel)
+		}
+		logLevel = lvl
+	case p.verbose:
+		logLevel = lvlDebug
+	case lvlOK && lvl != lvlInfo:
+		logLevel = lvl
+	default:
+		logLevel = lvlInfo
+	}
+	if !flagSet["loglevel"] && strings.TrimSpace(p.loglevel) != "" && !lvlOK {
+		logWarn("main", "unknown loglevel %q in config, using %q", p.loglevel, lvlName[logLevel])
+	}
+
 	if p.pprof != "" {
 		go func() {
-			log.Printf("[pprof] listening on http://%s/debug/pprof/", p.pprof)
+			logInfo("pprof", "listening on http://%s/debug/pprof/", p.pprof)
 			if err := http.ListenAndServe(p.pprof, nil); err != nil {
-				log.Printf("[pprof] server: %v", err)
+				logErr("pprof", "server: %v", err)
 			}
 		}()
 	}
@@ -120,7 +142,7 @@ func main() {
 		if err != nil {
 			fatal("client: %v", err)
 		}
-		log.Printf("[client] mixed socks5+http listening on %s -> %s", app.Addr(), p.server)
+		logInfo("client", "mixed socks5+http listening on %s -> %s", app.Addr(), p.server)
 		waitSignal()
 		app.Close()
 	default:
@@ -129,7 +151,7 @@ func main() {
 }
 
 func fatal(format string, v ...any) {
-	log.Printf(format, v...)
+	logErr("main", format, v...)
 	os.Exit(1)
 }
 

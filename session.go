@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/cipher"
-	"log"
 	"net"
 	"sync"
 	"time"
@@ -122,7 +121,7 @@ func (s *session) sendCtrl(f Frame) {
 	case s.ctrlQ <- f:
 	case <-s.done:
 	default:
-		log.Printf("[session] %s ctrl queue jammed (writer stuck) -> close", s.name)
+		logErr("session", "%s ctrl queue jammed (writer stuck) -> close", s.name)
 		s.close()
 	}
 }
@@ -208,7 +207,7 @@ func (s *session) writer() {
 		s.conn.SetWriteDeadline(deadline(writeTimeout))
 		t0 := time.Now()
 		if _, err := s.conn.Write(buf); err != nil {
-			log.Printf("[session] %s write err after %v (frame typ=%d sid=%d len=%d): %v",
+			logWarn("session", "%s write err after %v (frame typ=%d sid=%d len=%d): %v",
 				s.name, time.Since(t0).Round(time.Millisecond), f.Typ, f.SID, len(f.Payload), err)
 			s.close()
 			return

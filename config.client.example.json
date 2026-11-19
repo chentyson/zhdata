@@ -8,5 +8,6 @@
   "dlconns": -1,
   "migrate": 1,
   "slotbase": 0,
+  "loglevel": "info",
   "verbose": false
 }

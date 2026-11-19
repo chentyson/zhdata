@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"os"
 	"strconv"
@@ -350,7 +349,7 @@ func socksListeners(addr string) ([]net.Listener, error) {
 		if ln2, err := net.Listen("tcp", companion); err == nil {
 			lns = append(lns, ln2)
 		} else {
-			log.Printf("[client] companion listen %s unavailable: %v", companion, err)
+			logWarn("client", "companion listen %s unavailable: %v", companion, err)
 		}
 	}
 	return lns, nil
@@ -372,10 +371,10 @@ func (a *clientApp) Close() {
 	}
 }
 
+// logf is the client's debug channel: always called, level-gated globally
+// (cfg.verbose stays as an API field but no longer gates logging output).
 func (a *clientApp) logf(format string, v ...any) {
-	if a.cfg.verbose {
-		log.Printf("[client] "+format, v...)
-	}
+	logDbg("client", format, v...)
 }
 
 // ---------------- local socks / mixed (socks+http) side ----------------
@@ -391,7 +390,7 @@ func (a *clientApp) acceptLoop(ln net.Listener) {
 		c, err := ln.Accept()
 		if err != nil {
 			if !a.stopped.Load() {
-				log.Printf("[client] accept: %v", err)
+				logWarn("client", "accept: %v", err)
 			}
 			return
 		}
@@ -581,7 +580,7 @@ func (cn *cConn) sessionLoop() {
 		}
 		sess, err := cn.dialSession()
 		if err != nil {
-			a.logf("slot %d dial: %v (retry in %v)", cn.idx, err, backoff)
+			logWarn("client", "slot %d dial: %v (retry in %v)", cn.idx, err, backoff)
 			if !sleepSelect(a.stopCh, backoff) {
 				return
 			}
@@ -636,9 +635,9 @@ func (cn *cConn) sessionLoop() {
 		}
 		backoff = time.Second
 		if a.cfg.conns == 1 {
-			log.Printf("[client] session established (gen=%d, reopen streams=%d)", gen, nstreams)
+			logInfo("client", "session established (gen=%d, reopen streams=%d)", gen, nstreams)
 		} else {
-			log.Printf("[client] session established slot=%d (gen=%d, reopen streams=%d)", cn.idx, gen, nstreams)
+			logInfo("client", "session established slot=%d (gen=%d, reopen streams=%d)", cn.idx, gen, nstreams)
 		}
 		estStart := time.Now()
 		cn.lastAct.Store(estStart.UnixNano())
@@ -646,8 +645,8 @@ func (cn *cConn) sessionLoop() {
 			cn.lastAct.Store(time.Now().UnixNano())
 			t0 := time.Now()
 			cn.dispatch(gen, f)
-			if d := time.Since(t0); d > 500*time.Millisecond && a.cfg.verbose {
-				log.Printf("[client] dispatch slow slot=%d typ=%d sid=%d took=%v", cn.idx, f.Typ, f.SID, d.Round(time.Millisecond))
+			if d := time.Since(t0); d > 500*time.Millisecond {
+				logWarn("client", "dispatch slow slot=%d typ=%d sid=%d took=%v", cn.idx, f.Typ, f.SID, d.Round(time.Millisecond))
 			}
 		})
 		a.mu.Lock()
@@ -687,7 +686,7 @@ func (cn *cConn) sessionLoop() {
 				shift = 6
 			}
 			d := minDur(time.Duration(1<<shift)*time.Second, 60*time.Second)
-			log.Printf("[client] slot %d taken over (goaway), reconnect in %v", cn.idx, d)
+			logWarn("client", "slot %d taken over (goaway), reconnect in %v", cn.idx, d)
 			if !sleepSelect(a.stopCh, d) {
 				return
 			}
@@ -864,7 +863,7 @@ func (s *cStream) dbgLog(sent, frames int64, t0 time.Time) {
 	if frames > 0 {
 		avg = sent / frames
 	}
-	log.Printf("[dbg] sid=%d sent=%d frames=%d avg=%dB lanes=%d inflight=%dB ackedSeq=%d el=%s%s",
+	logDbg("dbg", "sid=%d sent=%d frames=%d avg=%dB lanes=%d inflight=%dB ackedSeq=%d el=%s%s",
 		s.sid, sent, frames, avg, lanes, inflight, acked, time.Since(t0).Round(time.Second), b.String())
 }
 
@@ -1133,9 +1132,7 @@ func (a *clientApp) sessionRecycleLoop() {
 		}
 		a.mu.Unlock()
 		if victim != nil {
-			if a.cfg.verbose {
-				log.Printf("[client] recycle: slot %d idle %v -> redial (%d idle sessions)", victim.idx, now.Sub(vt).Round(time.Second), idle)
-			}
+			logDbg("client", "recycle: slot %d idle %v -> redial (%d idle sessions)", victim.idx, now.Sub(vt).Round(time.Second), idle)
 			victim.sess.close() // sessionLoop reconnects with backoff
 		}
 	}
@@ -1293,7 +1290,7 @@ func (s *cStream) checkStalls() {
 		s.sendFin(fv)
 	}
 	if len(frames) > 0 && os.Getenv("ZHD_DEBUG2") != "" {
-		log.Printf("[client] retransmit sid=%d frames=%d lanes=%d total=%d",
+		logDbg("client", "retransmit sid=%d frames=%d lanes=%d total=%d",
 			s.sid, len(frames), len(s.conns), s.resendCount.Load())
 	}
 	for _, cn := range dead {
@@ -1978,9 +1975,7 @@ func (s *cStream) pumpUpBuckets(raw []byte, hdrEnd int, cl uint64) {
 		s.teardown()
 		return
 	}
-	if a.cfg.verbose {
-		log.Printf("[client] bucket done sid=%d cl=%d dur=%s", s.sid, cl, time.Since(t0).Round(time.Millisecond))
-	}
+	logDbg("client", "bucket done sid=%d cl=%d dur=%s", s.sid, cl, time.Since(t0).Round(time.Millisecond))
 	// All body bytes are at the backend in order. Close the upload so a
 	// backend that keys on EOF sees the complete request, then keep the
 	// stream alive draining local until EOF so the response flows back.
@@ -2011,12 +2006,12 @@ func (s *cStream) pumpUpBuckets(raw []byte, hdrEnd int, cl uint64) {
 // pumpUpTailEOF: the fin/finish/teardown tail shared with the bucketed path
 // after the last bucket group completes.
 func (s *cStream) pumpUpTailEOF(seq *uint32, t0 time.Time, sent, frames int64) {
-	if s.app.cfg.verbose && sent >= spreadThreshold {
+	if sent >= spreadThreshold {
 		avg := int64(0)
 		if frames > 0 {
 			avg = sent / frames
 		}
-		log.Printf("[client] pumpUp done sid=%d sent=%d frames=%d avg=%dB dur=%s",
+		logDbg("client", "pumpUp done sid=%d sent=%d frames=%d avg=%dB dur=%s",
 			s.sid, sent, frames, avg, time.Since(t0).Round(time.Millisecond))
 	}
 	s.sendFin(*seq + 1)
@@ -2037,8 +2032,8 @@ func (s *cStream) pumpUpTailEOF(seq *uint32, t0 time.Time, sent, frames int64) {
 		case <-time.After(10 * time.Millisecond):
 		}
 	}
-	if waited := time.Since(waitStart); waited > 2*time.Second && s.app.cfg.verbose {
-		log.Printf("[client] pumpUp finish slow sid=%d lastSeq=%d ackedSeq=%d waited=%v",
+	if waited := time.Since(waitStart); waited > 2*time.Second {
+		logWarn("client", "pumpUp finish slow sid=%d lastSeq=%d ackedSeq=%d waited=%v",
 			s.sid, *seq, acked, waited.Round(time.Millisecond))
 	}
 	s.teardown()
@@ -2078,9 +2073,7 @@ func (s *cStream) pumpUp() {
 	for {
 		// wait until this stream is OPEN on at least one live session
 		if !s.waitOpenAny() {
-			if s.app.cfg.verbose {
-				log.Printf("[client] pumpUp exit stream=%d sent=%d (session gone)", s.id, sent)
-			}
+			logWarn("client", "pumpUp exit stream=%d sent=%d (session gone)", s.id, sent)
 			return
 		}
 		s.local.SetReadDeadline(deadline(2 * time.Minute))
@@ -2112,15 +2105,15 @@ func (s *cStream) pumpUp() {
 			// EOF / error: half-close (finSeq = next seq) then teardown.
 			// EOF is the NORMAL end of an app stream (speedtests open
 			// hundreds of tiny ones); only log abnormal terminations.
-			if s.app.cfg.verbose && !streamChurn(err) {
-				log.Printf("[client] pumpUp err stream=%d sent=%d err=%v", s.id, sent, err)
+			if !streamChurn(err) {
+				logErr("client", "pumpUp err stream=%d sent=%d err=%v", s.id, sent, err)
 			}
-			if s.app.cfg.verbose && sent >= spreadThreshold {
+			if sent >= spreadThreshold {
 				avg := int64(0)
 				if frames > 0 {
 					avg = sent / frames
 				}
-				log.Printf("[client] pumpUp done sid=%d sent=%d frames=%d avg=%dB dur=%s",
+				logDbg("client", "pumpUp done sid=%d sent=%d frames=%d avg=%dB dur=%s",
 					s.sid, sent, frames, avg, time.Since(t0).Round(time.Millisecond))
 			}
 			s.sendFin(seq + 1)
@@ -2145,8 +2138,8 @@ func (s *cStream) pumpUp() {
 				case <-time.After(10 * time.Millisecond):
 				}
 			}
-			if waited := time.Since(waitStart); waited > 2*time.Second && s.app.cfg.verbose {
-				log.Printf("[client] pumpUp finish slow sid=%d lastSeq=%d ackedSeq=%d waited=%v",
+			if waited := time.Since(waitStart); waited > 2*time.Second {
+				logWarn("client", "pumpUp finish slow sid=%d lastSeq=%d ackedSeq=%d waited=%v",
 					s.sid, seq, acked, waited.Round(time.Millisecond))
 			}
 			s.teardown()
@@ -2167,8 +2160,8 @@ func (s *cStream) pumpDown() {
 			s.local.SetWriteDeadline(deadline(localWriteTO))
 			w0 := time.Now()
 			_, werr := s.local.Write(chunk)
-			if d := time.Since(w0); d > 2*time.Second && s.app.cfg.verbose {
-				log.Printf("[client] pumpDown slow sid=%d len=%d took=%v", s.sid, len(chunk), d.Round(time.Millisecond))
+			if d := time.Since(w0); d > 2*time.Second {
+				logWarn("client", "pumpDown slow sid=%d len=%d took=%v", s.sid, len(chunk), d.Round(time.Millisecond))
 			}
 			if werr != nil {
 				s.app.mu.Lock()

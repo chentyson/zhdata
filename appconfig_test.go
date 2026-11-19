@@ -169,3 +169,31 @@ func TestResolveModeFromConfig(t *testing.T) {
 		t.Fatalf("explicit -mode must win: %+v %v", out, err)
 	}
 }
+
+func TestParseLogLevel(t *testing.T) {
+	for s, want := range map[string]int{"error": lvlError, "warning": lvlWarn, "warn": lvlWarn, "INFO": lvlInfo, "debug": lvlDebug} {
+		got, ok := parseLogLevel(s)
+		if !ok || got != want {
+			t.Fatalf("parseLogLevel(%q)=%d,%v want %d", s, got, ok, want)
+		}
+	}
+	if _, ok := parseLogLevel("chatty"); ok {
+		t.Fatal("unknown level must not parse")
+	}
+}
+
+func TestResolveLogLevelFromConfig(t *testing.T) {
+	c, err := loadAppConfig(writeCfg(t, `{"loglevel":"debug"}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	out, err := resolveParams(defaultFlags(), map[string]bool{}, c)
+	if err != nil || out.loglevel != "debug" {
+		t.Fatalf("config loglevel ignored: %+v %v", out, err)
+	}
+	// explicit -loglevel beats config
+	out, err = resolveParams(coreParams{loglevel: "warning"}, map[string]bool{"loglevel": true}, c)
+	if err != nil || out.loglevel != "warning" {
+		t.Fatalf("explicit -loglevel must win: %+v %v", out, err)
+	}
+}

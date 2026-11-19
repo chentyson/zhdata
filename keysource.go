@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"sort"
@@ -48,7 +47,7 @@ func newKeyStore(spec string) (*keyStore, error) {
 	ks := &keyStore{paths: paths, sigs: map[string]string{}}
 	keys, per, errs := ks.collect()
 	for _, err := range errs {
-		log.Printf("[users] warn: %v", err)
+		logWarn("users", "%v", err)
 	}
 	if len(keys) == 0 {
 		return nil, fmt.Errorf("no user keys from %v", paths)
@@ -56,7 +55,7 @@ func newKeyStore(spec string) (*keyStore, error) {
 	ks.keys = keys
 	ks.reSigs()
 	ks.loaded = true
-	log.Printf("[users] loaded %d keys %v", len(keys), per)
+	logInfo("users", "loaded %d keys %v", len(keys), per)
 	return ks, nil
 }
 
@@ -97,18 +96,18 @@ func (ks *keyStore) reloadIfChanged() bool {
 	}
 	keys, per, errs := ks.collect()
 	if len(keys) == 0 {
-		log.Printf("[users] reload produced 0 keys, keeping previous (%d); errors: %v", len(ks.snapshot()), joinErrs(errs))
+		logWarn("users", "reload produced 0 keys, keeping previous (%d); errors: %v", len(ks.snapshot()), joinErrs(errs))
 		ks.reSigs()
 		return false
 	}
 	for _, err := range errs {
-		log.Printf("[users] warn: %v", err)
+		logWarn("users", "%v", err)
 	}
 	ks.mu.Lock()
 	ks.keys = keys
 	ks.mu.Unlock()
 	ks.sigs = sigs
-	log.Printf("[users] hot-reloaded %d keys %v", len(keys), per)
+	logInfo("users", "hot-reloaded %d keys %v", len(keys), per)
 	return true
 }
 

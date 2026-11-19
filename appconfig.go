@@ -13,14 +13,14 @@ import (
 // zhenhanvn can emit fields an older core has never seen without breaking it.
 // Precedence: explicitly-set CLI flag > config file > flag default.
 type appConfig struct {
-	Mode       string          `json:"mode"`  // "client" (default) | "server"
-	Listen     string          `json:"listen"` // client: local proxy port; server: comma-separated public ports
-	Server     json.RawMessage `json:"server"` // "h:p,h:p" or ["h:p","h:p"] slot i dials servers[i%N]
-	UUID       string          `json:"uuid"`   // client user id
-	Users      string          `json:"users"`  // server: comma-separated txt/json/sqlite key sources
+	Mode       string          `json:"mode"`    // "client" (default) | "server"
+	Listen     string          `json:"listen"`  // client: local proxy port; server: comma-separated public ports
+	Server     json.RawMessage `json:"server"`  // "h:p,h:p" or ["h:p","h:p"] slot i dials servers[i%N]
+	UUID       string          `json:"uuid"`    // client user id
+	Users      string          `json:"users"`   // server: comma-separated txt/json/sqlite key sources
 	Backend    string          `json:"backend"` // server: "direct" or socks addr
 	MaxClients *int            `json:"max_clients"`
-	Decoy      string          `json:"decoy"`  // server: host:port for non-protocol HTTP traffic
+	Decoy      string          `json:"decoy"` // server: host:port for non-protocol HTTP traffic
 	Verbose    *bool           `json:"verbose"`
 	Conns      *int            `json:"conns"`
 	Spread     *int            `json:"spread"`
@@ -29,6 +29,7 @@ type appConfig struct {
 	Dlconns    *int            `json:"dlconns"`
 	Slotbase   *int            `json:"slotbase"`
 	Pprof      string          `json:"pprof"`
+	LogLevel   string          `json:"loglevel"` // error|warning|info|debug (default info; verbose=true == debug)
 }
 
 // ServerCSV renders the "server" field into the canonical comma-separated
@@ -78,6 +79,7 @@ type coreParams struct {
 	backend    string
 	decoy      string
 	pprof      string
+	loglevel   string
 	maxClients int
 	conns      int
 	spread     int
@@ -120,6 +122,7 @@ func resolveParams(fl coreParams, set map[string]bool, cfg *appConfig) (corePara
 	pick("backend", &out.backend, cfg.Backend)
 	pick("decoy", &out.decoy, cfg.Decoy)
 	pick("pprof", &out.pprof, cfg.Pprof)
+	pick("loglevel", &out.loglevel, cfg.LogLevel)
 	pickInt("max-clients", &out.maxClients, cfg.MaxClients)
 	pickInt("conns", &out.conns, cfg.Conns)
 	pickInt("spread", &out.spread, cfg.Spread)
