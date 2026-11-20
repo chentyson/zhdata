@@ -1,6 +1,6 @@
 # zhdata 核心接口文档（zhenhanvn 一级核心接入）
 
-版本：zhdata **v0.13.0**（2026-11-19）· 适用 zhenhanvn（v2rayN-7.24.9 fork）
+版本：zhdata **v0.14.0**（2026-11-20）· 适用 zhenhanvn（v2rayN-7.24.9 fork）
 配套：《zhdata-一级核心接入方案.md》（总体方案）、《开发方案.md》§11（契约核对记录）
 
 ---
@@ -31,7 +31,7 @@ zhenhanvn 启动核心：  bin/zhdata/zhdata.exe -c config.json     （cwd = bin
 |---|---|
 | 可执行文件 | `bin/zhdata/zhdata(.exe)`（`CoreExes = ["zhdata"]`；非 Windows 无 .exe，`CoreManager.Init` 自动 chmod） |
 | 启动参数 | `Arguments = "-c {0}"`；`{0}` 普通路径为**相对文件名** `config.json`（工作目录已是 `binConfigs`），非 Windows sudo 路径为绝对带引号路径——两种都支持 |
-| 版本探测 | `zhdata -version` → exit 0，stdout 输出 `zhdata 0.13.0`（满足 `v?(?<version>\d+\.\d+\.\d+)`） |
+| 版本探测 | `zhdata -version` → exit 0，stdout 输出 `zhdata 0.14.0`（满足 `v?(?<version>\d+\.\d+\.\d+)`） |
 | 前台常驻 | 不 fork、不守护；启动 100ms 内 `HasExited` 即失败 |
 | 停止 | zhenhanvn 用 `Process.Kill()`（Windows=TerminateProcess），**不发信号**；核心无状态文件，强杀无损。reload = 杀进程后重启 |
 | 单进程 | 核心不自管子进程（Windows Kill 不带子进程树） |
@@ -117,12 +117,72 @@ new CoreInfo {
 - 系统代理、可用性测试（SOCKS 探测）、下载全部指向该端口 → **`GetLocalPort(EInboundProtocol.socks)` 直接返回 `listen` 端口即可**。
 - 不支持 SOCKS BIND / UDP associate（浏览器/HTTP 场景无影响；xray 对应能力同样缺席时可接受）。
 
+### 3.4 服务端启动参数说明（C498 当前测试节点）
+
+同一个 zhdata 二进制既是客户端核心，也是服务端核心。客户端与服务端不是两套代码，差异只在运行模式和启动参数：
+
+```text
+客户端：-mode client -listen <本地代理口> -server <zhdata服务端地址列表> -uuid <UUID>
+服务端：-mode server -listen <zhdata公开端口列表> -users <用户 key 源> -backend <后端出站方式>
+```
+
+zhenhanvn 目前启动客户端核心时使用 JSON 配置：
+
+```text
+bin/zhdata/zhdata.exe -c config.json
+```
+
+C498 测试节点目前服务端仍使用 systemd 命令行参数，不是 `-c config.json`。两者进入的是同一核心代码路径；JSON 配置只是 CLI 参数的另一种输入方式，优先级为：**显式 CLI 参数 > JSON 配置 > 默认值**。
+
+C498 当前 systemd 主服务文件：
+
+```ini
+[Unit]
+Description=zhdata-tunnel server (port 49888)
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/zhdata
+ExecStart=/opt/zhdata/zhdata-tunnel-linux-amd64 -mode server -listen :49888,:49889,:49890,:49891,:49892,:49893,:49894,:49895,:49896,:49897,:49898,:49899,:49900,:49901,:49902,:49903 -users /etc/s-ui/private/s-ui.db,/opt/zhdata/users.txt -backend direct -v -max-clients 100
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+```
+
+C498 当前 drop-in `/etc/systemd/system/zhdata.service.d/ports64.conf` 会把监听端口覆盖为 64 个端口：
+
+```ini
+[Service]
+ExecStart=
+ExecStart=/opt/zhdata/zhdata-tunnel-linux-amd64 -mode server -listen :49888,:49889,:49890,:49891,:49892,:49893,:49894,:49895,:49896,:49897,:49898,:49899,:49900,:49901,:49902,:49903,:49904,:49905,:49906,:49907,:49908,:49909,:49910,:49911,:49912,:49913,:49914,:49915,:49916,:49917,:49918,:49919,:49920,:49921,:49922,:49923,:49924,:49925,:49926,:49927,:49928,:49929,:49930,:49931,:49932,:49933,:49934,:49935,:49936,:49937,:49938,:49939,:49940,:49941,:49942,:49943,:49944,:49945,:49946,:49947,:49948,:49949,:49950,:49951 -users /etc/s-ui/private/s-ui.db,/opt/zhdata/users.txt -backend direct -v -max-clients 100
+```
+
+当前 C498 实际生效参数含义：
+
+| 参数 | 当前值 | 含义 |
+|---|---|---|
+| `-mode server` | `server` | 以 zhdata 服务端模式运行，接受 zhenhanvn/zhdata 客户端握手 |
+| `-listen` | `:49888`–`:49951` | 服务端监听 64 个 TCP 端口；每个端口对应一条独立公网 TCP 桶，用于抗 ISP 按流整形 |
+| `-users` | `/etc/s-ui/private/s-ui.db,/opt/zhdata/users.txt` | 逗号分隔的用户 key 源；支持 s-ui SQLite 和 txt/json；只读、20 秒 mtime 热加载 |
+| `-backend direct` | `direct` | 服务端收到隧道 stream 的目标地址后直接出站；也可填 socks 地址，例如 `127.0.0.1:12345` |
+| `-max-clients 100` | 100 | 服务端全局并发 session 上限；session 数约等于用户数 × 客户端 `conns` |
+| `-v` | 开启 | 旧 verbose 开关。当前代码中等价于 `loglevel=debug`；如果不显式设置 `-loglevel`，服务会输出 debug 级日志 |
+
+注意：
+
+- 当前 C498 服务仍使用 `-v`，所以日志级别是 **debug**，不是默认的 info。
+- 如果希望服务端保持“默认简单 + 明确故障提示”，建议改成 `-loglevel info` 或 `-loglevel warning`，去掉 `-v`。
+- 当前 `users` 里 `/etc/s-ui/private/s-ui.db` 不存在时，服务端会 warning 但仍继续从 `/opt/zhdata/users.txt` 加载 key；当前 C498 实际加载 1 个 key。
+- zhenhanvn 客户端默认基础 URI 是 `host:49888`，内部隐藏参数会自动展开为 `49888..49919`，共 32 个端口；C498 服务端监听到 `49951`，多余端口暂不影响。
+
 ## 4. 更新与发布契约
 
 | 项 | 要求（已满足） |
 |---|---|
 | 仓库 | `chentyson/zhdata`（GitHub Releases） |
-| tag | 纯 semver `v0.13.0` 形式（`zhdata-v0.12.4` 这类前缀 tag 会解析成 0.0.0） |
+| tag | 纯 semver `v0.14.0` 形式（`zhdata-v0.12.4` 这类前缀 tag 会解析成 0.0.0） |
 | 资产名（精确） | `zhdata-windows-64.zip`、`zhdata-windows-arm64.zip`、`zhdata-linux-64.zip`、`zhdata-linux-arm64.zip`、`zhdata-macos-64.zip`、`zhdata-macos-arm64.zip`（amd64→64） |
 | zip 布局 | 单顶层目录 `zhdata/` + 二进制；v2rayN 解压按**文件名扁平化**进 `bin/zhdata/`，两种布局都兼容；文件名不得含 `geo`（会被丢弃） |
 | CI | 仓库 `.github/workflows/release.yml`：push `v*.*.*` tag → 六平台构建 → 六 zip 上传（正式 release，非 draft，`/latest` 重定向依赖正式 release） |
@@ -130,7 +190,7 @@ new CoreInfo {
 
 ## 5. 日志接口（zhenhanvn 日志窗）
 
-**有接口。** v0.13.0 起核心日志为**单行、带级别标记**的结构化文本，全部走 **stdout**（stderr 基本为空），`displayLog=true`（zhdata 为正式协议节点时自动为 true）时被 `ProcessService.BeginOutputReadLine` 逐行送入消息视图，实时可见。
+**有接口。** v0.13.0 起核心日志为**单行、带级别标记**的结构化文本；v0.14.0 起加入明确握手/后端故障提示和客户端解析 IP 日志，全部走 **stdout**（stderr 基本为空），`displayLog=true`（zhdata 为正式协议节点时自动为 true）时被 `ProcessService.BeginOutputReadLine` 逐行送入消息视图，实时可见。
 
 ### 5.1 行格式
 
@@ -176,7 +236,7 @@ zhenhanvn 侧解析/过滤正则（可直接用于着色/过滤）：
 - `stderr` 仍会被 `SaveLogError` 落盘（核心偶尔在极早期（logger 初始化前）可能有一条 stderr，不影响级别体系）。
 - 日志窗"错误"高亮规则：匹配 `[error]`；"警告"匹配 `[warning]`。
 
-## 6. 功能边界（v0.13.0）
+## 6. 功能边界（v0.14.0）
 
 | 能力 | 状态 |
 |---|---|
