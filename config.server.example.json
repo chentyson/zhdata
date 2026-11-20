@@ -5,6 +5,8 @@
   "backend": "direct",
   "max_clients": 100,
   "decoy": "",
+  "admin": "127.0.0.1:6070",
+  "admin_token": "",
   "loglevel": "info",
   "verbose": false
 }

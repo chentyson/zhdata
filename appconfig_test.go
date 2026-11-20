@@ -197,3 +197,32 @@ func TestResolveLogLevelFromConfig(t *testing.T) {
 		t.Fatalf("explicit -loglevel must win: %+v %v", out, err)
 	}
 }
+
+func TestResolveAdminFields(t *testing.T) {
+	c, err := loadAppConfig(writeCfg(t, `{"admin":"127.0.0.1:6070","admin_token":"tok-cfg"}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	out, err := resolveParams(defaultFlags(), map[string]bool{}, c)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if out.admin != "127.0.0.1:6070" || out.adminToken != "tok-cfg" {
+		t.Fatalf("config admin/admin_token ignored: %+v", out)
+	}
+	// explicit CLI flags beat the config file
+	fl := defaultFlags()
+	fl.admin, fl.adminToken = "127.0.0.1:7070", "tok-cli"
+	out, err = resolveParams(fl, map[string]bool{"admin": true, "admin-token": true}, c)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if out.admin != "127.0.0.1:7070" || out.adminToken != "tok-cli" {
+		t.Fatalf("explicit -admin/-admin-token must win: %+v", out)
+	}
+	// unset everywhere = admin off
+	out, err = resolveParams(defaultFlags(), map[string]bool{}, nil)
+	if err != nil || out.admin != "" || out.adminToken != "" {
+		t.Fatalf("admin must default to off: %+v %v", out, err)
+	}
+}

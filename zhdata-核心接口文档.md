@@ -1,7 +1,7 @@
 # zhdata 核心接口文档（zhenhanvn 一级核心接入）
 
-版本：zhdata **v0.15.0**（2026-11-20）· 适用 zhenhanvn（v2rayN-7.24.9 fork）
-配套：《zhdata-一级核心接入方案.md》（总体方案）、《开发方案.md》§11（契约核对记录）
+版本：zhdata **v0.15.1**（2026-11-20）· 适用 zhenhanvn（v2rayN-7.24.9 fork）
+配套：《zhdata-一级核心接入方案.md》（总体方案）、《开发方案.md》§11（契约核对记录）、s-ui 侧契约 `s-ui/docs/zhdata-admin-api.md`（admin API 权威定义）
 
 ---
 
@@ -31,11 +31,11 @@ zhenhanvn 启动核心：  bin/zhdata/zhdata.exe -c config.json     （cwd = bin
 |---|---|
 | 可执行文件 | `bin/zhdata/zhdata(.exe)`（`CoreExes = ["zhdata"]`；非 Windows 无 .exe，`CoreManager.Init` 自动 chmod） |
 | 启动参数 | `Arguments = "-c {0}"`；`{0}` 普通路径为**相对文件名** `config.json`（工作目录已是 `binConfigs`），非 Windows sudo 路径为绝对带引号路径——两种都支持 |
-| 版本探测 | `zhdata -version` → exit 0，stdout 输出 `zhdata 0.15.0`（满足 `v?(?<version>\d+\.\d+\.\d+)`） |
+| 版本探测 | `zhdata -version` → exit 0，stdout 输出 `zhdata 0.15.1`（满足 `v?(?<version>\d+\.\d+\.\d+)`） |
 | 前台常驻 | 不 fork、不守护；启动 100ms 内 `HasExited` 即失败 |
 | 停止 | zhenhanvn 用 `Process.Kill()`（Windows=TerminateProcess），**不发信号**；核心无状态文件，强杀无损。reload = 杀进程后重启 |
 | 单进程 | 核心不自管子进程（Windows Kill 不带子进程树） |
-| CLI 兼容 | 全部配置字段都有同名 CLI flag（`-mode/-listen/-server/-uuid/-users/-backend/-max-clients/-max-sessions/-decoy/-v/-device-id/-conns/-spread/-train/-migrate/-dlconns/-slotbase/-pprof/-loglevel`），显式 CLI > 配置文件 > 默认 |
+| CLI 兼容 | 全部配置字段都有同名 CLI flag（`-mode/-listen/-server/-uuid/-users/-backend/-max-clients/-max-sessions/-decoy/-v/-device-id/-conns/-spread/-train/-migrate/-dlconns/-slotbase/-pprof/-admin/-admin-token/-loglevel`），显式 CLI > 配置文件 > 默认 |
 
 C# 注册示例（CoreInfoManager.InitCoreInfo）：
 
@@ -79,6 +79,8 @@ new CoreInfo {
 | `train` | int | 0 | 空闲训练帧秒数（0=关） |
 | `slotbase` | int | 0 | 多实例槽位起始（slotbase+conns ≤ 64） |
 | `pprof` | string | 空 | `127.0.0.1:6060` 开 pprof |
+| `admin` | string | 空 | server 侧：admin 管理 API 监听地址（如 `127.0.0.1:6070`）；空 = 关闭。契约要求只绑 loopback |
+| `admin_token` | string | 空 | server 侧：可选 Bearer token；设置后所有 admin `/v1/*` 必须带 `Authorization: Bearer <token>`（§3.6） |
 
 - **未知字段容忍**：新版 zhenhanvn 多写的字段旧核心直接忽略（不会启动失败）。
 - **优先级**：显式 CLI flag > 配置文件 > 默认值（纯 CLI 旧用法完全不变）。
@@ -226,12 +228,40 @@ ExecStart=/opt/zhdata/zhdata-tunnel-linux-amd64 -mode server -listen :49888,:498
 - 当前 `users` 里 `/etc/s-ui/private/s-ui.db` 不存在时，服务端会 warning 但仍继续从 `/opt/zhdata/users.txt` 加载 key；当前 C498 实际加载 1 个 key。
 - zhenhanvn 客户端默认基础 URI 是 `host:49888`，内部隐藏参数会自动展开为 `49888..49919`，共 32 个端口；C498 服务端监听到 `49951`，多余端口暂不影响。
 
+### 3.6 admin 管理 API（v0.15.1 起，仅 server 模式）
+
+权威契约：s-ui 仓库 `docs/zhdata-admin-api.md` §1。本节是核心侧实现说明，端点/语义与契约一致。
+
+启用：`-admin 127.0.0.1:6070`（或 config `"admin"`）+ 可选 `-admin-token <token>`（或 `"admin_token"`）。地址为空 = 关闭。server 模式且地址非空即起 `http.Server`；**绑定失败视为启动失败并退出**（systemd 能立刻感知管理面没起来）。契约要求只绑 loopback，由部署方保证。
+
+鉴权：设置 token 后**所有** `/v1/*` 必须带 `Authorization: Bearer <token>`（常数时间比较），缺失/错误回 401；未设置 token 则不鉴权。
+
+| 端点 | 语义 | 成功返回 |
+|---|---|---|
+| `GET /v1/version` | 核心版本（与 `-version` 同串，仍满足 `v?(?<version>\d+\.\d+\.\d+)`） | `{"version":"0.15.1"}` |
+| `PUT /v1/users` | **全量替换 API 用户集**：与文件/sqlite 用户源取并集；同名 uuid 的策略 **API 覆盖文件**（`max_devices` 0=不限，可解除文件限制）；空数组清空 API 集（不影响文件源）；内存中原子换表 | `{"ok":true,"keys":N}` |
+| `GET /v1/stats` | 自进程启动累计计数：`sessions_active`=当前活跃会话；`users[]` 按 uuid 给出 `devices`（当前活跃 device_id 数，与 `max_devices` 同一张表）、`up`/`down` 隧道字节 | `{"ts":..,"sessions_active":..,"users":[{"uuid":..,"devices":..,"up":..,"down":..}]}` |
+| `POST /v1/users/kick` | 按 uuid 切断该用户全部会话（先发 `tGoaway` 再关 socket，客户端按既有退避重连）；uuid 大小写不敏感；空 uuid = 400（P0 只按 uuid 踢） | `{"kicked":N}` |
+| `POST /v1/reload` | 契约 §1.5（原 P1）已实现：立即重读文件/sqlite 用户源，绕过 mtime/size 签名检查；API 用户集不动 | `{"ok":true,"keys":N}` |
+
+实现要点（admin 是叠加的**第三用户源**）：
+
+- 现有 `users`（txt/json/s-ui sqlite，20s mtime 热加载）**行为不变**；`PUT /v1/users` 之后握手与策略读取看到的是「文件 ∪ API」的合并视图，`snapshot()`/`policy()` 原子切换。
+- `reloadIfChanged` 只盯文件签名，**不会**把 API 用户集重载清掉。
+- 替换 users 不强制断已有会话：被移除 uuid 的**新**连接握手被拒（reject），既有会话等 kick 或自然结束（契约 §1.2）。
+- `up` = 已写入后端的字节（pumpUp + 拨号前补写），`down` = 后端读入并送往客户端的字节（downlink pump），与 s-ui「按周期采样求增量」语义配套。zhv4-6 旧客户端同样按 uuid 计入（其握手也认证 uuid）；理论上无 uuid 的会话计入保留 key `-`，不丢字节。
+- `keys` 报告**本次 PUT 写入的 API 用户集大小**；合并后的总数见 `[users]` 日志行与 `GET /v1/stats`。
+- 错误返回统一 `{"error":"..."}`（400/401/404/405），不影响契约里成功响应的形状。
+- 日志 tag `admin`：info = 启动监听 / PUT / kick / reload；warning = 绑定或 serve 异常。kick 动作本身在 `[server] [warning] kick uuid=... cut N session(s)`（默认 info 级可见）。
+
+客户端模式传 `-admin` 只打一条 warning 并忽略，不改变 client 行为。
+
 ## 4. 更新与发布契约
 
 | 项 | 要求（已满足） |
 |---|---|
 | 仓库 | `chentyson/zhdata`（GitHub Releases） |
-| tag | 纯 semver `v0.15.0` 形式（`zhdata-v0.12.4` 这类前缀 tag 会解析成 0.0.0） |
+| tag | 纯 semver `v0.15.1` 形式（`zhdata-v0.12.4` 这类前缀 tag 会解析成 0.0.0） |
 | 资产名（精确） | `zhdata-windows-64.zip`、`zhdata-windows-arm64.zip`、`zhdata-linux-64.zip`、`zhdata-linux-arm64.zip`、`zhdata-macos-64.zip`、`zhdata-macos-arm64.zip`（amd64→64） |
 | zip 布局 | 单顶层目录 `zhdata/` + 二进制；v2rayN 解压按**文件名扁平化**进 `bin/zhdata/`，两种布局都兼容；文件名不得含 `geo`（会被丢弃） |
 | CI | 仓库 `.github/workflows/release.yml`：push `v*.*.*` tag → 六平台构建 → 六 zip 上传（正式 release，非 draft，`/latest` 重定向依赖正式 release） |
@@ -248,13 +278,13 @@ ExecStart=/opt/zhdata/zhdata-tunnel-linux-amd64 -mode server -listen :49888,:498
 └─── 时间戳(log.LstdFlags) ───┘└─ tag ─┘└── level ──┘└── 消息 ──────────────────────
 ```
 
-- **tag**（子系统）：`main` `client` `server` `session` `users` `pprof` `dbg`
+- **tag**（子系统）：`main` `client` `server` `session` `users` `pprof` `admin` `dbg`
 - **level**：`error` `warning` `info` `debug`
 
 zhenhanvn 侧解析/过滤正则（可直接用于着色/过滤）：
 
 ```regex
-^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \[(main|client|server|session|users|pprof|dbg)\] \[(error|warning|info|debug)\] (.*)$
+^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \[(main|client|server|session|users|pprof|admin|dbg)\] \[(error|warning|info|debug)\] (.*)$
 ```
 
 ### 5.2 级别语义（默认 `info`，生产安静）
@@ -262,8 +292,8 @@ zhenhanvn 侧解析/过滤正则（可直接用于着色/过滤）：
 | 级别 | 事件 |
 |---|---|
 | `error` | 致命错误（配置错误、启动失败、退出前）；pumpUp 写失败；会话写队列死锁 |
-| `warning` | 拨号失败/退避重试、握手/UUID 认证失败、设备数超限、session 总数超限、GOAWAY 接管、握手限频、流重置、后端 DNS/连接失败、后端无响应、队列满、用户源重载异常 |
-| `info` | 核心启动监听（client/server）、客户端本次进程 device_id、zhdata 服务端目标解析出的 IP 地址、会话建立、users 加载/热加载 |
+| `warning` | 拨号失败/退避重试、握手/UUID 认证失败、设备数超限、session 总数超限、GOAWAY 接管、握手限频、流重置、后端 DNS/连接失败、后端无响应、队列满、用户源重载异常、kick 切断会话（`[server] kick uuid=... cut N`）、admin 绑定/serve 异常 |
+| `info` | 核心启动监听（client/server）、客户端本次进程 device_id、zhdata 服务端目标解析出的 IP 地址、会话建立、users 加载/热加载/`PUT /v1/users` 替换、admin API 启动监听、admin `POST /v1/reload` |
 | `debug` | 每流生命周期（backend connected/done、session ended、recycle 换新、重传、bucket 细节）、原 `-v` 全部内部日志 |
 
 `loglevel` 门控在**核心侧**完成：默认 `info` 时 debug 行不产生（零开销）；`debug` ≡ 旧 `-v`。环境变量 `ZHD_DEBUG=1` 追加协议帧级 trace（比 debug 更细，调试专用）。
@@ -272,6 +302,7 @@ zhenhanvn 侧解析/过滤正则（可直接用于着色/过滤）：
 
 ```text
 2026-11-19 09:03:47 [server] [info] listening on [127.0.0.1:18555], users=1, backend=direct, max-sessions=10, max-clients=10
+2026-11-19 09:03:47 [admin] [info] admin API listening on http://127.0.0.1:6070/v1/ (auth=true)
 2026-11-19 09:03:49 [client] [info] mixed socks5+http listening on 127.0.0.1:10808 -> C498.example:49888 device=4c81ad5d31d34f8a4f6c19877d2461c4
 2026-11-19 09:03:49 [client] [info] server target resolved target=C498.example:49888 ips=1.2.3.4,5.6.7.8
 2026-11-19 09:03:49 [server] [info] session established uuid=smoke-uu device=4c81ad5d31d34f8a4f6c19877d2461c4 slot=0 from 127.0.0.1
@@ -287,11 +318,12 @@ zhenhanvn 侧解析/过滤正则（可直接用于着色/过滤）：
 - `stderr` 仍会被 `SaveLogError` 落盘（核心偶尔在极早期（logger 初始化前）可能有一条 stderr，不影响级别体系）。
 - 日志窗"错误"高亮规则：匹配 `[error]`；"警告"匹配 `[warning]`。
 
-## 6. 功能边界（v0.15.0）
+## 6. 功能边界（v0.15.1）
 
 | 能力 | 状态 |
 |---|---|
-| 速度/流量统计 | **无 API**：zhenhanvn 速度栏对 zhdata 恒 0（与 hysteria2/brook 等一致，非错误）。可选方案：核心暴露 clash_api `ws://:StatePort2/traffic` + `IsRunningCore` 加 zhdata 判定（未实现，列入 backlog） |
+| 速度/流量统计 | **admin API（v0.15.1 起）**：`GET /v1/stats` 暴露 `sessions_active` 与按 uuid 的 `devices`/`up`/`down` 累计字节（§3.6），s-ui 面板按周期采样求增量入库。zhenhanvn 速度栏对 zhdata 仍恒 0（GUI 未接 admin API，与 hysteria2/brook 等一致，非错误）。clash_api `ws://:StatePort2/traffic` + `IsRunningCore` 判定方案仍未实现（backlog） |
+| 用户/凭据管理 | **admin API（v0.15.1 起）**：`PUT /v1/users` 推送 API 用户集（与文件/sqlite 源并集、API 策略覆盖）、`POST /v1/users/kick` 按 uuid 切会话、`POST /v1/reload` 强制重载（§3.6）。文件 `users` 热加载仍是独立可用路径，面板不可用时也能工作 |
 | 批量测速"测试全部" | 现只批 xray/sing_box，zhdata 节点被跳过（C# 侧加批量需 `LoadCoreConfigSpeedtest` 支持 zhdata 配置） |
 | TUN | zhdata 无 tun 入站；TUN 模式需走 sing-box 前置 → zhdata socks 的链式方案（框架侧设计） |
 | 组节点（PolicyGroup/ProxyChain） | 白名单只含 Xray/sing_box（框架侧） |

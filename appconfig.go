@@ -13,25 +13,27 @@ import (
 // zhenhanvn can emit fields an older core has never seen without breaking it.
 // Precedence: explicitly-set CLI flag > config file > flag default.
 type appConfig struct {
-	Mode       string          `json:"mode"`    // "client" (default) | "server"
-	Listen     string          `json:"listen"`  // client: local proxy port; server: comma-separated public ports
-	Server     json.RawMessage `json:"server"`  // "h:p,h:p" or ["h:p","h:p"] slot i dials servers[i%N]
-	UUID       string          `json:"uuid"`    // client user id
-	Users      string          `json:"users"`   // server: comma-separated txt/json/sqlite key sources
-	Backend    string          `json:"backend"` // server: "direct" or socks addr
-	MaxClients *int            `json:"max_clients"`
-	MaxSessions *int           `json:"max_sessions"` // server: max concurrent tunnel sessions; <=0 = unlimited
-	DeviceID   string          `json:"device_id"`    // client: optional 16-byte hex per-process device id
-	Decoy      string          `json:"decoy"`        // server: host:port for non-protocol HTTP traffic
-	Verbose    *bool           `json:"verbose"`
-	Conns      *int            `json:"conns"`
-	Spread     *int            `json:"spread"`
-	Train      *int            `json:"train"`
-	Migrate    *int            `json:"migrate"`
-	Dlconns    *int            `json:"dlconns"`
-	Slotbase   *int            `json:"slotbase"`
-	Pprof      string          `json:"pprof"`
-	LogLevel   string          `json:"loglevel"` // error|warning|info|debug (default info; verbose=true == debug)
+	Mode        string          `json:"mode"`    // "client" (default) | "server"
+	Listen      string          `json:"listen"`  // client: local proxy port; server: comma-separated public ports
+	Server      json.RawMessage `json:"server"`  // "h:p,h:p" or ["h:p","h:p"] slot i dials servers[i%N]
+	UUID        string          `json:"uuid"`    // client user id
+	Users       string          `json:"users"`   // server: comma-separated txt/json/sqlite key sources
+	Backend     string          `json:"backend"` // server: "direct" or socks addr
+	MaxClients  *int            `json:"max_clients"`
+	MaxSessions *int            `json:"max_sessions"` // server: max concurrent tunnel sessions; <=0 = unlimited
+	DeviceID    string          `json:"device_id"`    // client: optional 16-byte hex per-process device id
+	Decoy       string          `json:"decoy"`        // server: host:port for non-protocol HTTP traffic
+	Verbose     *bool           `json:"verbose"`
+	Conns       *int            `json:"conns"`
+	Spread      *int            `json:"spread"`
+	Train       *int            `json:"train"`
+	Migrate     *int            `json:"migrate"`
+	Dlconns     *int            `json:"dlconns"`
+	Slotbase    *int            `json:"slotbase"`
+	Pprof       string          `json:"pprof"`
+	Admin       string          `json:"admin"`       // server: admin API listen addr (e.g. 127.0.0.1:6070); empty = off
+	AdminToken  string          `json:"admin_token"` // server: optional Bearer token for admin /v1/* routes
+	LogLevel    string          `json:"loglevel"`    // error|warning|info|debug (default info; verbose=true == debug)
 }
 
 // ServerCSV renders the "server" field into the canonical comma-separated
@@ -73,25 +75,27 @@ func loadAppConfig(path string) (*appConfig, error) {
 // coreParams holds fully-resolved runtime parameters (the union of all CLI
 // flags, possibly overridden by the JSON config).
 type coreParams struct {
-	mode       string
-	listen     string
-	server     string
-	uuid       string
-	users      string
-	backend    string
-	decoy      string
+	mode        string
+	listen      string
+	server      string
+	uuid        string
+	users       string
+	backend     string
+	decoy       string
 	pprof       string
+	admin       string
+	adminToken  string
 	loglevel    string
 	maxClients  int
 	maxSessions int
 	deviceID    string
 	conns       int
-	spread     int
-	train      int
-	migrate    int
-	dlconns    int
-	slotbase   int
-	verbose    bool
+	spread      int
+	train       int
+	migrate     int
+	dlconns     int
+	slotbase    int
+	verbose     bool
 }
 
 // resolveParams merges CLI flags with the optional config file. fl carries
@@ -126,6 +130,8 @@ func resolveParams(fl coreParams, set map[string]bool, cfg *appConfig) (corePara
 	pick("backend", &out.backend, cfg.Backend)
 	pick("decoy", &out.decoy, cfg.Decoy)
 	pick("pprof", &out.pprof, cfg.Pprof)
+	pick("admin", &out.admin, cfg.Admin)
+	pick("admin-token", &out.adminToken, cfg.AdminToken)
 	pick("loglevel", &out.loglevel, cfg.LogLevel)
 	pickInt("max-clients", &out.maxClients, cfg.MaxClients)
 	pickInt("max-sessions", &out.maxSessions, cfg.MaxSessions)

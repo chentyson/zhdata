@@ -14,17 +14,30 @@ import (
 )
 
 // keyStore manages user keys from multiple sources (plain text and s-ui
-// sqlite databases). -users accepts a comma separated list of paths; each
-// path is auto-detected (sqlite magic) and results are unioned, lowercased,
-// deduplicated. Files are re-read when mtime/size changes (hot reload).
+// sqlite databases) plus the admin API user set (admin.go PUT /v1/users).
+// -users accepts a comma separated list of paths; each path is auto-detected
+// (sqlite magic) and results are unioned, lowercased, deduplicated. Files are
+// re-read when mtime/size changes (hot reload). The API user set is a third
+// source: it is unioned with the file sources and NEVER cleared by a file
+// hot-reload (reloadIfChanged only watches file signatures). Policy merge:
+// the API entry wins for the same uuid (max_devices 0 = unlimited override).
 type keyStore struct {
 	paths []string
 
-	mu       sync.RWMutex
-	keys     []string
-	policies map[string]userPolicy // uuid -> per-user policy (0 max devices = unlimited)
-	sigs     map[string]string     // path -> "mtimeNano:size"
-	loaded   bool
+	mu           sync.RWMutex
+	keys         []string              // effective view: file/sqlite sources ∪ API users (merged)
+	policies     map[string]userPolicy // effective view: uuid -> policy (0 max devices = unlimited)
+	fileKeys     []string              // last collect() result from file/sqlite sources only
+	filePolicies map[string]userPolicy // policies from file/sqlite sources only
+	apiPolicies  map[string]userPolicy // admin API user set: uuid -> policy (0 = unlimited)
+	sigs         map[string]string     // path -> "mtimeNano:size"
+	loaded       bool
+}
+
+// apiUser is one entry of the admin API user set (zhdata-admin-api.md §1.2).
+type apiUser struct {
+	UUID       string
+	MaxDevices int
 }
 
 const keyReloadInterval = 20 * time.Second
@@ -45,7 +58,13 @@ func newKeyStore(spec string) (*keyStore, error) {
 	if len(paths) == 0 {
 		return nil, fmt.Errorf("empty -users spec")
 	}
-	ks := &keyStore{paths: paths, policies: map[string]userPolicy{}, sigs: map[string]string{}}
+	ks := &keyStore{
+		paths:        paths,
+		policies:     map[string]userPolicy{},
+		filePolicies: map[string]userPolicy{},
+		apiPolicies:  map[string]userPolicy{},
+		sigs:         map[string]string{},
+	}
 	keys, policies, per, errs := ks.collect()
 	for _, err := range errs {
 		logWarn("users", "%v", err)
@@ -53,11 +72,12 @@ func newKeyStore(spec string) (*keyStore, error) {
 	if len(keys) == 0 {
 		return nil, fmt.Errorf("no user keys from %v", paths)
 	}
-	ks.keys = keys
-	ks.policies = policies
+	ks.fileKeys = keys
+	ks.filePolicies = policies
 	ks.reSigs()
 	ks.loaded = true
-	logInfo("users", "loaded %d keys (%d device-limited) %v", len(keys), countLimited(policies), per)
+	ks.mergeLocked()
+	logInfo("users", "loaded %d keys (%d device-limited) %v", len(ks.keys), countLimited(ks.policies), per)
 	return ks, nil
 }
 
@@ -71,6 +91,71 @@ func (ks *keyStore) policy(uuid string) userPolicy {
 	ks.mu.RLock()
 	defer ks.mu.RUnlock()
 	return ks.policies[uuid]
+}
+
+// setAPIUsers atomically replaces the admin API user set (PUT /v1/users).
+// An empty list clears the API set; file/sqlite sources are untouched. The
+// effective key set stays the union of both worlds. Returns the API-set size
+// and the merged total.
+func (ks *keyStore) setAPIUsers(users []apiUser) (apiN, totalN int) {
+	next := make(map[string]userPolicy, len(users))
+	for _, u := range users {
+		k := strings.ToLower(strings.TrimSpace(u.UUID))
+		if k == "" || k == "null" {
+			continue
+		}
+		dev := u.MaxDevices
+		if dev < 0 {
+			dev = 0
+		}
+		next[k] = userPolicy{MaxDevices: dev}
+	}
+	ks.mu.Lock()
+	ks.apiPolicies = next
+	ks.mergeLocked()
+	apiN, totalN = len(next), len(ks.keys)
+	limited := countLimited(ks.policies)
+	ks.mu.Unlock()
+	logInfo("users", "admin API users replaced: api=%d total=%d (%d device-limited)", apiN, totalN, limited)
+	return apiN, totalN
+}
+
+// apiCount reports the size of the admin API user set.
+func (ks *keyStore) apiCount() int {
+	ks.mu.RLock()
+	defer ks.mu.RUnlock()
+	return len(ks.apiPolicies)
+}
+
+// mergeLocked recomputes the effective keys/policies views from the file
+// sources and the API user set. The API entry overrides the file policy for
+// the same uuid, including "unlimited" (max_devices 0 removes a file limit).
+func (ks *keyStore) mergeLocked() {
+	set := make(map[string]bool, len(ks.fileKeys)+len(ks.apiPolicies))
+	for _, k := range ks.fileKeys {
+		set[k] = true
+	}
+	for k := range ks.apiPolicies {
+		set[k] = true
+	}
+	keys := make([]string, 0, len(set))
+	for k := range set {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	policies := make(map[string]userPolicy, len(ks.filePolicies)+len(ks.apiPolicies))
+	for k, p := range ks.filePolicies {
+		policies[k] = p
+	}
+	for k, p := range ks.apiPolicies {
+		if p.MaxDevices > 0 {
+			policies[k] = p
+		} else {
+			delete(policies, k)
+		}
+	}
+	ks.keys = keys
+	ks.policies = policies
 }
 
 func countLimited(policies map[string]userPolicy) int {
@@ -90,22 +175,28 @@ func (ks *keyStore) reSigs() {
 			sigs[p] = fmt.Sprintf("%d:%d", st.ModTime().UnixNano(), st.Size())
 		}
 	}
+	ks.mu.Lock()
 	ks.sigs = sigs
+	ks.mu.Unlock()
 }
 
 // reloadIfChanged re-reads sources if any file changed (or appeared/vanished).
-// On total failure the previous key set is kept (fail-safe).
+// On total failure the previous key set is kept (fail-safe). The API user set
+// is never touched here: it is not a file source.
 func (ks *keyStore) reloadIfChanged() bool {
+	ks.mu.RLock()
+	prev := ks.sigs
+	ks.mu.RUnlock()
 	sigs := map[string]string{}
 	changed := false
 	for _, p := range ks.paths {
 		if st, err := os.Stat(p); err == nil {
 			s := fmt.Sprintf("%d:%d", st.ModTime().UnixNano(), st.Size())
 			sigs[p] = s
-			if ks.sigs[p] != s {
+			if prev[p] != s {
 				changed = true
 			}
-		} else if _, existed := ks.sigs[p]; existed {
+		} else if _, existed := prev[p]; existed {
 			changed = true // file vanished
 		}
 	}
@@ -122,12 +213,36 @@ func (ks *keyStore) reloadIfChanged() bool {
 		logWarn("users", "%v", err)
 	}
 	ks.mu.Lock()
-	ks.keys = keys
-	ks.policies = policies
-	ks.mu.Unlock()
+	ks.fileKeys = keys
+	ks.filePolicies = policies
+	ks.mergeLocked() // API user set survives file reloads (it is not file-derived)
+	total, apiN := len(ks.keys), len(ks.apiPolicies)
+	limited := countLimited(ks.policies)
 	ks.sigs = sigs
-	logInfo("users", "hot-reloaded %d keys (%d device-limited) %v", len(keys), countLimited(policies), per)
+	ks.mu.Unlock()
+	logInfo("users", "hot-reloaded %d keys = %d file + %d api (%d device-limited) %v", total, len(keys), apiN, limited, per)
 	return true
+}
+
+// reloadNow re-reads every file/sqlite source immediately, bypassing the
+// mtime/size signature check (admin POST /v1/reload, contract §1.5 — P1).
+// Same fail-safe as reloadIfChanged: total failure keeps the previous keys.
+func (ks *keyStore) reloadNow() (total int, errs []error) {
+	keys, policies, per, errs := ks.collect()
+	if len(keys) == 0 {
+		logWarn("users", "forced reload produced 0 file keys, keeping previous; errors: %v", joinErrs(errs))
+		return len(ks.snapshot()), errs
+	}
+	ks.mu.Lock()
+	ks.fileKeys = keys
+	ks.filePolicies = policies
+	ks.mergeLocked()
+	total, apiN := len(ks.keys), len(ks.apiPolicies)
+	limited := countLimited(ks.policies)
+	ks.mu.Unlock()
+	ks.reSigs()
+	logInfo("users", "reloaded on demand: %d keys = %d file + %d api (%d device-limited) %v", total, len(keys), apiN, limited, per)
+	return total, errs
 }
 
 func (ks *keyStore) collect() (keys []string, policies map[string]userPolicy, per map[string]int, errs []error) {

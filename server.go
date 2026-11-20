@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/http"
 	"strconv"
 	"strings"
 	"sync"
@@ -22,6 +23,8 @@ type serverConfig struct {
 	maxClients  int
 	maxSessions int
 	decoy       string // optional host:port for fallback splice of non-protocol traffic
+	adminAddr   string // admin API listen address (zhdata-admin-api.md §1); empty = off
+	adminToken  string // optional Bearer token for /v1/* admin endpoints
 	verbose     bool
 }
 
@@ -31,10 +34,16 @@ type serverApp struct {
 
 	lns     []net.Listener
 	mu      sync.Mutex
-	conns   map[string]*sSession            // uuid(+device)(+slot) -> current session
-	devices map[string]map[[16]byte]int     // uuid -> device_id -> active session count
+	conns   map[string]*sSession        // uuid(+device)(+slot) -> current session
+	devices map[string]map[[16]byte]int // uuid -> device_id -> active session count
 	active  int
 	estab   atomic.Uint64 // sessions established (for tests/observability)
+
+	traffMu sync.Mutex               // guards the traffic map (entries are atomic)
+	traffic map[string]*trafficCount // uuid -> cumulative tunnel bytes since process start
+
+	adminLn  net.Listener // admin API listener (nil when admin is off)
+	adminSrv *http.Server
 
 	stmMu   sync.Mutex          // guards streams map + sStream.members + groups map
 	streams map[string]*sStream // "uuid#device#sid" -> stream (GLOBAL per uuid+device: one app stream may span sessions)
@@ -57,6 +66,18 @@ type dnsEntry struct {
 	ips  []string
 	expA int64 // unixnano expiry
 }
+
+// trafficCount is one uuid's cumulative tunnel byte counter (admin
+// GET /v1/stats). Counters are atomic; only the map needs the mutex.
+type trafficCount struct {
+	up   atomic.Int64 // client -> server -> backend (pumpUp / pre-dial flush writes)
+	down atomic.Int64 // backend -> server -> client (downlink pump reads)
+}
+
+// noUUIDTrafficKey accounts traffic of any session that somehow carries no
+// uuid (legacy zhv4-6 handshakes authenticate by uuid, so this is only a
+// defensive bucket; it must stay visible in stats rather than be dropped).
+const noUUIDTrafficKey = "-"
 
 type sSession struct {
 	uuid      string
@@ -163,6 +184,7 @@ func newServerApp(cfg serverConfig) (*serverApp, error) {
 		lns:     lns,
 		conns:   map[string]*sSession{},
 		devices: map[string]map[[16]byte]int{},
+		traffic: map[string]*trafficCount{},
 		streams: map[string]*sStream{},
 		groups:  map[string]*upGroup{},
 		fails:   map[string]*failWin{},
@@ -176,6 +198,14 @@ func newServerApp(cfg serverConfig) (*serverApp, error) {
 	}
 	logInfo("server", "listening on %v, users=%d, backend=%s, max-sessions=%d, max-clients=%d",
 		addrs, len(ks.snapshot()), cfg.backend, cfg.maxSessions, cfg.maxClients)
+	if cfg.adminAddr != "" {
+		if err := a.startAdmin(cfg.adminAddr, cfg.adminToken); err != nil {
+			for _, l := range lns {
+				l.Close()
+			}
+			return nil, err
+		}
+	}
 	for _, ln := range lns {
 		go a.acceptLoop(ln)
 	}
@@ -275,6 +305,11 @@ func (a *serverApp) Close() {
 		close(a.stopCh)
 		for _, ln := range a.lns {
 			ln.Close()
+		}
+		if a.adminSrv != nil {
+			a.adminSrv.Close()
+		} else if a.adminLn != nil {
+			a.adminLn.Close()
 		}
 		a.mu.Lock()
 		for _, sh := range a.conns {
@@ -570,9 +605,9 @@ func (a *serverApp) attachBucketMember(sh *sSession, sid, lsid uint16, off, ln u
 		laneHi:    map[*sSession]*laneAckState{sh: {}},
 		members:   map[*sSession]bool{sh: true},
 		grpKey:    lkey,
-		grpOff:   off,
-		grpLen:   ln,
-		grpFinal: fin,
+		grpOff:    off,
+		grpLen:    ln,
+		grpFinal:  fin,
 	}
 	close(st.dialDone) // members have no backend dial
 	a.streams[streamKeyFor(sh, sid)] = st
@@ -1153,6 +1188,7 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 			break
 		}
 		st.written += int64(len(b))
+		a.addTraffic(st.uuid, true, int64(len(b))) // admin stats: upload delivered to backend
 		delete(st.rx.buf, st.rx.next)
 		st.rx.bufN -= len(b)
 		st.rx.next++
@@ -1232,6 +1268,7 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 		n, err := bc.Read(buf)
 		if n > 0 {
 			total += n
+			a.addTraffic(st.uuid, false, int64(n)) // admin stats: backend bytes toward client
 			payload := make([]byte, n)
 			copy(payload, buf[:n])
 			st.mu.Lock()
@@ -1305,6 +1342,7 @@ func (a *serverApp) pumpUp(st *sStream, sh *sSession) {
 			st.mu.Lock()
 			st.written += int64(n)
 			st.mu.Unlock()
+			a.addTraffic(st.uuid, true, int64(n)) // admin stats: upload delivered to backend
 			if err != nil {
 				a.logf("pumpUp write err sid=%d written=%d err=%v", st.sid, st.written, err)
 				a.closeStream(st, true)
@@ -1407,6 +1445,61 @@ func (sh *sSession) closeAll(a *serverApp) {
 	if sh.sess != nil {
 		sh.sess.close()
 	}
+}
+
+// ---------------- admin API support: traffic counters + kick ----------------
+
+// addTraffic accumulates tunnel bytes toward one uuid's counters
+// (admin GET /v1/stats, cumulative since process start). Legacy zhv4-6
+// sessions authenticate a uuid too; anything without one lands under
+// noUUIDTrafficKey so the bytes never disappear from stats.
+func (a *serverApp) addTraffic(uuid string, up bool, n int64) {
+	if n <= 0 {
+		return
+	}
+	key := uuid
+	if key == "" {
+		key = noUUIDTrafficKey
+	}
+	a.traffMu.Lock()
+	c := a.traffic[key]
+	if c == nil {
+		c = &trafficCount{}
+		a.traffic[key] = c
+	}
+	a.traffMu.Unlock()
+	if up {
+		c.up.Add(n)
+	} else {
+		c.down.Add(n)
+	}
+}
+
+// kickUUID closes every active session belonging to one uuid
+// (admin POST /v1/users/kick). Sessions get a polite tGoaway (same signal as
+// a takeover) before the socket dies, so clients log the cut and reconnect
+// on their normal backoff; a uuid removed from the user set is then rejected
+// at auth. Streams die with their sessions (closeAll -> detach).
+func (a *serverApp) kickUUID(uuid string) int {
+	if uuid == "" {
+		return 0
+	}
+	a.mu.Lock()
+	var targets []*sSession
+	for _, sh := range a.conns {
+		if strings.EqualFold(sh.uuid, uuid) {
+			targets = append(targets, sh)
+		}
+	}
+	a.mu.Unlock()
+	for _, sh := range targets {
+		sh.sess.sendCtrl(Frame{Typ: tGoaway})
+		sh.closeAll(a)
+	}
+	if n := len(targets); n > 0 {
+		logWarn("server", "kick uuid=%s: cut %d session(s)", short(uuid), n)
+	}
+	return len(targets)
 }
 
 // ---------------- anti-probe: per-IP handshake failure rate limit ----------------

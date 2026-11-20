@@ -15,7 +15,7 @@ import (
 //
 // zhenhanvn can filter/color lines with:
 //
-//	^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \[(client|server|session|users|pprof)\] \[(error|warning|info|debug)\]
+//	^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \[(client|server|session|users|pprof|admin)\] \[(error|warning|info|debug)\]
 //
 // Level gate: default "info" (production quiet). "debug" == legacy -v: per-stream
 // lifecycle (backend connected/done, session ended, recycle redial) plus a.logf

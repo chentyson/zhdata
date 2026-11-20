@@ -12,7 +12,7 @@ import (
 	"syscall"
 )
 
-const version = "0.15.0" // zhenhanvn first-class core: zhv7 per-process device_id, per-UUID device limits, uuid+device session/stream namespace, explicit session/device rejection reasons
+const version = "0.15.1" // admin management API (zhdata-admin-api.md §1): -admin/-admin-token, API user set union, per-uuid stats + kick
 
 func main() {
 	mode := flag.String("mode", "client", "client | server")
@@ -33,6 +33,8 @@ func main() {
 	dlconns := flag.Int("dlconns", -1, "split pools: last N sessions are download-only homes, rest upload-only lanes (-1 = auto conns/2 (v0.11.18 default), 0 = shared)")
 	slotbase := flag.Int("slotbase", 0, "first slot index for this instance (v0.11.20; run two clients side by side, e.g. -conns 32 -slotbase 32, without takeover conflicts)")
 	pprofAddr := flag.String("pprof", "", "enable net/http/pprof (goroutine/heap dumps) on this address, e.g. 127.0.0.1:6060; empty = off")
+	admin := flag.String("admin", "", "server: admin API listen address e.g. 127.0.0.1:6070 (bind loopback; empty = off, see zhdata-admin-api.md)")
+	adminToken := flag.String("admin-token", "", "server: optional Bearer token required on every admin /v1/* call")
 	configPath := flag.String("c", "", "JSON config file (zhenhanvn core mode, see config.client.example.json); explicit flags below override it")
 	logLevelFlag := flag.String("loglevel", "info", "log level: error | warning | info | debug (debug == same detail as -v)")
 	showVer := flag.Bool("version", false, "print version")
@@ -57,25 +59,27 @@ func main() {
 		}
 	}
 	p, err := resolveParams(coreParams{
-		mode:       *mode,
-		listen:     *listen,
-		server:     *server,
-		uuid:       *uuid,
-		users:      *users,
-		backend:    *backend,
-		decoy:      *decoy,
-		pprof:      *pprofAddr,
+		mode:        *mode,
+		listen:      *listen,
+		server:      *server,
+		uuid:        *uuid,
+		users:       *users,
+		backend:     *backend,
+		decoy:       *decoy,
+		pprof:       *pprofAddr,
+		admin:       *admin,
+		adminToken:  *adminToken,
 		loglevel:    *logLevelFlag,
 		maxClients:  *maxClients,
 		maxSessions: *maxSessions,
 		deviceID:    *deviceID,
 		conns:       *conns,
-		spread:     *spread,
-		train:      *train,
-		migrate:    *migrate,
-		dlconns:    *dlconns,
-		slotbase:   *slotbase,
-		verbose:    *verbose,
+		spread:      *spread,
+		train:       *train,
+		migrate:     *migrate,
+		dlconns:     *dlconns,
+		slotbase:    *slotbase,
+		verbose:     *verbose,
 	}, flagSet, appCfg)
 	if err != nil {
 		fatal("config: %v", err)
@@ -130,6 +134,8 @@ func main() {
 			maxClients:  p.maxClients,
 			maxSessions: maxSessions,
 			decoy:       p.decoy,
+			adminAddr:   p.admin,
+			adminToken:  p.adminToken,
 			verbose:     p.verbose,
 		})
 		if err != nil {
@@ -140,6 +146,9 @@ func main() {
 	case "client":
 		if p.listen == "" || p.server == "" || p.uuid == "" {
 			fatal("client mode requires -listen, -server and -uuid (or config listen/server/uuid)")
+		}
+		if p.admin != "" {
+			logWarn("main", "admin API is server-side only: -admin %q ignored in client mode", p.admin)
 		}
 		app, err := newClientApp(clientConfig{
 			listen:   p.listen,

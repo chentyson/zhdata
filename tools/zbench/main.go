@@ -1,4 +1,4 @@
-﻿// zbench: speedtest-profile load generator against zhdata's local socks5.
+// zbench: speedtest-profile load generator against zhdata's local socks5.
 // Mimics what v2rayN's speedtest actually does (which curl -Z does not):
 // N staggered bulk PUT streams PLUS a churn of tiny probe streams, sampled
 // per-second so we get stability percentiles, not just an average.
@@ -211,7 +211,7 @@ func main() {
 			prev = cur
 		}
 		close(stop)
-		_ = wg // goroutines may still be draining; exit after printing (os.Exit below)
+		_ = &wg // goroutines may still be draining; exit after printing (os.Exit below)
 		time.Sleep(500 * time.Millisecond)
 		// drain: give stragglers a beat then move on
 		time.Sleep(500 * time.Millisecond)
