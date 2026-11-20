@@ -20,10 +20,11 @@ import (
 type keyStore struct {
 	paths []string
 
-	mu     sync.RWMutex
-	keys   []string
-	sigs   map[string]string // path -> "mtimeNano:size"
-	loaded bool
+	mu       sync.RWMutex
+	keys     []string
+	policies map[string]userPolicy // uuid -> per-user policy (0 max devices = unlimited)
+	sigs     map[string]string     // path -> "mtimeNano:size"
+	loaded   bool
 }
 
 const keyReloadInterval = 20 * time.Second
@@ -44,8 +45,8 @@ func newKeyStore(spec string) (*keyStore, error) {
 	if len(paths) == 0 {
 		return nil, fmt.Errorf("empty -users spec")
 	}
-	ks := &keyStore{paths: paths, sigs: map[string]string{}}
-	keys, per, errs := ks.collect()
+	ks := &keyStore{paths: paths, policies: map[string]userPolicy{}, sigs: map[string]string{}}
+	keys, policies, per, errs := ks.collect()
 	for _, err := range errs {
 		logWarn("users", "%v", err)
 	}
@@ -53,9 +54,10 @@ func newKeyStore(spec string) (*keyStore, error) {
 		return nil, fmt.Errorf("no user keys from %v", paths)
 	}
 	ks.keys = keys
+	ks.policies = policies
 	ks.reSigs()
 	ks.loaded = true
-	logInfo("users", "loaded %d keys %v", len(keys), per)
+	logInfo("users", "loaded %d keys (%d device-limited) %v", len(keys), countLimited(policies), per)
 	return ks, nil
 }
 
@@ -63,6 +65,22 @@ func (ks *keyStore) snapshot() []string {
 	ks.mu.RLock()
 	defer ks.mu.RUnlock()
 	return append([]string(nil), ks.keys...)
+}
+
+func (ks *keyStore) policy(uuid string) userPolicy {
+	ks.mu.RLock()
+	defer ks.mu.RUnlock()
+	return ks.policies[uuid]
+}
+
+func countLimited(policies map[string]userPolicy) int {
+	n := 0
+	for _, p := range policies {
+		if p.MaxDevices > 0 {
+			n++
+		}
+	}
+	return n
 }
 
 func (ks *keyStore) reSigs() {
@@ -94,7 +112,7 @@ func (ks *keyStore) reloadIfChanged() bool {
 	if !changed {
 		return false
 	}
-	keys, per, errs := ks.collect()
+	keys, policies, per, errs := ks.collect()
 	if len(keys) == 0 {
 		logWarn("users", "reload produced 0 keys, keeping previous (%d); errors: %v", len(ks.snapshot()), joinErrs(errs))
 		ks.reSigs()
@@ -105,30 +123,41 @@ func (ks *keyStore) reloadIfChanged() bool {
 	}
 	ks.mu.Lock()
 	ks.keys = keys
+	ks.policies = policies
 	ks.mu.Unlock()
 	ks.sigs = sigs
-	logInfo("users", "hot-reloaded %d keys %v", len(keys), per)
+	logInfo("users", "hot-reloaded %d keys (%d device-limited) %v", len(keys), countLimited(policies), per)
 	return true
 }
 
-func (ks *keyStore) collect() (keys []string, per map[string]int, errs []error) {
+func (ks *keyStore) collect() (keys []string, policies map[string]userPolicy, per map[string]int, errs []error) {
 	set := map[string]bool{}
+	policies = map[string]userPolicy{}
 	per = map[string]int{}
 	for _, p := range ks.paths {
-		var ks2 []string
+		var us []string
+		var ps map[string]userPolicy
 		var err error
 		if isSqliteFile(p) {
-			ks2, err = readUsersFromDB(p)
+			us, ps, err = readUsersFromDB(p)
 		} else {
-			ks2, err = loadUsers(p)
+			us, ps, err = loadUsersWithPolicies(p)
 		}
 		if err != nil {
 			errs = append(errs, fmt.Errorf("%s: %w", p, err))
 			continue
 		}
-		per[p] = len(ks2)
-		for _, k := range ks2 {
+		per[p] = len(us)
+		for _, k := range us {
+			if k == "" || k == "null" {
+				continue
+			}
 			set[k] = true
+			if pol, ok := ps[k]; ok && pol.MaxDevices > 0 {
+				if old, exists := policies[k]; !exists || old.MaxDevices == 0 || pol.MaxDevices > old.MaxDevices {
+					policies[k] = pol
+				}
+			}
 		}
 	}
 	keys = make([]string, 0, len(set))
@@ -160,24 +189,27 @@ func isSqliteFile(p string) bool {
 	return string(magic[:]) == "SQLite format 3"
 }
 
-// readUsersFromDB reads keys from an s-ui style sqlite database by finding
-// every table that has a "uuid" column (schema-adaptive, read-only).
-func readUsersFromDB(path string) ([]string, error) {
+// readUsersFromDB reads keys and optional per-user policies from an s-ui
+// style sqlite database by finding every table that has a "uuid" column
+// (schema-adaptive, read-only). Optional policy columns: max_devices,
+// max_clients, devices, device_limit.
+func readUsersFromDB(path string) ([]string, map[string]userPolicy, error) {
+	policies := map[string]userPolicy{}
 	db, err := openReadonlyDB(path)
 	if err != nil {
-		return nil, err
+		return nil, policies, err
 	}
 	defer db.Close()
 	rows, err := db.Query("SELECT name FROM sqlite_master WHERE type='table'")
 	if err != nil {
-		return nil, err
+		return nil, policies, err
 	}
 	var tables []string
 	for rows.Next() {
 		var t string
 		if err = rows.Scan(&t); err != nil {
 			rows.Close()
-			return nil, err
+			return nil, policies, err
 		}
 		tables = append(tables, t)
 	}
@@ -190,14 +222,36 @@ func readUsersFromDB(path string) ([]string, error) {
 			continue
 		}
 		used++
-		q := "SELECT uuid FROM " + quoteIdent(t)
+		polCol := firstColumn(db, t, "max_devices", "max_clients", "devices", "device_limit")
+		if polCol == "" {
+			q := "SELECT uuid FROM " + quoteIdent(t)
+			r2, err := db.Query(q)
+			if err != nil {
+				continue
+			}
+			for r2.Next() {
+				var u sql.NullString
+				if err = r2.Scan(&u); err != nil {
+					break
+				}
+				k := strings.ToLower(strings.TrimSpace(u.String))
+				if k != "" && k != "null" {
+					out = append(out, k)
+				}
+			}
+			r2.Close()
+			continue
+		}
+
+		q := "SELECT uuid, " + quoteIdent(polCol) + " FROM " + quoteIdent(t)
 		r2, err := db.Query(q)
 		if err != nil {
 			continue
 		}
 		for r2.Next() {
 			var u sql.NullString
-			if err = r2.Scan(&u); err != nil {
+			var pol sql.NullInt64
+			if err = r2.Scan(&u, &pol); err != nil {
 				break
 			}
 			k := strings.ToLower(strings.TrimSpace(u.String))
@@ -205,13 +259,16 @@ func readUsersFromDB(path string) ([]string, error) {
 				continue
 			}
 			out = append(out, k)
+			if pol.Valid && pol.Int64 > 0 {
+				policies[k] = userPolicy{MaxDevices: int(pol.Int64)}
+			}
 		}
 		r2.Close()
 	}
 	if used == 0 {
-		return nil, fmt.Errorf("no table with a 'uuid' column in %s", path)
+		return nil, policies, fmt.Errorf("no table with a 'uuid' column in %s", path)
 	}
-	return out, nil
+	return out, policies, nil
 }
 
 func openReadonlyDB(path string) (*sql.DB, error) {
@@ -258,6 +315,15 @@ func tableHasColumn(db *sql.DB, table, col string) bool {
 		}
 	}
 	return false
+}
+
+func firstColumn(db *sql.DB, table string, cols ...string) string {
+	for _, c := range cols {
+		if tableHasColumn(db, table, c) {
+			return c
+		}
+	}
+	return ""
 }
 
 func quoteIdent(s string) string {

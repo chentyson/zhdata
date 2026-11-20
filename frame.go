@@ -39,15 +39,28 @@ const (
 	maxPayload = 16 * 1024
 	smallFrame = 1400 // DATA frames up to this size get priority
 
-	handshakeLen = 48     // 16B salt + 32B encrypted magic block
-	magic        = "zhv6" // v0.14: explicit auth response (zhv5/zhv4 clients are still accepted by the server)
+	handshakeLen = 48     // 16B salt + 32B encrypted handshake block
+	magic        = "zhv7" // v0.15: per-process device_id in the handshake (zhv6/zhv5/zhv4 clients are still accepted by the server)
+
+	deviceIDLen       = 16
+	handDevOff        = 5  // offset inside the encrypted 32B block: magic(4)+slot(1)
+	handNonceOff      = 21 // deviceID(16) + nonce(11)
+	handNonceLen      = 11
 
 	authRespLen       = 32
 	authMagicOK       = "zhok"
 	authRejectPrefix  = "\xff\xfe\xfd\xfc"
-	authErrTimeout    = "zhdata handshake timed out (server did not answer before timeout)"
-	authErrUntrusted  = "zhdata handshake was not completed by a compatible zhdata server"
-	authErrServerFail = "zhdata authentication failed: server rejected this UUID"
+	authReasonGeneric = 0
+	authReasonBadAuth = 1
+	authReasonMaxSess = 2
+	authReasonDevice  = 3
+
+	authErrTimeout      = "zhdata handshake timed out (server did not answer before timeout)"
+	authErrUntrusted    = "zhdata handshake was not completed by a compatible zhdata server"
+	authErrServerFail   = "zhdata authentication failed: server rejected this UUID"
+	authErrMaxSessions  = "zhdata server session limit reached: server resource limit exceeded"
+	authErrDeviceLimit  = "zhdata device limit reached: this UUID has too many active devices"
+	authErrServerReason = "zhdata server rejected this session"
 )
 
 // bucket member tOpen payload helpers (see tOpenBucketMember).
@@ -84,14 +97,40 @@ func encodeAuthOK(tx cipherStream) []byte {
 	return p
 }
 
-func encodeAuthReject() []byte {
+func encodeAuthReject(reason byte) []byte {
 	p := make([]byte, authRespLen)
 	copy(p, authRejectPrefix)
+	p[4] = reason
 	return p
 }
 
 func isAuthReject(p []byte) bool {
 	return len(p) >= 4 && string(p[:4]) == authRejectPrefix
+}
+
+func authRejectReason(p []byte) byte {
+	if !isAuthReject(p) {
+		return authReasonGeneric
+	}
+	if len(p) < 5 {
+		return authReasonGeneric
+	}
+	return p[4]
+}
+
+func authRejectMessage(reason byte) string {
+	switch reason {
+	case authReasonMaxSess:
+		return authErrMaxSessions
+	case authReasonDevice:
+		return authErrDeviceLimit
+	case authReasonBadAuth:
+		return authErrServerFail
+	case authReasonGeneric:
+		return authErrServerFail
+	default:
+		return authErrServerReason
+	}
 }
 
 func verifyAuthOK(p []byte, rx cipherStream) bool {

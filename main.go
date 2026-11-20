@@ -12,7 +12,7 @@ import (
 	"syscall"
 )
 
-const version = "0.14.0" // zhenhanvn first-class core: zhv6 explicit auth handshake, client server-target resolved IP logging, clearer connection/backend failure logs
+const version = "0.15.0" // zhenhanvn first-class core: zhv7 per-process device_id, per-UUID device limits, uuid+device session/stream namespace, explicit session/device rejection reasons
 
 func main() {
 	mode := flag.String("mode", "client", "client | server")
@@ -21,9 +21,11 @@ func main() {
 	uuid := flag.String("uuid", "", "user uuid (client)")
 	users := flag.String("users", "", "user key sources: comma separated txt/sqlite paths, e.g. /etc/s-ui/private/s-ui.db,/opt/zhdata/users.txt (server)")
 	backend := flag.String("backend", "direct", `backend: "direct" or socks addr e.g. 127.0.0.1:12345 (server)`)
-	maxClients := flag.Int("max-clients", 100, "max concurrent sessions per server (sessions = users x client -conns)")
+	maxClients := flag.Int("max-clients", 100, "compat alias for max concurrent sessions per server")
+	maxSessions := flag.Int("max-sessions", 0, "max concurrent tunnel sessions per server; 0 means unlimited (overrides -max-clients when explicitly set)")
 	decoy := flag.String("decoy", "", "optional host:port to splice non-protocol HTTP-looking traffic (server)")
 	verbose := flag.Bool("v", false, "verbose logging")
+	deviceID := flag.String("device-id", "", "optional 16-byte hex device id for this client process; empty = random per process (server treats each device id as one active device instance)")
 	conns := flag.Int("conns", 1, "parallel tunnel sessions 1-64 (client; independent slots/buckets)")
 	spread := flag.Int("spread", 8, "max lanes one bulk upload stream may fan across (client; v0.11 retransmit makes fan-out safe; auto-capped to conns/live-bulk-streams, set 1 to disable)")
 	train := flag.Int("train", 0, "seconds between per-session idle training frames; 0 = off (v0.8 experiment: keep ISP shaping buckets warm)")
@@ -63,9 +65,11 @@ func main() {
 		backend:    *backend,
 		decoy:      *decoy,
 		pprof:      *pprofAddr,
-		loglevel:   *logLevelFlag,
-		maxClients: *maxClients,
-		conns:      *conns,
+		loglevel:    *logLevelFlag,
+		maxClients:  *maxClients,
+		maxSessions: *maxSessions,
+		deviceID:    *deviceID,
+		conns:       *conns,
 		spread:     *spread,
 		train:      *train,
 		migrate:    *migrate,
@@ -110,13 +114,23 @@ func main() {
 		if p.listen == "" || p.users == "" {
 			fatal("server mode requires -listen and -users (or config listen/users)")
 		}
+		maxSessions := p.maxSessions
+		if flagSet["max-sessions"] {
+			maxSessions = p.maxSessions
+		} else {
+			maxSessions = p.maxClients
+		}
+		if maxSessions < 0 {
+			maxSessions = 0
+		}
 		app, err := newServerApp(serverConfig{
-			listen:     p.listen,
-			usersPath:  p.users,
-			backend:    p.backend,
-			maxClients: p.maxClients,
-			decoy:      p.decoy,
-			verbose:    p.verbose,
+			listen:      p.listen,
+			usersPath:   p.users,
+			backend:     p.backend,
+			maxClients:  p.maxClients,
+			maxSessions: maxSessions,
+			decoy:       p.decoy,
+			verbose:     p.verbose,
 		})
 		if err != nil {
 			fatal("server: %v", err)
@@ -131,6 +145,7 @@ func main() {
 			listen:   p.listen,
 			server:   p.server,
 			uuid:     p.uuid,
+			deviceID: p.deviceID,
 			conns:    p.conns,
 			spread:   p.spread,
 			train:    p.train,
@@ -142,7 +157,7 @@ func main() {
 		if err != nil {
 			fatal("client: %v", err)
 		}
-		logInfo("client", "mixed socks5+http listening on %s -> %s", app.Addr(), p.server)
+		logInfo("client", "mixed socks5+http listening on %s -> %s device=%x", app.Addr(), p.server, app.deviceID[:])
 		waitSignal()
 		app.Close()
 	default:

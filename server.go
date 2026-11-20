@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -15,26 +16,28 @@ import (
 )
 
 type serverConfig struct {
-	listen     string
-	usersPath  string
-	backend    string // "direct" or socks addr like 127.0.0.1:12345
-	maxClients int
-	decoy      string // optional host:port for fallback splice of non-protocol traffic
-	verbose    bool
+	listen      string
+	usersPath   string
+	backend     string // "direct" or socks addr like 127.0.0.1:12345
+	maxClients  int
+	maxSessions int
+	decoy       string // optional host:port for fallback splice of non-protocol traffic
+	verbose     bool
 }
 
 type serverApp struct {
 	cfg serverConfig
 	ks  *keyStore
 
-	lns    []net.Listener
-	mu     sync.Mutex
-	conns  map[string]*sSession // uuid(+slot) -> current session
-	active int
-	estab  atomic.Uint64 // sessions established (for tests/observability)
+	lns     []net.Listener
+	mu      sync.Mutex
+	conns   map[string]*sSession            // uuid(+device)(+slot) -> current session
+	devices map[string]map[[16]byte]int     // uuid -> device_id -> active session count
+	active  int
+	estab   atomic.Uint64 // sessions established (for tests/observability)
 
 	stmMu   sync.Mutex          // guards streams map + sStream.members + groups map
-	streams map[string]*sStream // "uuid#sid" -> stream (GLOBAL per uuid: one app stream may span sessions)
+	streams map[string]*sStream // "uuid#device#sid" -> stream (GLOBAL per uuid+device: one app stream may span sessions)
 	groups  map[string]*upGroup // zhv5: leader streamKey -> bucket reassembly group
 
 	failMu sync.Mutex
@@ -56,8 +59,10 @@ type dnsEntry struct {
 }
 
 type sSession struct {
-	uuid string
-	sess *session
+	uuid      string
+	deviceID  [16]byte
+	hasDevice bool
+	sess      *session
 
 	smu     sync.Mutex
 	streams map[uint16]*sStream // membership view: sids carried by this session
@@ -69,9 +74,11 @@ type sSession struct {
 // carries a 4-byte sequence number and is reassembled to order before being
 // replayed to the backend. Downlink still flows through the owner session.
 type sStream struct {
-	owner *sSession
-	uuid  string
-	sid   uint16
+	owner     *sSession
+	uuid      string
+	deviceID  [16]byte
+	hasDevice bool
+	sid       uint16
 
 	mu          sync.Mutex // reassembler + backend fields
 	backend     net.Conn
@@ -130,8 +137,14 @@ func newServerApp(cfg serverConfig) (*serverApp, error) {
 	if err != nil {
 		return nil, err
 	}
-	if cfg.maxClients <= 0 {
+	if cfg.maxClients <= 0 && cfg.maxSessions <= 0 {
 		cfg.maxClients = 100
+	}
+	if cfg.maxSessions < 0 {
+		cfg.maxSessions = 0
+	}
+	if cfg.maxSessions == 0 {
+		cfg.maxSessions = cfg.maxClients
 	}
 	lns := []net.Listener(nil)
 	for _, spec := range splitCSV(cfg.listen) {
@@ -149,6 +162,7 @@ func newServerApp(cfg serverConfig) (*serverApp, error) {
 		ks:      ks,
 		lns:     lns,
 		conns:   map[string]*sSession{},
+		devices: map[string]map[[16]byte]int{},
 		streams: map[string]*sStream{},
 		groups:  map[string]*upGroup{},
 		fails:   map[string]*failWin{},
@@ -160,8 +174,8 @@ func newServerApp(cfg serverConfig) (*serverApp, error) {
 	for _, ln := range lns {
 		addrs = append(addrs, ln.Addr().String())
 	}
-	logInfo("server", "listening on %v, users=%d, backend=%s, max-clients=%d",
-		addrs, len(ks.snapshot()), cfg.backend, cfg.maxClients)
+	logInfo("server", "listening on %v, users=%d, backend=%s, max-sessions=%d, max-clients=%d",
+		addrs, len(ks.snapshot()), cfg.backend, cfg.maxSessions, cfg.maxClients)
 	for _, ln := range lns {
 		go a.acceptLoop(ln)
 	}
@@ -305,14 +319,20 @@ func (a *serverApp) handle(c net.Conn) {
 	uuid, rx := "", cipherStream(nil)
 	version := ""
 	var slot byte
+	var deviceID [16]byte
+	var hasDevice bool
 	for _, u := range a.ks.snapshot() {
 		ctr := newCTR(u, salt)
 		pt := make([]byte, 32)
 		ctr.XORKeyStream(pt, enc)
-		if string(pt[:4]) == magic || string(pt[:4]) == "zhv5" || string(pt[:4]) == "zhv4" {
+		if string(pt[:4]) == magic || string(pt[:4]) == "zhv6" || string(pt[:4]) == "zhv5" || string(pt[:4]) == "zhv4" {
 			uuid, rx = u, ctr
 			version = string(pt[:4])
 			slot = pt[4] // handshake slot byte (0 = single-session legacy)
+			if version == magic {
+				copy(deviceID[:], pt[handDevOff:handDevOff+deviceIDLen])
+				hasDevice = true
+			}
 			break
 		}
 	}
@@ -326,38 +346,58 @@ func (a *serverApp) handle(c net.Conn) {
 		} else {
 			logDbg("server", "handshake rate limited from %s", raddr)
 		}
-		writeAuthReject(c)
+		writeAuthReject(c, authReasonBadAuth)
 		c.Close()
 		return
 	}
-	wantAuth := version == magic
+	wantAuth := version == magic || version == "zhv6"
 
-	// takeover + max clients. Sessions are keyed per (uuid,slot): a client
-	// with -conns N holds N independent sessions that never take each other
-	// over; slot 0 keeps the legacy single-session semantics.
+	// takeover + max sessions. zhv7 sessions are keyed per (uuid,device_id,slot):
+	// one device with -conns N holds N independent sessions; a new device_id
+	// does not GOAWAY another device even when it uses the same slot.
 	if slot >= maxSlots {
 		slot = 0
 	}
-	connKey := uuid
-	if slot > 0 {
-		connKey = uuid + "#" + string(rune('0'+slot))
-	}
+	connKey := sessionKey(uuid, deviceID, hasDevice, slot)
 	a.mu.Lock()
-	if a.active >= a.cfg.maxClients {
+	if a.cfg.maxSessions > 0 && a.active >= a.cfg.maxSessions {
 		a.mu.Unlock()
-		logWarn("server", "max clients reached, rejecting %s from %s", short(uuid), raddr)
+		logWarn("server", "max sessions reached, rejecting %s from %s (active=%d limit=%d)",
+			short(uuid), raddr, a.active, a.cfg.maxSessions)
 		if wantAuth {
-			writeAuthReject(c)
+			writeAuthReject(c, authReasonMaxSess)
 		}
 		c.Close()
 		return
 	}
+	pol := a.ks.policy(uuid)
+	if hasDevice && pol.MaxDevices > 0 {
+		dm := a.devices[uuid]
+		if _, ok := dm[deviceID]; !ok && len(dm) >= pol.MaxDevices {
+			a.mu.Unlock()
+			logWarn("server", "device limit reached, rejecting uuid=%s device=%s slot=%d from %s (devices=%d limit=%d)",
+				short(uuid), shortDevice(deviceID), slot, raddr, len(dm), pol.MaxDevices)
+			if wantAuth {
+				writeAuthReject(c, authReasonDevice)
+			}
+			c.Close()
+			return
+		}
+	}
 	old := a.conns[connKey]
 	a.active++
+	if hasDevice {
+		dm := a.devices[uuid]
+		if dm == nil {
+			dm = map[[16]byte]int{}
+			a.devices[uuid] = dm
+		}
+		dm[deviceID]++
+	}
 	a.mu.Unlock()
 
 	if old != nil {
-		logWarn("server", "takeover uuid=%s slot=%d (old conn from different client)", short(uuid), slot)
+		logWarn("server", "takeover uuid=%s device=%s slot=%d (same uuid+device+slot reconnected)", short(uuid), shortDevice(deviceID), slot)
 		old.sess.sendCtrl(Frame{Typ: tGoaway})
 		go func() {
 			time.Sleep(300 * time.Millisecond)
@@ -376,12 +416,12 @@ func (a *serverApp) handle(c net.Conn) {
 		}
 		c.SetWriteDeadline(noDeadline())
 	}
-	sh := &sSession{uuid: uuid, sess: sess, streams: map[uint16]*sStream{}}
+	sh := &sSession{uuid: uuid, deviceID: deviceID, hasDevice: hasDevice, sess: sess, streams: map[uint16]*sStream{}}
 	a.mu.Lock()
 	a.conns[connKey] = sh
 	a.mu.Unlock()
 	a.estab.Add(1)
-	logInfo("server", "session established uuid=%s slot=%d from %s", short(uuid), slot, raddr)
+	logInfo("server", "session established uuid=%s device=%s slot=%d from %s", short(uuid), shortDevice(deviceID), slot, raddr)
 
 	err := sess.run(func(f *Frame) { a.dispatch(sh, f) })
 	sh.closeAll(a)
@@ -390,12 +430,50 @@ func (a *serverApp) handle(c net.Conn) {
 	if a.conns[connKey] == sh {
 		delete(a.conns, connKey)
 	}
+	if hasDevice {
+		dm := a.devices[uuid]
+		if dm != nil {
+			if dm[deviceID] <= 1 {
+				delete(dm, deviceID)
+				if len(dm) == 0 {
+					delete(a.devices, uuid)
+				}
+			} else {
+				dm[deviceID]--
+			}
+		}
+	}
 	a.mu.Unlock()
-	logDbg("server", "session ended uuid=%s slot=%d: %v", short(uuid), slot, err)
+	logDbg("server", "session ended uuid=%s device=%s slot=%d: %v", short(uuid), shortDevice(deviceID), slot, err)
 }
 
-func streamKey(uuid string, sid uint16) string {
-	return uuid + "#" + strconv.FormatUint(uint64(sid), 10)
+func deviceHex(d [16]byte) string {
+	return hex.EncodeToString(d[:])
+}
+
+func sessionKey(uuid string, deviceID [16]byte, hasDevice bool, slot byte) string {
+	if !hasDevice {
+		if slot == 0 {
+			return uuid
+		}
+		return uuid + "#" + string(rune('0'+slot))
+	}
+	return uuid + ":" + deviceHex(deviceID) + ":" + strconv.FormatUint(uint64(slot), 10)
+}
+
+func streamKey(uuid string, deviceID [16]byte, hasDevice bool, sid uint16) string {
+	if !hasDevice {
+		return uuid + "#" + strconv.FormatUint(uint64(sid), 10)
+	}
+	return uuid + ":" + deviceHex(deviceID) + "#" + strconv.FormatUint(uint64(sid), 10)
+}
+
+func streamKeyFor(sh *sSession, sid uint16) string {
+	return streamKey(sh.uuid, sh.deviceID, sh.hasDevice, sid)
+}
+
+func streamKeyForStream(st *sStream, sid uint16) string {
+	return streamKey(st.uuid, st.deviceID, st.hasDevice, sid)
 }
 
 // wakeAll hands a wake token to every parked dispatch lane of this stream
@@ -442,7 +520,7 @@ type upGroup struct {
 }
 
 func (a *serverApp) attachBucketMember(sh *sSession, sid, lsid uint16, off, ln uint64, fin bool) {
-	lkey := streamKey(sh.uuid, lsid)
+	lkey := streamKeyFor(sh, lsid)
 	a.stmMu.Lock()
 	if sh.closed {
 		a.stmMu.Unlock()
@@ -466,7 +544,7 @@ func (a *serverApp) attachBucketMember(sh *sSession, sid, lsid uint16, off, ln u
 	if fin && off+ln > g.bodyLen {
 		g.bodyLen = off + ln
 	}
-	if existing := a.streams[streamKey(sh.uuid, sid)]; existing != nil {
+	if existing := a.streams[streamKeyFor(sh, sid)]; existing != nil {
 		// member sid re-opened on this session (reconnect): re-attach only
 		existing.members[sh] = true
 		a.stmMu.Unlock()
@@ -479,23 +557,25 @@ func (a *serverApp) attachBucketMember(sh *sSession, sid, lsid uint16, off, ln u
 		return
 	}
 	st := &sStream{
-		owner:    sh,
-		uuid:     sh.uuid,
-		sid:      sid,
-		upq:      make(chan []byte, 128),
-		dialDone: make(chan struct{}),
-		dlWake:   make(chan struct{}, 1),
-		rx:       reassembler{next: 1, buf: map[uint32][]byte{}},
-		rxWake:   make(chan struct{}, maxSlots),
-		laneHi:   map[*sSession]*laneAckState{sh: {}},
-		members:  map[*sSession]bool{sh: true},
-		grpKey:   lkey,
+		owner:     sh,
+		uuid:      sh.uuid,
+		deviceID:  sh.deviceID,
+		hasDevice: sh.hasDevice,
+		sid:       sid,
+		upq:       make(chan []byte, 128),
+		dialDone:  make(chan struct{}),
+		dlWake:    make(chan struct{}, 1),
+		rx:        reassembler{next: 1, buf: map[uint32][]byte{}},
+		rxWake:    make(chan struct{}, maxSlots),
+		laneHi:    map[*sSession]*laneAckState{sh: {}},
+		members:   map[*sSession]bool{sh: true},
+		grpKey:    lkey,
 		grpOff:   off,
 		grpLen:   ln,
 		grpFinal: fin,
 	}
 	close(st.dialDone) // members have no backend dial
-	a.streams[streamKey(sh.uuid, sid)] = st
+	a.streams[streamKeyFor(sh, sid)] = st
 	a.stmMu.Unlock()
 	leader.mu.Lock()
 	if leader.grp == nil || leader.grpDone {
@@ -615,7 +695,7 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 			sh.sess.sendCtrl(Frame{Typ: tReset, SID: f.SID})
 			return
 		}
-		key := streamKey(sh.uuid, f.SID)
+		key := streamKeyFor(sh, f.SID)
 		a.stmMu.Lock()
 		if sh.closed {
 			a.stmMu.Unlock()
@@ -632,16 +712,18 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 				return
 			}
 			st = &sStream{
-				owner:    sh,
-				uuid:     sh.uuid,
-				sid:      f.SID,
-				upq:      make(chan []byte, 128),
-				dialDone: make(chan struct{}),
-				dlWake:   make(chan struct{}, 1),
-				rx:       reassembler{next: 1, buf: map[uint32][]byte{}},
-				rxWake:   make(chan struct{}, maxSlots),
-				laneHi:   map[*sSession]*laneAckState{sh: {}},
-				members:  map[*sSession]bool{sh: true},
+				owner:     sh,
+				uuid:      sh.uuid,
+				deviceID:  sh.deviceID,
+				hasDevice: sh.hasDevice,
+				sid:       f.SID,
+				upq:       make(chan []byte, 128),
+				dialDone:  make(chan struct{}),
+				dlWake:    make(chan struct{}, 1),
+				rx:        reassembler{next: 1, buf: map[uint32][]byte{}},
+				rxWake:    make(chan struct{}, maxSlots),
+				laneHi:    map[*sSession]*laneAckState{sh: {}},
+				members:   map[*sSession]bool{sh: true},
 			}
 			a.streams[key] = st
 			a.stmMu.Unlock()
@@ -676,7 +758,7 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 		st := sh.streams[f.SID]
 		sh.smu.Unlock()
 		if st == nil {
-			if a.resetOnce(streamKey(sh.uuid, f.SID)) {
+			if a.resetOnce(streamKeyFor(sh, f.SID)) {
 				a.logf("tReset sid=%d reason=unknown-stream (tdata for closed/unopened sid) seq=%d", f.SID, seq)
 				sh.sess.sendCtrl(Frame{Typ: tReset, SID: f.SID})
 			}
@@ -1239,13 +1321,13 @@ func (a *serverApp) pumpUp(st *sStream, sh *sSession) {
 // session, closes the backend, and (optionally) resets on every member.
 func (a *serverApp) closeStream(st *sStream, sendReset bool) {
 	a.stmMu.Lock()
-	if a.streams[streamKey(st.uuid, st.sid)] != st {
+	if a.streams[streamKeyForStream(st, st.sid)] != st {
 		a.stmMu.Unlock()
 		return // already replaced/closed
 	}
-	delete(a.streams, streamKey(st.uuid, st.sid))
+	delete(a.streams, streamKeyForStream(st, st.sid))
 	if st.grpKey == "" {
-		delete(a.groups, streamKey(st.uuid, st.sid)) // leader death ends the bucket group
+		delete(a.groups, streamKeyForStream(st, st.sid)) // leader death ends the bucket group
 	}
 	members := make([]*sSession, 0, len(st.members))
 	for m := range st.members {
@@ -1375,10 +1457,14 @@ func (a *serverApp) spliceDecoy(c net.Conn, head []byte) {
 
 // ---------------- helpers ----------------
 
-func writeAuthReject(c net.Conn) {
+func writeAuthReject(c net.Conn, reason byte) {
 	c.SetWriteDeadline(deadline(3 * time.Second))
-	_, _ = c.Write(encodeAuthReject())
+	_, _ = c.Write(encodeAuthReject(reason))
 	c.SetWriteDeadline(noDeadline())
+}
+
+func shortDevice(d [16]byte) string {
+	return hex.EncodeToString(d[:])
 }
 
 func addrHost(atyp byte, addr []byte) string {

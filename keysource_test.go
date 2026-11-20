@@ -33,7 +33,7 @@ func makeSuiDB(t *testing.T, uuids ...string) string {
 
 func TestReadUsersFromDB(t *testing.T) {
 	p := makeSuiDB(t, "UPPER-Aaa", "b-bb")
-	u, err := readUsersFromDB(p)
+	u, _, err := readUsersFromDB(p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func TestReadUsersFromDBNoUuidTable(t *testing.T) {
 	db, _ := sql.Open("sqlite", p)
 	db.Exec(`CREATE TABLE foo (a text)`)
 	db.Close()
-	if _, err := readUsersFromDB(p); err == nil {
+	if _, _, err := readUsersFromDB(p); err == nil {
 		t.Fatal("expected error when no uuid column exists")
 	}
 }

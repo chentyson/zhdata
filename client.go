@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -22,7 +23,8 @@ type clientConfig struct {
 	listen   string // local socks5 listen addr
 	server   string // zhdata server host:port; comma separated for multi-port
 	uuid     string
-	conns    int // parallel tunnel sessions (1..maxSlots)
+	deviceID string // optional 16-byte hex per-process device id; empty = random
+	conns    int   // parallel tunnel sessions (1..maxSlots)
 	spread   int // max lanes one bulk stream may use (1 disables in-stream spread)
 	train    int // seconds between per-session training frames; 0 = off (v0.8 experiment)
 	migrate  int // v0.11.12: stalled-lane whole-backlog migration; 0 = off (default, download parity with v0.11.7), 1 = on
@@ -43,6 +45,7 @@ type clientConfig struct {
 // globally unique per uuid so one sid can appear on multiple sessions.
 type clientApp struct {
 	cfg       clientConfig
+	deviceID  [16]byte       // per-process device id; stable for this process lifetime, random per start
 	listener  net.Listener   // primary SOCKS listener (Addr()/Close reference)
 	listeners []net.Listener // primary + dual-stack loopback companions; accept runs on all
 	streamID  uint32         // global cStream id counter, shared across all listeners
@@ -269,7 +272,18 @@ func newClientApp(cfg clientConfig) (*clientApp, error) {
 	if len(servers) == 0 {
 		return nil, fmt.Errorf("no server address")
 	}
+	var deviceID [16]byte
+	if hid := strings.TrimSpace(cfg.deviceID); hid != "" {
+		raw, err := hex.DecodeString(hid)
+		if err != nil || len(raw) != deviceIDLen {
+			return nil, fmt.Errorf("invalid device id %q: want 32 hex chars", hid)
+		}
+		copy(deviceID[:], raw)
+	} else {
+		copy(deviceID[:], randBytes(deviceIDLen))
+	}
 	a := &clientApp{
+		deviceID:  deviceID,
 		cfg:       cfg,
 		listener:  lns[0],
 		listeners: lns,
@@ -696,8 +710,9 @@ func (cn *cConn) dialSession() (*session, error) {
 	tx := newCTR(a.cfg.uuid, salt)
 	hp := make([]byte, 32)
 	copy(hp, magic)
-	hp[4] = cn.idx // session slot: server keys takeover per (uuid,slot)
-	copy(hp[5:], randBytes(8))
+	hp[4] = cn.idx // session slot: server keys takeover per (uuid,device_id,slot)
+	copy(hp[handDevOff:handDevOff+deviceIDLen], a.deviceID[:])
+	copy(hp[handNonceOff:], randBytes(handNonceLen))
 	tx.XORKeyStream(hp, hp) // tx consumed 32 keystream bytes; frames continue after
 	if _, err = c.Write(append(salt, hp...)); err != nil {
 		c.Close()
@@ -714,7 +729,7 @@ func (cn *cConn) dialSession() (*session, error) {
 	}
 	if isAuthReject(auth) {
 		c.Close()
-		return nil, errors.New(authErrServerFail)
+		return nil, errors.New(authRejectMessage(authRejectReason(auth)))
 	}
 
 	rx := newCTR(a.cfg.uuid, salt)

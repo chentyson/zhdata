@@ -69,9 +69,11 @@ func stressShim(t *testing.T, uuid, name string) *sSession {
 // it exactly like dispatch() does.
 func stressStream(a *serverApp, owner *sSession, sid uint16) *sStream {
 	st := &sStream{
-		owner:    owner,
-		uuid:     owner.uuid,
-		sid:      sid,
+		owner:     owner,
+		uuid:      owner.uuid,
+		deviceID:  owner.deviceID,
+		hasDevice: owner.hasDevice,
+		sid:       sid,
 		upq:      make(chan []byte, 128),
 		dialDone: make(chan struct{}),
 		rx:       reassembler{next: 1, buf: map[uint32][]byte{}},
@@ -83,7 +85,7 @@ func stressStream(a *serverApp, owner *sSession, sid uint16) *sStream {
 	owner.streams[sid] = st
 	owner.smu.Unlock()
 	a.stmMu.Lock()
-	a.streams[streamKey(owner.uuid, sid)] = st
+	a.streams[streamKeyForStream(st, sid)] = st
 	a.stmMu.Unlock()
 	return st
 }
@@ -160,7 +162,7 @@ func TestStressReorderOverflowResetsOnlyTheStream(t *testing.T) {
 	}
 
 	a.stmMu.Lock()
-	_, stillThere := a.streams[streamKey(uuid, sid)]
+	_, stillThere := a.streams[streamKey(uuid, [16]byte{}, false, sid)]
 	a.stmMu.Unlock()
 	if stillThere {
 		t.Fatal("stream still registered after reorder overflow; expected reset")

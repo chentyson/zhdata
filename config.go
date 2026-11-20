@@ -7,10 +7,17 @@ import (
 	"strings"
 )
 
+type userPolicy struct {
+	MaxDevices int
+}
+
 type usersFile struct {
 	Users []struct {
-		UUID string `json:"uuid"`
-		Name string `json:"name"`
+		UUID       string `json:"uuid"`
+		Name       string `json:"name"`
+		MaxDevices int    `json:"max_devices"`
+		MaxClients int    `json:"max_clients"`
+		Devices    int    `json:"devices"`
 	} `json:"users"`
 }
 
@@ -19,6 +26,17 @@ type usersFile struct {
 //   - JSON array:  ["uuid1","uuid2",...]
 //   - plain text:  one uuid per line, '#' comments allowed
 func loadUsers(path string) ([]string, error) {
+	users, _, err := loadUsersWithPolicies(path)
+	return users, err
+}
+
+func loadUsersWithPolicies(path string) ([]string, map[string]userPolicy, error) {
+	policies := map[string]userPolicy{}
+	users, err := loadUsersRaw(path, policies)
+	return users, policies, err
+}
+
+func loadUsersRaw(path string, policies map[string]userPolicy) ([]string, error) {
 	raw, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -32,7 +50,18 @@ func loadUsers(path string) ([]string, error) {
 				return nil, fmt.Errorf("users file: %w", err)
 			}
 			for _, u := range uf.Users {
-				out = append(out, strings.ToLower(strings.TrimSpace(u.UUID)))
+				k := strings.ToLower(strings.TrimSpace(u.UUID))
+				out = append(out, k)
+				dev := u.MaxDevices
+				if dev == 0 {
+					dev = u.MaxClients
+				}
+				if dev == 0 {
+					dev = u.Devices
+				}
+				if k != "" && k != "null" && dev > 0 {
+					policies[k] = userPolicy{MaxDevices: dev}
+				}
 			}
 		} else {
 			var arr []string
@@ -49,7 +78,15 @@ func loadUsers(path string) ([]string, error) {
 			if line == "" || strings.HasPrefix(line, "#") {
 				continue
 			}
-			out = append(out, strings.ToLower(line))
+			fields := strings.Fields(line)
+			k := strings.ToLower(strings.TrimSpace(fields[0]))
+			out = append(out, k)
+			if len(fields) > 1 {
+				var dev int
+				if _, err := fmt.Sscanf(fields[1], "%d", &dev); err == nil && dev > 0 {
+					policies[k] = userPolicy{MaxDevices: dev}
+				}
+			}
 		}
 	}
 	clean := out[:0:0]

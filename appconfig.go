@@ -20,7 +20,9 @@ type appConfig struct {
 	Users      string          `json:"users"`   // server: comma-separated txt/json/sqlite key sources
 	Backend    string          `json:"backend"` // server: "direct" or socks addr
 	MaxClients *int            `json:"max_clients"`
-	Decoy      string          `json:"decoy"` // server: host:port for non-protocol HTTP traffic
+	MaxSessions *int           `json:"max_sessions"` // server: max concurrent tunnel sessions; <=0 = unlimited
+	DeviceID   string          `json:"device_id"`    // client: optional 16-byte hex per-process device id
+	Decoy      string          `json:"decoy"`        // server: host:port for non-protocol HTTP traffic
 	Verbose    *bool           `json:"verbose"`
 	Conns      *int            `json:"conns"`
 	Spread     *int            `json:"spread"`
@@ -78,10 +80,12 @@ type coreParams struct {
 	users      string
 	backend    string
 	decoy      string
-	pprof      string
-	loglevel   string
-	maxClients int
-	conns      int
+	pprof       string
+	loglevel    string
+	maxClients  int
+	maxSessions int
+	deviceID    string
+	conns       int
 	spread     int
 	train      int
 	migrate    int
@@ -124,6 +128,8 @@ func resolveParams(fl coreParams, set map[string]bool, cfg *appConfig) (corePara
 	pick("pprof", &out.pprof, cfg.Pprof)
 	pick("loglevel", &out.loglevel, cfg.LogLevel)
 	pickInt("max-clients", &out.maxClients, cfg.MaxClients)
+	pickInt("max-sessions", &out.maxSessions, cfg.MaxSessions)
+	pick("device-id", &out.deviceID, cfg.DeviceID)
 	pickInt("conns", &out.conns, cfg.Conns)
 	pickInt("spread", &out.spread, cfg.Spread)
 	pickInt("train", &out.train, cfg.Train)
