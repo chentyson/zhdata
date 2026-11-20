@@ -167,7 +167,7 @@ ExecStart=/opt/zhdata/zhdata-tunnel-linux-amd64 -mode server -listen :49888,:498
 | `-listen` | `:49888`–`:49951` | 服务端监听 64 个 TCP 端口；每个端口对应一条独立公网 TCP 桶，用于抗 ISP 按流整形 |
 | `-users` | `/etc/s-ui/private/s-ui.db,/opt/zhdata/users.txt` | 逗号分隔的用户 key 源；支持 s-ui SQLite 和 txt/json；只读、20 秒 mtime 热加载 |
 | `-backend direct` | `direct` | 服务端收到隧道 stream 的目标地址后直接出站；也可填 socks 地址，例如 `127.0.0.1:12345` |
-| `-max-clients 100` | 100 | 服务端全局并发 session 上限；session 数约等于用户数 × 客户端 `conns` |
+| `-max-clients 100` | 100 | 服务端全局并发 zhdata tunnel session 上限；不是客户数，也不是终端数。旧客户端一个终端一条 session 时名字叫 clients；现在一个终端 `-conns 32` 会产生 32 条 session。150 台终端 × 32 slot = 4800 条并发 session，因此当前 100 会拒绝其余连接，需设到至少 4800，并留重连余量。 |
 | `-v` | 开启 | 旧 verbose 开关。当前代码中等价于 `loglevel=debug`；如果不显式设置 `-loglevel`，服务会输出 debug 级日志 |
 
 注意：
