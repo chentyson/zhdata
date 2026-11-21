@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/chentyson/zhdata"
 )
 
 func writeCfg(t *testing.T, body string) string {
@@ -171,13 +173,13 @@ func TestResolveModeFromConfig(t *testing.T) {
 }
 
 func TestParseLogLevel(t *testing.T) {
-	for s, want := range map[string]int{"error": lvlError, "warning": lvlWarn, "warn": lvlWarn, "INFO": lvlInfo, "debug": lvlDebug} {
-		got, ok := parseLogLevel(s)
+	for s, want := range map[string]int{"error": zhdata.LevelError, "warning": zhdata.LevelWarn, "warn": zhdata.LevelWarn, "INFO": zhdata.LevelInfo, "debug": zhdata.LevelDebug} {
+		got, ok := zhdata.ParseLogLevel(s)
 		if !ok || got != want {
-			t.Fatalf("parseLogLevel(%q)=%d,%v want %d", s, got, ok, want)
+			t.Fatalf("ParseLogLevel(%q)=%d,%v want %d", s, got, ok, want)
 		}
 	}
-	if _, ok := parseLogLevel("chatty"); ok {
+	if _, ok := zhdata.ParseLogLevel("chatty"); ok {
 		t.Fatal("unknown level must not parse")
 	}
 }

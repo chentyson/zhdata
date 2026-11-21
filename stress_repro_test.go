@@ -1,4 +1,4 @@
-package main
+package zhdata
 
 // stress_repro_test.go — deterministic regression tests for the upload collapse
 // that used to happen on high-RTT (~170-240ms), lossy/reordering lines.

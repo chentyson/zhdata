@@ -1,4 +1,4 @@
-package main
+package zhdata
 
 import (
 	"context"
@@ -19,7 +19,8 @@ import (
 type serverConfig struct {
 	listen      string
 	usersPath   string
-	backend     string // "direct" or socks addr like 127.0.0.1:12345
+	backend     string // "direct", socks addr like 127.0.0.1:12345, or "zhdata" = byte-level relay to upstream
+	upstream    string // with backend "zhdata": comma-separated upstream zhdata host:port (round-robin per connection)
 	maxClients  int
 	maxSessions int
 	decoy       string // optional host:port for fallback splice of non-protocol traffic
@@ -44,6 +45,8 @@ type serverApp struct {
 
 	adminLn  net.Listener // admin API listener (nil when admin is off)
 	adminSrv *http.Server
+
+	relay *relayState // byte-level pass-through backend (-backend zhdata); see relay.go
 
 	stmMu   sync.Mutex          // guards streams map + sStream.members + groups map
 	streams map[string]*sStream // "uuid#device#sid" -> stream (GLOBAL per uuid+device: one app stream may span sessions)
@@ -198,6 +201,14 @@ func newServerApp(cfg serverConfig) (*serverApp, error) {
 	}
 	logInfo("server", "listening on %v, users=%d, backend=%s, max-sessions=%d, max-clients=%d",
 		addrs, len(ks.snapshot()), cfg.backend, cfg.maxSessions, cfg.maxClients)
+	relay, err := newRelayState(cfg.backend, cfg.upstream)
+	if err != nil {
+		for _, l := range lns {
+			l.Close()
+		}
+		return nil, err
+	}
+	a.relay = relay
 	if cfg.adminAddr != "" {
 		if err := a.startAdmin(cfg.adminAddr, cfg.adminToken); err != nil {
 			for _, l := range lns {
@@ -383,6 +394,14 @@ func (a *serverApp) handle(c net.Conn) {
 		}
 		writeAuthReject(c, authReasonBadAuth)
 		c.Close()
+		return
+	}
+	if a.relay != nil && a.relay.enabledNow() {
+		// Byte-level pass-through: the 48B handshake is replayed and every
+		// following ciphertext byte is piped to an upstream zhdata server.
+		// No frame is parsed or injected, so both hops keep their own
+		// keystreams in sync (zhdata-admin-api.md relay section).
+		a.handleRelay(c, buf, uuid, version, slot, deviceID, hasDevice, raddr)
 		return
 	}
 	wantAuth := version == magic || version == "zhv6"
@@ -1011,8 +1030,17 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 			a.completeMember(st)
 		}
 		if finNow && !memberDone && bc != nil {
-			if tc, ok := bc.(*net.TCPConn); ok {
-				tc.CloseWrite()
+			// The backend half-close must land AFTER every payload this stream
+			// already queued for the backend. A client that writes and
+			// immediately half-closes (embedded Client.DialContext + CloseWrite,
+			// or any tiny request whose fin rides the same TCP burst as its
+			// body) used to have its body lost: dispatch CloseWrote the backend
+			// while the upload pump still held the queued bytes
+			// ("wasasend: socket had already been shut down").
+			select {
+			case st.upq <- backendFinMark:
+			default:
+				closeBackendWrite(bc) // queue saturated: half-close inline
 			}
 		}
 
@@ -1119,7 +1147,11 @@ func (a *serverApp) resetOnce(key string) bool {
 func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byte, port uint16) {
 	var bc net.Conn
 	var err error
-	if a.cfg.backend == "direct" {
+	// -backend zhdata selects the relay in handle(); when the relay is off
+	// (PUT /v1/relay {"enabled":false}) the tunnel terminates right here and
+	// must dial the target directly, so the relay name is never a socks addr.
+	backend := strings.TrimSpace(a.cfg.backend)
+	if backend == "" || backend == "direct" || backend == backendZhdata {
 		host := addrHost(atyp, addr)
 		ips, lerr := a.lookupHost(host)
 		if lerr != nil {
@@ -1154,7 +1186,7 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 			dial(v6)
 		}
 	} else {
-		bc, err = socksDial(a.cfg.backend, atyp, addr, port)
+		bc, err = socksDial(backend, atyp, addr, port)
 	}
 	if err != nil {
 		logWarn("server", "backend connect failed target=%s reason=%v", addrStr(atyp, addr, port), err)
@@ -1331,6 +1363,18 @@ func (a *serverApp) pumpUp(st *sStream, sh *sSession) {
 	for {
 		select {
 		case p := <-st.upq:
+			if p != nil && len(p) == 0 {
+				// backendFinMark: the client's tClose, queued behind every
+				// payload that was already waiting for the backend.
+				st.mu.Lock()
+				bc := st.backend
+				st.mu.Unlock()
+				closeBackendWrite(bc)
+				continue
+			}
+			if p == nil {
+				continue // empty DATA frame (defensive: nothing to write)
+			}
 			st.mu.Lock()
 			bc := st.backend
 			st.mu.Unlock()
@@ -1352,6 +1396,26 @@ func (a *serverApp) pumpUp(st *sStream, sh *sSession) {
 			a.logf("pumpUp exit sid=%d written=%d", st.sid, st.written)
 			return
 		}
+	}
+}
+
+// backendFinMark rides the upload queue so the backend half-close keeps the
+// same order as the data it follows. It is a non-nil empty slice: real DATA
+// payloads are never empty, and a nil payload (empty frame) is skipped above.
+var backendFinMark = []byte{}
+
+// closeBackendWrite shuts the backend's send direction (the target's reader
+// sees EOF while it may still answer us).
+func closeBackendWrite(bc net.Conn) {
+	if bc == nil {
+		return
+	}
+	if tc, ok := bc.(*net.TCPConn); ok {
+		_ = tc.CloseWrite()
+		return
+	}
+	if cw, ok := bc.(interface{ CloseWrite() error }); ok {
+		_ = cw.CloseWrite()
 	}
 }
 
@@ -1476,10 +1540,13 @@ func (a *serverApp) addTraffic(uuid string, up bool, n int64) {
 }
 
 // kickUUID closes every active session belonging to one uuid
-// (admin POST /v1/users/kick). Sessions get a polite tGoaway (same signal as
-// a takeover) before the socket dies, so clients log the cut and reconnect
-// on their normal backoff; a uuid removed from the user set is then rejected
-// at auth. Streams die with their sessions (closeAll -> detach).
+// (admin POST /v1/users/kick). Direct-path sessions get a polite tGoaway (same
+// signal as a takeover) before the socket dies, so clients log the cut and
+// reconnect on their normal backoff; a uuid removed from the user set is then
+// rejected at auth. Streams die with their sessions (closeAll -> detach).
+// Relay pipes cannot carry a tGoaway (the relay injects no frames), so kicking
+// a relayed uuid tears the pipes down: the client sees its session die and
+// reconnects (the panel must move the user out of the pushed set first).
 func (a *serverApp) kickUUID(uuid string) int {
 	if uuid == "" {
 		return 0
@@ -1496,10 +1563,14 @@ func (a *serverApp) kickUUID(uuid string) int {
 		sh.sess.sendCtrl(Frame{Typ: tGoaway})
 		sh.closeAll(a)
 	}
-	if n := len(targets); n > 0 {
-		logWarn("server", "kick uuid=%s: cut %d session(s)", short(uuid), n)
+	pipes := 0
+	if a.relay != nil {
+		pipes = a.relay.kick(uuid)
 	}
-	return len(targets)
+	if n := len(targets) + pipes; n > 0 {
+		logWarn("server", "kick uuid=%s: cut %d session(s), %d relay pipe(s)", short(uuid), len(targets), pipes)
+	}
+	return len(targets) + pipes
 }
 
 // ---------------- anti-probe: per-IP handshake failure rate limit ----------------

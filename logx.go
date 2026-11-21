@@ -1,4 +1,4 @@
-package main
+package zhdata
 
 import (
 	"fmt"
@@ -52,6 +52,10 @@ var lvlName = []string{"error", "warning", "info", "debug"}
 
 func logAt(lvl int, tag, format string, v ...any) {
 	if logLevel == lvlNone || lvl > logLevel {
+		return
+	}
+	if fn := logSink.Load(); fn != nil {
+		(*fn)(lvl, tag, fmt.Sprintf(format, v...))
 		return
 	}
 	log.Printf("[%s] [%s] %s", tag, lvlName[lvl], fmt.Sprintf(format, v...))

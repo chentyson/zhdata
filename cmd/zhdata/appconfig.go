@@ -13,12 +13,13 @@ import (
 // zhenhanvn can emit fields an older core has never seen without breaking it.
 // Precedence: explicitly-set CLI flag > config file > flag default.
 type appConfig struct {
-	Mode        string          `json:"mode"`    // "client" (default) | "server"
-	Listen      string          `json:"listen"`  // client: local proxy port; server: comma-separated public ports
-	Server      json.RawMessage `json:"server"`  // "h:p,h:p" or ["h:p","h:p"] slot i dials servers[i%N]
-	UUID        string          `json:"uuid"`    // client user id
-	Users       string          `json:"users"`   // server: comma-separated txt/json/sqlite key sources
-	Backend     string          `json:"backend"` // server: "direct" or socks addr
+	Mode        string          `json:"mode"`     // "client" (default) | "server"
+	Listen      string          `json:"listen"`   // client: local proxy port; server: comma-separated public ports
+	Server      json.RawMessage `json:"server"`   // "h:p,h:p" or ["h:p","h:p"] slot i dials servers[i%N]
+	UUID        string          `json:"uuid"`     // client user id
+	Users       string          `json:"users"`    // server: comma-separated txt/json/sqlite key sources
+	Backend     string          `json:"backend"`  // server: "direct", socks addr, or "zhdata" = byte-level relay to upstream
+	Upstream    string          `json:"upstream"` // server: comma-separated upstream zhdata host:port (backend "zhdata")
 	MaxClients  *int            `json:"max_clients"`
 	MaxSessions *int            `json:"max_sessions"` // server: max concurrent tunnel sessions; <=0 = unlimited
 	DeviceID    string          `json:"device_id"`    // client: optional 16-byte hex per-process device id
@@ -81,6 +82,7 @@ type coreParams struct {
 	uuid        string
 	users       string
 	backend     string
+	upstream    string
 	decoy       string
 	pprof       string
 	admin       string
@@ -128,6 +130,7 @@ func resolveParams(fl coreParams, set map[string]bool, cfg *appConfig) (corePara
 	pick("uuid", &out.uuid, cfg.UUID)
 	pick("users", &out.users, cfg.Users)
 	pick("backend", &out.backend, cfg.Backend)
+	pick("upstream", &out.upstream, cfg.Upstream)
 	pick("decoy", &out.decoy, cfg.Decoy)
 	pick("pprof", &out.pprof, cfg.Pprof)
 	pick("admin", &out.admin, cfg.Admin)

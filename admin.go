@@ -1,4 +1,4 @@
-package main
+package zhdata
 
 import (
 	"crypto/subtle"
@@ -21,11 +21,13 @@ import (
 //
 // Endpoints (all application/json):
 //
-//	GET  /v1/version      -> {"version":"0.15.1"}
+//	GET  /v1/version      -> {"version":"0.15.2"}
 //	PUT  /v1/users        -> replace the API user set; {"ok":true,"keys":N}
 //	GET  /v1/stats        -> {"ts":..,"sessions_active":..,"users":[..]}
 //	POST /v1/users/kick   -> {"kicked":N}
 //	POST /v1/reload       -> force file-source reload now (§1.5 "optional P1")
+//	GET  /v1/relay        -> {"enabled":..,"upstream":[..],"pipes":N}
+//	PUT  /v1/relay        -> {"upstream":[..],"enabled":bool} -> {"ok":true,..}
 //
 // PUT /v1/users replaces only the *API user set*: the effective user set stays
 // the union with the file/sqlite -users sources (existing users.txt setups are
@@ -90,6 +92,7 @@ func (api *adminAPI) handler() http.Handler {
 	mux.HandleFunc("/v1/users/kick", api.requireAuth(api.handleKick))
 	mux.HandleFunc("/v1/stats", api.requireAuth(api.handleStats))
 	mux.HandleFunc("/v1/reload", api.requireAuth(api.handleReload))
+	mux.HandleFunc("/v1/relay", api.requireAuth(api.handleRelay))
 	return mux
 }
 
@@ -118,7 +121,7 @@ func (api *adminAPI) handleVersion(w http.ResponseWriter, r *http.Request) {
 		methodNotAllowed(w, http.MethodGet)
 		return
 	}
-	writeAdminJSON(w, http.StatusOK, map[string]any{"version": version})
+	writeAdminJSON(w, http.StatusOK, map[string]any{"version": Version})
 }
 
 type adminUserJSON struct {
@@ -249,6 +252,52 @@ func (api *adminAPI) handleReload(w http.ResponseWriter, r *http.Request) {
 	}
 	logInfo("admin", "POST /v1/reload: keys=%d warnings=%d", total, len(errs))
 	writeAdminJSON(w, http.StatusOK, resp)
+}
+
+// GET /v1/relay — the byte-level relay backend state (v0.15.2):
+//
+//	{"enabled":bool,"upstream":["h:p",...],"pipes":<live relay pipes>}
+//
+// PUT /v1/relay — hot update, either field alone:
+//
+//	{"upstream":["h:p",...],"enabled":true} -> {"ok":true,"upstream":N,"enabled":true}
+//
+// enabled=false falls back to the direct backend for NEW connections; pipes
+// already established keep flowing to their upstream until they end (same
+// "new connections only" rule as -backend).
+func (api *adminAPI) handleRelay(w http.ResponseWriter, r *http.Request) {
+	app := api.app
+	switch r.Method {
+	case http.MethodGet:
+		enabled, upstream, pipes := app.relay.snapshot()
+		if upstream == nil {
+			upstream = []string{}
+		}
+		writeAdminJSON(w, http.StatusOK, map[string]any{
+			"enabled":  enabled,
+			"upstream": upstream,
+			"pipes":    pipes,
+		})
+	case http.MethodPut:
+		var req struct {
+			Upstream *[]string `json:"upstream"`
+			Enabled  *bool     `json:"enabled"`
+		}
+		dec := json.NewDecoder(io.LimitReader(r.Body, adminBodyLimit))
+		if err := dec.Decode(&req); err != nil {
+			writeAdminJSON(w, http.StatusBadRequest, map[string]any{"error": "bad json: " + err.Error()})
+			return
+		}
+		on, n, err := app.relay.apply(req.Upstream, req.Enabled)
+		if err != nil {
+			writeAdminJSON(w, http.StatusBadRequest, map[string]any{"error": err.Error()})
+			return
+		}
+		logInfo("admin", "PUT /v1/relay: enabled=%v upstream=%d", on, n)
+		writeAdminJSON(w, http.StatusOK, map[string]any{"ok": true, "upstream": n, "enabled": on})
+	default:
+		writeAdminJSON(w, http.StatusMethodNotAllowed, map[string]any{"error": "method must be GET or PUT"})
+	}
 }
 
 func methodNotAllowed(w http.ResponseWriter, want string) {

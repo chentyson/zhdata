@@ -17,7 +17,7 @@ foreach ($t in $targets) {
     $out = "dist/zhdata-$($t.GOOS)-$($t.GOARCH)$ext"
     $env:GOOS = $t.GOOS
     $env:GOARCH = $t.GOARCH
-    go build -trimpath -ldflags "-s -w" -o $out .
+    go build -trimpath -ldflags "-s -w" -o $out ./cmd/zhdata
     Write-Host "built $out"
 }
 $env:GOOS = ""; $env:GOARCH = ""

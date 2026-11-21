@@ -31,11 +31,12 @@ zhenhanvn 启动核心：  bin/zhdata/zhdata.exe -c config.json     （cwd = bin
 |---|---|
 | 可执行文件 | `bin/zhdata/zhdata(.exe)`（`CoreExes = ["zhdata"]`；非 Windows 无 .exe，`CoreManager.Init` 自动 chmod） |
 | 启动参数 | `Arguments = "-c {0}"`；`{0}` 普通路径为**相对文件名** `config.json`（工作目录已是 `binConfigs`），非 Windows sudo 路径为绝对带引号路径——两种都支持 |
-| 版本探测 | `zhdata -version` → exit 0，stdout 输出 `zhdata 0.15.1`（满足 `v?(?<version>\d+\.\d+\.\d+)`） |
+| 版本探测 | `zhdata -version` → exit 0，stdout 输出 `zhdata 0.15.2`（满足 `v?(?<version>\d+\.\d+\.\d+)`） |
 | 前台常驻 | 不 fork、不守护；启动 100ms 内 `HasExited` 即失败 |
 | 停止 | zhenhanvn 用 `Process.Kill()`（Windows=TerminateProcess），**不发信号**；核心无状态文件，强杀无损。reload = 杀进程后重启 |
 | 单进程 | 核心不自管子进程（Windows Kill 不带子进程树） |
-| CLI 兼容 | 全部配置字段都有同名 CLI flag（`-mode/-listen/-server/-uuid/-users/-backend/-max-clients/-max-sessions/-decoy/-v/-device-id/-conns/-spread/-train/-migrate/-dlconns/-slotbase/-pprof/-admin/-admin-token/-loglevel`），显式 CLI > 配置文件 > 默认 |
+| CLI 兼容 | 全部配置字段都有同名 CLI flag（`-mode/-listen/-server/-uuid/-users/-backend/-upstream/-max-clients/-max-sessions/-decoy/-v/-device-id/-conns/-spread/-train/-migrate/-dlconns/-slotbase/-pprof/-admin/-admin-token/-loglevel`），显式 CLI > 配置文件 > 默认 |
+| 构建路径 | v0.15.2 起仓库是 Go module `github.com/chentyson/zhdata`：可执行入口在 `./cmd/zhdata`（`go build ./cmd/zhdata`，`build.sh`/`build.ps1` 已改），产物名与 flag 语义不变；根包是可直接嵌入的库（§8） |
 
 C# 注册示例（CoreInfoManager.InitCoreInfo）：
 
@@ -65,7 +66,8 @@ new CoreInfo {
 | `server` | string \| string[] | 必填(client) | `["h1:p1","h2:p2"]` 或 `"h1:p1,h2:p2"`；slot i 拨 `servers[i%N]`（多端口分桶抗整形） |
 | `uuid` | string | 必填(client) | 用户 uuid（大小写不敏感） |
 | `users` | string | 必填(server) | 逗号分隔 txt/json/**s-ui sqlite** 路径（只读、20s mtime 热加载） |
-| `backend` | string | `direct` | server 侧：`direct` 或 socks 地址（对接 sing-box socks inbound） |
+| `backend` | string | `direct` | server 侧：`direct` 或 socks 地址（对接 sing-box socks inbound）；`zhdata` = 字节级 relay（§3.7，需 `upstream`） |
+| `upstream` | string | 空 | server 侧（`backend=zhdata`）：上游 zhdata 服务端列表 `h1:p1,h2:p2`；每条下游连接按 round-robin 选一个上游（v0.15.2 起） |
 | `max_clients` | int | 100 | server 侧兼容别名；等价于全局会话上限。若显式设置 `max_sessions`，以 `max_sessions` 为准 |
 | `max_sessions` | int | 0 | server 侧全局并发 tunnel session 资源上限；`<=0` 表示不限制 |
 | `device_id` | string | 空 | client：可选 16 字节 hex（32 个十六进制字符）。空 = 每次进程启动自动生成随机 device_id；进程存活期间所有 slot 共用 |
@@ -238,11 +240,13 @@ ExecStart=/opt/zhdata/zhdata-tunnel-linux-amd64 -mode server -listen :49888,:498
 
 | 端点 | 语义 | 成功返回 |
 |---|---|---|
-| `GET /v1/version` | 核心版本（与 `-version` 同串，仍满足 `v?(?<version>\d+\.\d+\.\d+)`） | `{"version":"0.15.1"}` |
+| `GET /v1/version` | 核心版本（与 `-version` 同串，仍满足 `v?(?<version>\d+\.\d+\.\d+)`） | `{"version":"0.15.2"}` |
 | `PUT /v1/users` | **全量替换 API 用户集**：与文件/sqlite 用户源取并集；同名 uuid 的策略 **API 覆盖文件**（`max_devices` 0=不限，可解除文件限制）；空数组清空 API 集（不影响文件源）；内存中原子换表 | `{"ok":true,"keys":N}` |
 | `GET /v1/stats` | 自进程启动累计计数：`sessions_active`=当前活跃会话；`users[]` 按 uuid 给出 `devices`（当前活跃 device_id 数，与 `max_devices` 同一张表）、`up`/`down` 隧道字节 | `{"ts":..,"sessions_active":..,"users":[{"uuid":..,"devices":..,"up":..,"down":..}]}` |
 | `POST /v1/users/kick` | 按 uuid 切断该用户全部会话（先发 `tGoaway` 再关 socket，客户端按既有退避重连）；uuid 大小写不敏感；空 uuid = 400（P0 只按 uuid 踢） | `{"kicked":N}` |
 | `POST /v1/reload` | 契约 §1.5（原 P1）已实现：立即重读文件/sqlite 用户源，绕过 mtime/size 签名检查；API 用户集不动 | `{"ok":true,"keys":N}` |
+| `GET /v1/relay` | v0.15.2 起：读 relay 状态（§3.7）。`pipes` = 当前活着的字节管道数（一条下游会话 = 一条上游 TCP） | `{"enabled":bool,"upstream":["h:p",..],"pipes":N}` |
+| `PUT /v1/relay` | v0.15.2 起：热更新 relay。`upstream`（可选）全量替换上游列表（校验 `host:port`；空列表 + `enabled=true` → 400）；`enabled`（可选）开关 relay；两者都不给 → 400；**只影响新连接**，已有管道不动（关掉 relay 后旧管道继续跑到自然结束） | `{"ok":true,"upstream":N,"enabled":bool}` |
 
 实现要点（admin 是叠加的**第三用户源**）：
 
@@ -256,12 +260,42 @@ ExecStart=/opt/zhdata/zhdata-tunnel-linux-amd64 -mode server -listen :49888,:498
 
 客户端模式传 `-admin` 只打一条 warning 并忽略，不改变 client 行为。
 
+### 3.7 字节级 relay（`-backend zhdata`，v0.15.2 起，仅 server 模式）
+
+用途：让一台 zhdata 服务端只做**入口 + 控制面**，把隧道原样转给下一跳 zhdata 服务端（多级中转 / 单入口多出口），relay 本机不需要落地后端。
+
+启用：`-backend zhdata -upstream h1:p1,h2:p2`（或 config `"backend":"zhdata"` + `"upstream":"h1:p1,h2:p2"`）。启动日志 `[relay] [info] byte-level relay to [..] (round-robin per connection)`；`backend=zhdata` 而 upstream 为空/无合法地址 → **启动失败退出**（systemd 可感知）。
+
+语义（不可降级）：
+
+- **控制面留在 relay**：48B 握手（16B salt + 32B 密文块）由 relay 按用户 key 暴力解密，得到 uuid / slot / device_id / 版本，认证、`max_sessions`、`max_devices`、每 IP 握手失败限频、decoy splice 全部在 relay 上执行，与直连服务端一字不差（认证失败回 32B 明文 reject：reason 0=通用、1=认证失败、2=会话数超限、3=设备数超限）。
+- **数据面字节直通**：握手之后 relay 把「48B 头 + 后续全部密文字节」原样搬运，**从不解析/改写/注入任何帧**。协议帧格式对 relay 完全透明，因此 zhv5 分桶、多 lane spread、重传等特性跨 relay 天然可用（无需 relay 认识它们）。relay 也不代答 tAck/tGoaway。
+- **设备引用计数**：relay 复用同一张 `(uuid, device_id)` 表（与直连服务端同一实现）；超过 `max_devices` 时明文 reject reason=3，日志后缀 `[relay]`。
+- **上游选择**：每条**下游连接**按 round-robin 取一个 upstream（同一下游会话生命周期内固定一条上游 TCP）。上游拨号失败（超时/拒绝）→ 直接关下游（P0 不做上游重试，客户端按既有退避重连）。
+- **统计口径**：两个方向的原始字节都计入 `addTraffic(uuid, ...)`，所以 relay 与最终服务端两侧 `GET /v1/stats` 都会统计到这段流量（口径是**密文字节**，含 48B 握手，不等于 payload）。
+- **kick**：`POST /v1/users/kick` 除切会话外还会切断该 uuid 的 relay 管道，日志 `[server] [warning] kick uuid=.. cut N session(s), M relay pipe(s)`。因为 relay 不能往管道里注入 `tGoaway`，kick 的 relay 语义就是**断管道**：客户端 1–2s 退避后重连（重新握手），所以面板要**先移除用户/凭据再 kick**，否则会立刻重连回来。
+- **关掉 relay**（`PUT /v1/relay {"enabled":false}`）：只影响**新连接**——新连接在本机落地，后端按 `direct` 直连目标（`backend=zhdata` 不是 socks 地址，不会被当成 socks 拨号）；已建立的管道不动，跑到自然结束。
+- **容量口径（P0 已知代价）**：一条下游会话 = 一条上游 TCP，relay 上不另建会话池，所以上游的连接数按下游 `conns` 放大；relay 侧带宽/流量限速未实现（P1）。
+
+示例：
+
+```bash
+# 入口机（relay）
+zhdata -mode server -listen 49888 -users /opt/zhdata/users.txt \
+       -backend zhdata -upstream 1.2.3.4:49888,1.2.3.4:49889 \
+       -admin 127.0.0.1:6070 -admin-token <token>
+# 热更新上游 / 查看状态
+curl -X PUT -H "Authorization: Bearer <token>" -H 'Content-Type: application/json' \
+     -d '{"upstream":["1.2.3.4:49888"],"enabled":true}' http://127.0.0.1:6070/v1/relay
+curl -H "Authorization: Bearer <token>" http://127.0.0.1:6070/v1/relay
+```
+
 ## 4. 更新与发布契约
 
 | 项 | 要求（已满足） |
 |---|---|
 | 仓库 | `chentyson/zhdata`（GitHub Releases） |
-| tag | 纯 semver `v0.15.1` 形式（`zhdata-v0.12.4` 这类前缀 tag 会解析成 0.0.0） |
+| tag | 纯 semver `v0.15.2` 形式（`zhdata-v0.12.4` 这类前缀 tag 会解析成 0.0.0） |
 | 资产名（精确） | `zhdata-windows-64.zip`、`zhdata-windows-arm64.zip`、`zhdata-linux-64.zip`、`zhdata-linux-arm64.zip`、`zhdata-macos-64.zip`、`zhdata-macos-arm64.zip`（amd64→64） |
 | zip 布局 | 单顶层目录 `zhdata/` + 二进制；v2rayN 解压按**文件名扁平化**进 `bin/zhdata/`，两种布局都兼容；文件名不得含 `geo`（会被丢弃） |
 | CI | 仓库 `.github/workflows/release.yml`：push `v*.*.*` tag → 六平台构建 → 六 zip 上传（正式 release，非 draft，`/latest` 重定向依赖正式 release） |
@@ -278,13 +312,13 @@ ExecStart=/opt/zhdata/zhdata-tunnel-linux-amd64 -mode server -listen :49888,:498
 └─── 时间戳(log.LstdFlags) ───┘└─ tag ─┘└── level ──┘└── 消息 ──────────────────────
 ```
 
-- **tag**（子系统）：`main` `client` `server` `session` `users` `pprof` `admin` `dbg`
+- **tag**（子系统）：`main` `client` `server` `session` `users` `pprof` `admin` `relay` `dbg`
 - **level**：`error` `warning` `info` `debug`
 
 zhenhanvn 侧解析/过滤正则（可直接用于着色/过滤）：
 
 ```regex
-^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \[(main|client|server|session|users|pprof|admin|dbg)\] \[(error|warning|info|debug)\] (.*)$
+^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \[(main|client|server|session|users|pprof|admin|relay|dbg)\] \[(error|warning|info|debug)\] (.*)$
 ```
 
 ### 5.2 级别语义（默认 `info`，生产安静）
@@ -318,10 +352,12 @@ zhenhanvn 侧解析/过滤正则（可直接用于着色/过滤）：
 - `stderr` 仍会被 `SaveLogError` 落盘（核心偶尔在极早期（logger 初始化前）可能有一条 stderr，不影响级别体系）。
 - 日志窗"错误"高亮规则：匹配 `[error]`；"警告"匹配 `[warning]`。
 
-## 6. 功能边界（v0.15.1）
+## 6. 功能边界（v0.15.2）
 
 | 能力 | 状态 |
 |---|---|
+| 多级中转 / relay | **v0.15.2 起**：`-backend zhdata -upstream h:p[,h:p]`，控制面（认证/设备数/会话数/decoy/统计）在 relay，数据面字节直通不解析帧；`GET/PUT /v1/relay` 热更新上游与开关（§3.7）。relay 侧带宽限速 = P1 未做 |
+| 作为 Go 库嵌入 | **v0.15.2 起**：仓库是 module `github.com/chentyson/zhdata`，s-ui 可直接 `import "github.com/chentyson/zhdata"`，用 `NewClient` + `DialContext` 把隧道当 `net.Conn` 用（§8）；CLI 构建路径改为 `./cmd/zhdata` |
 | 速度/流量统计 | **admin API（v0.15.1 起）**：`GET /v1/stats` 暴露 `sessions_active` 与按 uuid 的 `devices`/`up`/`down` 累计字节（§3.6），s-ui 面板按周期采样求增量入库。zhenhanvn 速度栏对 zhdata 仍恒 0（GUI 未接 admin API，与 hysteria2/brook 等一致，非错误）。clash_api `ws://:StatePort2/traffic` + `IsRunningCore` 判定方案仍未实现（backlog） |
 | 用户/凭据管理 | **admin API（v0.15.1 起）**：`PUT /v1/users` 推送 API 用户集（与文件/sqlite 源并集、API 策略覆盖）、`POST /v1/users/kick` 按 uuid 切会话、`POST /v1/reload` 强制重载（§3.6）。文件 `users` 热加载仍是独立可用路径，面板不可用时也能工作 |
 | 批量测速"测试全部" | 现只批 xray/sing_box，zhdata 节点被跳过（C# 侧加批量需 `LoadCoreConfigSpeedtest` 支持 zhdata 配置） |
@@ -341,3 +377,76 @@ zhenhanvn 侧解析/过滤正则（可直接用于着色/过滤）：
 8. `-loglevel warning`（或 config）时 debug/info 行消失；`ZHD_DEBUG=1` 出现帧 trace。
 9. 断线：出现 `[warning] slot N dial ... retry`，自动恢复。
 10. 导入/导出 `zhdata://<uuid>@<host>:<port>` 链接。
+
+## 8. 作为 Go 库嵌入（v0.15.2 起）
+
+v0.15.2 把仓库拆成 module `github.com/chentyson/zhdata`：根目录是 `package zhdata`（可嵌入库 + 全部单测），`./cmd/zhdata` 是 CLI 入口（`main.go` + flag/JSON 解析）。**CLI 行为与旧单文件版完全一致**（flag、config、日志、systemd 路径都不变，只是构建命令变成 `go build ./cmd/zhdata`）。纯 Go，无 CGO（sqlite 走 `modernc.org/sqlite`）。
+
+s-ui 侧引用（本仓库为同机兄弟目录，开发期用 replace）：
+
+```
+require github.com/chentyson/zhdata v0.0.0
+replace github.com/chentyson/zhdata => ../v2rayn/zhdata-src
+```
+
+### 8.1 客户端嵌入 API（面板「把 zhdata 当 net.Conn 用」）
+
+```go
+type ClientConfig struct {
+	Servers  []string // 必填：zhdata 服务端 host:port（多端口 = 多 slot）
+	UUID     string   // 必填
+	Conns    int      // <=0 → 16
+	Spread   int      // <=0 → 8
+	DLPool   int      // 下载/上传池分离：-1=auto(conns/2)，0=共享
+	SlotBase int      // 多实例槽位起始（slotbase+conns ≤ 64）
+	Train    int      // 空闲训练帧秒数（0=关）
+	DeviceID []byte   // 空 → 随机 16B；非空必须 16B
+	LogLevel string   // none|error|warning|info|debug（空=info）
+	Logf     func(string, ...any) // 可选：日志转发，行前缀 "zhdata[tag/level]"
+}
+
+func NewClient(cfg *ClientConfig) (*Client, error)
+func (c *Client) DialContext(ctx context.Context, host string, port int) (net.Conn, error)
+func (c *Client) Close()
+func (c *Client) DeviceID() []byte
+```
+
+`DialContext` 走**内存流直连**：不经过本地 socks/http 口，直接把一条流挂进完整客户端栈（多会话、lane spread、窗口/重传、zhv5 分桶、GOAWAY takeover、空闲回收全部照用）。语义要点：
+
+- 返回的 `net.Conn` 实现 **`CloseWrite()`**：只半关 app→tunnel 方向，产生 `tClose(finSeq)`，目标看到 FIN 但仍可继续回数据（HTTP 半关闭、`io.Copy` + CloseWrite 模式可用）；反方向（目标结束）由服务端 `tClose` 让 app 的 `Read` 返回 `io.EOF`。
+- `ctx` 取消/超时：立即回收该流并返回 `ctx.Err()`；目标连不上：服务端 `tReset`，错误串含 `could not connect`；`Close()` 之后 `DialContext` 返回 `ErrClientClosed`（幂等，可重复调用）。
+- 域名由**服务端解析**（客户端不做 DNS），IP 目标直填。
+
+```go
+cli, err := zhdata.NewClient(&zhdata.ClientConfig{
+	Servers: []string{"example.com:49888", "example.com:49889"},
+	UUID:    "your-uuid", Conns: 16, Spread: 8, DLPool: -1,
+	LogLevel: "info", Logf: func(format string, a ...any) { log.Printf(format, a...) },
+})
+defer cli.Close()
+conn, err := cli.DialContext(ctx, "api.example.com", 443) // 走隧道
+```
+
+### 8.2 服务端 / relay 嵌入 API
+
+```go
+type ServerOptions struct {
+	Listen, Users, Backend, Upstream string // Backend "zhdata" = 字节级 relay（§3.7）
+	MaxClients, MaxSessions int
+	Decoy, AdminAddr, AdminToken string
+	Verbose bool
+}
+func NewServer(o *ServerOptions) (*Server, error) // 起监听 + admin API + relay；失败即返回 error
+func (s *Server) Close()                          // 停监听 / admin / 后台循环
+```
+
+`ClientOptions`/`NewClientApp`（`Listen: ""` = 不建本地代理口）与 `ClientApp.DeviceIDHex()` 也已导出，便于面板直接跑一个 client 实例而不暴露本地口。
+
+### 8.3 日志接入
+
+```go
+zhdata.SetLogLevel(zhdata.LevelInfo)         // 或 ParseLogLevel("info")
+zhdata.SetLogSink(func(level int, tag, msg string) { /* 落库/日志窗 */ })
+```
+
+`SetLogSink` 是**进程级**开关：设置后所有 tag 的日志不再写 stderr，而是走回调（`tag` 见 §5.1，含 `relay`）；传 `nil` 恢复 stderr。`LogLevelName()`/`LogErr/LogWarn/LogInfo/LogDbg` 也导出，便于面板统一格式化。

@@ -1,4 +1,4 @@
-package main
+package zhdata
 
 import (
 	"bufio"
@@ -264,9 +264,15 @@ func newClientApp(cfg clientConfig) (*clientApp, error) {
 		dlStart = cfg.conns - cfg.dlconns
 	}
 	split := cfg.dlconns > 0
-	lns, err := socksListeners(cfg.listen)
-	if err != nil {
-		return nil, err
+	// listen "" = no local proxy listener (embedded use: streams come from
+	// Client.DialContext instead of SOCKS connections).
+	var lns []net.Listener
+	if listen := strings.TrimSpace(cfg.listen); listen != "" {
+		ls, lerr := socksListeners(listen)
+		if lerr != nil {
+			return nil, lerr
+		}
+		lns = ls
 	}
 	servers := splitCSV(cfg.server)
 	if len(servers) == 0 {
@@ -285,7 +291,6 @@ func newClientApp(cfg clientConfig) (*clientApp, error) {
 	a := &clientApp{
 		deviceID:  deviceID,
 		cfg:       cfg,
-		listener:  lns[0],
 		listeners: lns,
 		servers:   servers,
 		streams:   map[uint32]*cStream{},
@@ -294,6 +299,9 @@ func newClientApp(cfg clientConfig) (*clientApp, error) {
 		split:     split,
 		dns:       map[string]dnsEntry{},
 		dnsLog:    map[string]string{},
+	}
+	if len(lns) > 0 {
+		a.listener = lns[0]
 	}
 	for i := 0; i < cfg.conns; i++ {
 		a.conns = append(a.conns, &cConn{
@@ -348,7 +356,14 @@ func (a *clientApp) trainLoop() {
 	}
 }
 
-func (a *clientApp) Addr() string { return a.listener.Addr().String() }
+// Addr reports the primary local proxy endpoint ("" in listener-less
+// embedded mode, where streams come from Client.DialContext).
+func (a *clientApp) Addr() string {
+	if a.listener == nil {
+		return ""
+	}
+	return a.listener.Addr().String()
+}
 
 // socksListeners binds the SOCKS endpoint and, for loopback/wildcard hosts,
 // also binds the companion IP family so that clients using `localhost`
@@ -1021,7 +1036,9 @@ func (s *cStream) closeWriteLocal() {
 	s.app.logf("stream %d closeWriteLocal", s.id)
 	// The local side may be a mixed-listener wrapper (bufferedConn/replayConn)
 	// around the TCP conn; the wrappers expose CloseWrite so the half-close
-	// (which lets the server CloseWrite the backend) still works.
+	// (which lets the server CloseWrite the backend) still works. The embedded
+	// memConn's pump-side view implements CloseWrite as the delivery-side
+	// half-close (the application's reader sees EOF).
 	if err := closeWriteConn(s.local); err != nil {
 		s.teardown()
 	}

@@ -7,6 +7,6 @@ mkdir -p dist
 for t in windows/amd64 windows/arm64 darwin/amd64 darwin/arm64 linux/amd64 linux/arm64; do
   os="${t%/*}"; arch="${t#*/}"
   ext=""; [ "$os" = "windows" ] && ext=".exe"
-  GOOS="$os" GOARCH="$arch" go build -trimpath -ldflags "-s -w" -o "dist/zhdata-$os-$arch$ext" .
+  GOOS="$os" GOARCH="$arch" go build -trimpath -ldflags "-s -w" -o "dist/zhdata-$os-$arch$ext" ./cmd/zhdata
   echo "built dist/zhdata-$os-$arch$ext"
 done

@@ -10,9 +10,9 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
-)
 
-const version = "0.15.1" // admin management API (zhdata-admin-api.md §1): -admin/-admin-token, API user set union, per-uuid stats + kick
+	"github.com/chentyson/zhdata"
+)
 
 func main() {
 	mode := flag.String("mode", "client", "client | server")
@@ -20,7 +20,8 @@ func main() {
 	server := flag.String("server", "", "zhdata server host:port, comma separated for multi-port slots (client)")
 	uuid := flag.String("uuid", "", "user uuid (client)")
 	users := flag.String("users", "", "user key sources: comma separated txt/sqlite paths, e.g. /etc/s-ui/private/s-ui.db,/opt/zhdata/users.txt (server)")
-	backend := flag.String("backend", "direct", `backend: "direct" or socks addr e.g. 127.0.0.1:12345 (server)`)
+	backend := flag.String("backend", "direct", `backend: "direct", socks addr e.g. 127.0.0.1:12345, or "zhdata" = byte-level relay to -upstream (server)`)
+	upstream := flag.String("upstream", "", `upstream zhdata host:port list, comma separated; required with -backend zhdata, picked round-robin per connection (server)`)
 	maxClients := flag.Int("max-clients", 100, "compat alias for max concurrent sessions per server")
 	maxSessions := flag.Int("max-sessions", 0, "max concurrent tunnel sessions per server; 0 means unlimited (overrides -max-clients when explicitly set)")
 	decoy := flag.String("decoy", "", "optional host:port to splice non-protocol HTTP-looking traffic (server)")
@@ -42,7 +43,7 @@ func main() {
 
 	if *showVer {
 		// zhenhanvn UpdateService parses X.Y.Z out of this line.
-		fmt.Println("zhdata", version)
+		fmt.Println("zhdata", zhdata.Version)
 		return
 	}
 	log.SetFlags(log.LstdFlags)
@@ -65,6 +66,7 @@ func main() {
 		uuid:        *uuid,
 		users:       *users,
 		backend:     *backend,
+		upstream:    *upstream,
 		decoy:       *decoy,
 		pprof:       *pprofAddr,
 		admin:       *admin,
@@ -86,29 +88,29 @@ func main() {
 	}
 
 	// log level gate: explicit -loglevel > config loglevel > (-v => debug) > info
-	lvl, lvlOK := parseLogLevel(p.loglevel)
+	lvl, lvlOK := zhdata.ParseLogLevel(p.loglevel)
 	switch {
 	case flagSet["loglevel"]:
 		if !lvlOK {
 			fatal("unknown -loglevel %q (want error|warning|info|debug)", p.loglevel)
 		}
-		logLevel = lvl
+		zhdata.SetLogLevel(lvl)
 	case p.verbose:
-		logLevel = lvlDebug
-	case lvlOK && lvl != lvlInfo:
-		logLevel = lvl
+		zhdata.SetLogLevel(zhdata.LevelDebug)
+	case lvlOK && lvl != zhdata.LevelInfo:
+		zhdata.SetLogLevel(lvl)
 	default:
-		logLevel = lvlInfo
+		zhdata.SetLogLevel(zhdata.LevelInfo)
 	}
 	if !flagSet["loglevel"] && strings.TrimSpace(p.loglevel) != "" && !lvlOK {
-		logWarn("main", "unknown loglevel %q in config, using %q", p.loglevel, lvlName[logLevel])
+		zhdata.LogWarn("main", "unknown loglevel %q in config, using %q", p.loglevel, zhdata.LogLevelName())
 	}
 
 	if p.pprof != "" {
 		go func() {
-			logInfo("pprof", "listening on http://%s/debug/pprof/", p.pprof)
+			zhdata.LogInfo("pprof", "listening on http://%s/debug/pprof/", p.pprof)
 			if err := http.ListenAndServe(p.pprof, nil); err != nil {
-				logErr("pprof", "server: %v", err)
+				zhdata.LogErr("pprof", "server: %v", err)
 			}
 		}()
 	}
@@ -127,16 +129,17 @@ func main() {
 		if maxSessions < 0 {
 			maxSessions = 0
 		}
-		app, err := newServerApp(serverConfig{
-			listen:      p.listen,
-			usersPath:   p.users,
-			backend:     p.backend,
-			maxClients:  p.maxClients,
-			maxSessions: maxSessions,
-			decoy:       p.decoy,
-			adminAddr:   p.admin,
-			adminToken:  p.adminToken,
-			verbose:     p.verbose,
+		app, err := zhdata.NewServer(&zhdata.ServerOptions{
+			Listen:      p.listen,
+			Users:       p.users,
+			Backend:     p.backend,
+			Upstream:    p.upstream,
+			MaxClients:  p.maxClients,
+			MaxSessions: maxSessions,
+			Decoy:       p.decoy,
+			AdminAddr:   p.admin,
+			AdminToken:  p.adminToken,
+			Verbose:     p.verbose,
 		})
 		if err != nil {
 			fatal("server: %v", err)
@@ -148,25 +151,25 @@ func main() {
 			fatal("client mode requires -listen, -server and -uuid (or config listen/server/uuid)")
 		}
 		if p.admin != "" {
-			logWarn("main", "admin API is server-side only: -admin %q ignored in client mode", p.admin)
+			zhdata.LogWarn("main", "admin API is server-side only: -admin %q ignored in client mode", p.admin)
 		}
-		app, err := newClientApp(clientConfig{
-			listen:   p.listen,
-			server:   p.server,
-			uuid:     p.uuid,
-			deviceID: p.deviceID,
-			conns:    p.conns,
-			spread:   p.spread,
-			train:    p.train,
-			migrate:  p.migrate,
-			dlconns:  p.dlconns,
-			slotbase: p.slotbase,
-			verbose:  p.verbose,
+		app, err := zhdata.NewClientApp(&zhdata.ClientOptions{
+			Listen:   p.listen,
+			Server:   p.server,
+			UUID:     p.uuid,
+			DeviceID: p.deviceID,
+			Conns:    p.conns,
+			Spread:   p.spread,
+			Train:    p.train,
+			Migrate:  p.migrate,
+			DLConns:  p.dlconns,
+			SlotBase: p.slotbase,
+			Verbose:  p.verbose,
 		})
 		if err != nil {
 			fatal("client: %v", err)
 		}
-		logInfo("client", "mixed socks5+http listening on %s -> %s device=%x", app.Addr(), p.server, app.deviceID[:])
+		zhdata.LogInfo("client", "mixed socks5+http listening on %s -> %s device=%s", app.Addr(), p.server, app.DeviceIDHex())
 		waitSignal()
 		app.Close()
 	default:
@@ -175,7 +178,7 @@ func main() {
 }
 
 func fatal(format string, v ...any) {
-	logErr("main", format, v...)
+	zhdata.LogErr("main", format, v...)
 	os.Exit(1)
 }
 

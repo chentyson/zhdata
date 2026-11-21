@@ -1,4 +1,4 @@
-package main
+package zhdata
 
 // Mixed local listener (xray "mixed" equivalent): ONE local port serves both
 // SOCKS5 and an HTTP proxy, dispatched on the first byte of the connection

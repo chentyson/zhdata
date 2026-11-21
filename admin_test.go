@@ -1,4 +1,4 @@
-package main
+package zhdata
 
 import (
 	"encoding/json"
@@ -127,14 +127,14 @@ func TestAdminVersionAndBearerAuth(t *testing.T) {
 	}
 
 	code, v := adminJSON(t, http.MethodGet, base+"/v1/version", "s3cr3t", "")
-	if code != http.StatusOK || v["version"] != version {
+	if code != http.StatusOK || v["version"] != Version {
 		t.Fatalf("GET /v1/version: %d %v", code, v)
 	}
 	// zhenhanvn parses the version with `v?(?<version>\d+\.\d+\.\d+)` out of
 	// the -version line; the admin API reports the same string.
-	m := regexp.MustCompile(`v?(\d+\.\d+\.\d+)`).FindStringSubmatch("zhdata " + version)
-	if m == nil || m[1] != version {
-		t.Fatalf("version %q not parseable by zhenhanvn regex", version)
+	m := regexp.MustCompile(`v?(\d+\.\d+\.\d+)`).FindStringSubmatch("zhdata " + Version)
+	if m == nil || m[1] != Version {
+		t.Fatalf("version %q not parseable by zhenhanvn regex", Version)
 	}
 
 	// no token configured -> no auth required
@@ -172,7 +172,7 @@ func TestAdminServerModeStartsListener(t *testing.T) {
 		t.Fatalf("unauth over real admin bind: want 401, got %d %s", code, raw)
 	}
 	code, raw := adminHTTP(t, http.MethodGet, "http://"+addr+"/v1/version", "tok", "")
-	if code != http.StatusOK || !strings.Contains(string(raw), `"version":"`+version+`"`) {
+	if code != http.StatusOK || !strings.Contains(string(raw), `"version":"`+Version+`"`) {
 		t.Fatalf("version over real admin bind: %d %s", code, raw)
 	}
 }

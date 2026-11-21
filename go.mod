@@ -1,4 +1,4 @@
-module zhdata-tunnel
+module github.com/chentyson/zhdata
 
 go 1.26.0
 

@@ -1,4 +1,4 @@
-package main
+package zhdata
 
 // End-to-end tests for the Mixed local listener (SOCKS5 + HTTP proxy on one
 // port), mirroring the harness of TestEndToEnd in zhdata_test.go: server app
