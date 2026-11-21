@@ -21,9 +21,10 @@ import (
 //
 // Endpoints (all application/json):
 //
-//	GET  /v1/version      -> {"version":"0.15.2"}
+//	GET  /v1/version      -> {"version":"0.15.3"}
 //	PUT  /v1/users        -> replace the API user set; {"ok":true,"keys":N}
 //	GET  /v1/stats        -> {"ts":..,"sessions_active":..,"users":[..]}
+//	GET  /v1/sessions     -> {"ts":..,"sessions":[{uuid,device,slot,remote,started_at,relay},..]}
 //	POST /v1/users/kick   -> {"kicked":N}
 //	POST /v1/reload       -> force file-source reload now (§1.5 "optional P1")
 //	GET  /v1/relay        -> {"enabled":..,"upstream":[..],"pipes":N}
@@ -91,6 +92,7 @@ func (api *adminAPI) handler() http.Handler {
 	mux.HandleFunc("/v1/users", api.requireAuth(api.handleUsersPut))
 	mux.HandleFunc("/v1/users/kick", api.requireAuth(api.handleKick))
 	mux.HandleFunc("/v1/stats", api.requireAuth(api.handleStats))
+	mux.HandleFunc("/v1/sessions", api.requireAuth(api.handleSessions))
 	mux.HandleFunc("/v1/reload", api.requireAuth(api.handleReload))
 	mux.HandleFunc("/v1/relay", api.requireAuth(api.handleRelay))
 	return mux
@@ -313,4 +315,70 @@ func writeAdminJSON(w http.ResponseWriter, code int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	_, _ = w.Write(body)
+}
+
+// ---------------- GET /v1/sessions ----------------
+
+// sessionInfo is one live tunnel session as the panel's inbound-connection list
+// wants it: uuid / device / slot / remote / started_at / relay.
+//
+// Device is the 16-byte per-process device_id in lowercase hex. A pre-zhv7
+// client (zhv4/5/6) carries no device_id at all, and there is nothing honest to
+// put there, so it reads as the empty string rather than 32 zeros.
+type sessionInfo struct {
+	UUID      string `json:"uuid"`
+	Device    string `json:"device"`
+	Slot      int    `json:"slot"`
+	Remote    string `json:"remote"`
+	StartedAt int64  `json:"started_at"`
+	Relay     bool   `json:"relay"`
+}
+
+// listSessions snapshots the live session set, read-only: tunnel sessions this
+// process terminated itself (relay=false, from a.conns, keyed uuid:device:slot)
+// plus the byte-level pipes it is relaying upstream (relay=true). A relay
+// process terminates no tunnel of its own, so its list is exactly its pipes.
+func (a *serverApp) listSessions() []sessionInfo {
+	a.mu.Lock()
+	rows := make([]sessionInfo, 0, len(a.conns))
+	for _, sh := range a.conns {
+		dev := ""
+		if sh.hasDevice {
+			dev = deviceHex(sh.deviceID)
+		}
+		rows = append(rows, sessionInfo{
+			UUID:      sh.uuid,
+			Device:    dev,
+			Slot:      int(sh.slot),
+			Remote:    sh.remote,
+			StartedAt: sh.started.Unix(),
+		})
+	}
+	a.mu.Unlock()
+	rows = append(rows, a.relay.listPipes()...)
+	sort.Slice(rows, func(i, j int) bool {
+		if rows[i].StartedAt != rows[j].StartedAt {
+			return rows[i].StartedAt < rows[j].StartedAt
+		}
+		if rows[i].UUID != rows[j].UUID {
+			return rows[i].UUID < rows[j].UUID
+		}
+		return rows[i].Slot < rows[j].Slot
+	})
+	return rows
+}
+
+// GET /v1/sessions — the panel's inbound connection list: one row per live
+// tunnel session, oldest first. No side effects. Per-session byte counters are
+// deliberately out of P0 (they would need per-session traffic accounting;
+// GET /v1/stats keeps the per-uuid totals).
+func (api *adminAPI) handleSessions(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		methodNotAllowed(w, http.MethodGet)
+		return
+	}
+	writeAdminJSON(w, http.StatusOK, map[string]any{
+		"ts":       time.Now().Unix(),
+		"sessions": api.app.listSessions(),
+	})
 }

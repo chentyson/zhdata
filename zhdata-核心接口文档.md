@@ -31,7 +31,7 @@ zhenhanvn 启动核心：  bin/zhdata/zhdata.exe -c config.json     （cwd = bin
 |---|---|
 | 可执行文件 | `bin/zhdata/zhdata(.exe)`（`CoreExes = ["zhdata"]`；非 Windows 无 .exe，`CoreManager.Init` 自动 chmod） |
 | 启动参数 | `Arguments = "-c {0}"`；`{0}` 普通路径为**相对文件名** `config.json`（工作目录已是 `binConfigs`），非 Windows sudo 路径为绝对带引号路径——两种都支持 |
-| 版本探测 | `zhdata -version` → exit 0，stdout 输出 `zhdata 0.15.2`（满足 `v?(?<version>\d+\.\d+\.\d+)`） |
+| 版本探测 | `zhdata -version` → exit 0，stdout 输出 `zhdata 0.15.3`（满足 `v?(?<version>\d+\.\d+\.\d+)`） |
 | 前台常驻 | 不 fork、不守护；启动 100ms 内 `HasExited` 即失败 |
 | 停止 | zhenhanvn 用 `Process.Kill()`（Windows=TerminateProcess），**不发信号**；核心无状态文件，强杀无损。reload = 杀进程后重启 |
 | 单进程 | 核心不自管子进程（Windows Kill 不带子进程树） |
@@ -240,10 +240,11 @@ ExecStart=/opt/zhdata/zhdata-tunnel-linux-amd64 -mode server -listen :49888,:498
 
 | 端点 | 语义 | 成功返回 |
 |---|---|---|
-| `GET /v1/version` | 核心版本（与 `-version` 同串，仍满足 `v?(?<version>\d+\.\d+\.\d+)`） | `{"version":"0.15.2"}` |
+| `GET /v1/version` | 核心版本（与 `-version` 同串，仍满足 `v?(?<version>\d+\.\d+\.\d+)`） | `{"version":"0.15.3"}` |
 | `PUT /v1/users` | **全量替换 API 用户集**：与文件/sqlite 用户源取并集；同名 uuid 的策略 **API 覆盖文件**（`max_devices` 0=不限，可解除文件限制）；空数组清空 API 集（不影响文件源）；内存中原子换表 | `{"ok":true,"keys":N}` |
 | `GET /v1/stats` | 自进程启动累计计数：`sessions_active`=当前活跃会话；`users[]` 按 uuid 给出 `devices`（当前活跃 device_id 数，与 `max_devices` 同一张表）、`up`/`down` 隧道字节 | `{"ts":..,"sessions_active":..,"users":[{"uuid":..,"devices":..,"up":..,"down":..}]}` |
-| `POST /v1/users/kick` | 按 uuid 切断该用户全部会话（先发 `tGoaway` 再关 socket，客户端按既有退避重连）；uuid 大小写不敏感；空 uuid = 400（P0 只按 uuid 踢） | `{"kicked":N}` |
+| `GET /v1/sessions` | v0.15.3 起：面板「入站连接列表」数据源。一条隧道会话一行，**按 `started_at` 升序**；`device`=握手里的 16B device_id（32 位小写 hex；zhv4/5/6 旧客户端没有 device_id → 空串），`slot`=握手 slot，`remote`=隧道对端 `ip:port`，`started_at`=会话建立时刻（unix 秒），`relay`=该会话是否走 `-backend zhdata` 管道（relay 进程里全是 true，直连进程全是 false）。数据源是 `a.conns`（键 `uuid:device:slot`）+ 活管道集合。**GET only、无副作用**；per-session 字节数 P0 不提供（用 `GET /v1/stats` 的按 uuid 累计） | `{"ts":<unix>,"sessions":[{"uuid":"..","device":"<32hex>","slot":<int>,"remote":"ip:port","started_at":<unix>,"relay":<bool>}]}` |
+| `POST /v1/users/kick` | 按 uuid 切断该用户全部会话（先发 `tGoaway` 再关 socket，客户端按既有退避重连）；uuid 大小写不敏感；空 uuid = 400（P0 只按 uuid 踢）；relay 进程里同时切断该 uuid 的活管道（§3.7） | `{"kicked":N}` |
 | `POST /v1/reload` | 契约 §1.5（原 P1）已实现：立即重读文件/sqlite 用户源，绕过 mtime/size 签名检查；API 用户集不动 | `{"ok":true,"keys":N}` |
 | `GET /v1/relay` | v0.15.2 起：读 relay 状态（§3.7）。`pipes` = 当前活着的字节管道数（一条下游会话 = 一条上游 TCP） | `{"enabled":bool,"upstream":["h:p",..],"pipes":N}` |
 | `PUT /v1/relay` | v0.15.2 起：热更新 relay。`upstream`（可选）全量替换上游列表（校验 `host:port`；空列表 + `enabled=true` → 400）；`enabled`（可选）开关 relay；两者都不给 → 400；**只影响新连接**，已有管道不动（关掉 relay 后旧管道继续跑到自然结束） | `{"ok":true,"upstream":N,"enabled":bool}` |
@@ -257,6 +258,7 @@ ExecStart=/opt/zhdata/zhdata-tunnel-linux-amd64 -mode server -listen :49888,:498
 - `keys` 报告**本次 PUT 写入的 API 用户集大小**；合并后的总数见 `[users]` 日志行与 `GET /v1/stats`。
 - 错误返回统一 `{"error":"..."}`（400/401/404/405），不影响契约里成功响应的形状。
 - 日志 tag `admin`：info = 启动监听 / PUT / kick / reload；warning = 绑定或 serve 异常。kick 动作本身在 `[server] [warning] kick uuid=... cut N session(s)`（默认 info 级可见）。
+- `GET /v1/sessions` 与 `GET /v1/stats` 是**只读快照**，不加锁副作用、不产生日志行（面板轮询）；`sessions_active` 与 `sessions` 行数同源（`a.conns` + relay 管道），所以面板两边不会看到互相矛盾的数。kick 之后两侧同时归零（relay 管道也在同一刀里）。
 
 客户端模式传 `-admin` 只打一条 warning 并忽略，不改变 client 行为。
 
@@ -295,7 +297,7 @@ curl -H "Authorization: Bearer <token>" http://127.0.0.1:6070/v1/relay
 | 项 | 要求（已满足） |
 |---|---|
 | 仓库 | `chentyson/zhdata`（GitHub Releases） |
-| tag | 纯 semver `v0.15.2` 形式（`zhdata-v0.12.4` 这类前缀 tag 会解析成 0.0.0） |
+| tag | 纯 semver `v0.15.3` 形式（`zhdata-v0.12.4` 这类前缀 tag 会解析成 0.0.0） |
 | 资产名（精确） | `zhdata-windows-64.zip`、`zhdata-windows-arm64.zip`、`zhdata-linux-64.zip`、`zhdata-linux-arm64.zip`、`zhdata-macos-64.zip`、`zhdata-macos-arm64.zip`（amd64→64） |
 | zip 布局 | 单顶层目录 `zhdata/` + 二进制；v2rayN 解压按**文件名扁平化**进 `bin/zhdata/`，两种布局都兼容；文件名不得含 `geo`（会被丢弃） |
 | CI | 仓库 `.github/workflows/release.yml`：push `v*.*.*` tag → 六平台构建 → 六 zip 上传（正式 release，非 draft，`/latest` 重定向依赖正式 release） |
@@ -332,6 +334,8 @@ zhenhanvn 侧解析/过滤正则（可直接用于着色/过滤）：
 
 `loglevel` 门控在**核心侧**完成：默认 `info` 时 debug 行不产生（零开销）；`debug` ≡ 旧 `-v`。环境变量 `ZHD_DEBUG=1` 追加协议帧级 trace（比 debug 更细，调试专用）。
 
+**查询类端点不产生日志行**（`GET /v1/stats`、`GET /v1/sessions`、`GET /v1/relay`、`GET /v1/version`）：面板会按秒级轮询，日志只在状态真正变化时出现（会话建立/结束在 `info`/`debug`，kick/PUT/reload 在 `info`/`warning`），面板要「谁在线」请直接读 `GET /v1/sessions`（§3.6）。
+
 ### 5.3 样例（真实输出）
 
 ```text
@@ -352,10 +356,11 @@ zhenhanvn 侧解析/过滤正则（可直接用于着色/过滤）：
 - `stderr` 仍会被 `SaveLogError` 落盘（核心偶尔在极早期（logger 初始化前）可能有一条 stderr，不影响级别体系）。
 - 日志窗"错误"高亮规则：匹配 `[error]`；"警告"匹配 `[warning]`。
 
-## 6. 功能边界（v0.15.2）
+## 6. 功能边界（v0.15.3）
 
 | 能力 | 状态 |
 |---|---|
+| 入站连接列表 | **v0.15.3 起**：`GET /v1/sessions` 一条隧道会话一行（uuid/device/slot/remote `ip:port`/started_at/relay），按建立时间升序，只读无副作用；relay 进程列出它的活管道（`relay=true`）。per-session 字节数 = P0 未做（面板要按会话流量需在核心加 per-session 计数，P1） |
 | 多级中转 / relay | **v0.15.2 起**：`-backend zhdata -upstream h:p[,h:p]`，控制面（认证/设备数/会话数/decoy/统计）在 relay，数据面字节直通不解析帧；`GET/PUT /v1/relay` 热更新上游与开关（§3.7）。relay 侧带宽限速 = P1 未做 |
 | 作为 Go 库嵌入 | **v0.15.2 起**：仓库是 module `github.com/chentyson/zhdata`，s-ui 可直接 `import "github.com/chentyson/zhdata"`，用 `NewClient` + `DialContext` 把隧道当 `net.Conn` 用（§8）；CLI 构建路径改为 `./cmd/zhdata` |
 | 速度/流量统计 | **admin API（v0.15.1 起）**：`GET /v1/stats` 暴露 `sessions_active` 与按 uuid 的 `devices`/`up`/`down` 累计字节（§3.6），s-ui 面板按周期采样求增量入库。zhenhanvn 速度栏对 zhdata 仍恒 0（GUI 未接 admin API，与 hysteria2/brook 等一致，非错误）。clash_api `ws://:StatePort2/traffic` + `IsRunningCore` 判定方案仍未实现（backlog） |

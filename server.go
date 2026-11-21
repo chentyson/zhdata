@@ -88,6 +88,13 @@ type sSession struct {
 	hasDevice bool
 	sess      *session
 
+	// Session identity for the panel's connection list (GET /v1/sessions):
+	// slot from the handshake, the peer address of the tunnel socket, and the
+	// moment the session was established (auth passed, registered in a.conns).
+	slot    byte
+	remote  string
+	started time.Time
+
 	smu     sync.Mutex
 	streams map[uint16]*sStream // membership view: sids carried by this session
 	closed  bool
@@ -470,7 +477,16 @@ func (a *serverApp) handle(c net.Conn) {
 		}
 		c.SetWriteDeadline(noDeadline())
 	}
-	sh := &sSession{uuid: uuid, deviceID: deviceID, hasDevice: hasDevice, sess: sess, streams: map[uint16]*sStream{}}
+	sh := &sSession{
+		uuid:      uuid,
+		deviceID:  deviceID,
+		hasDevice: hasDevice,
+		sess:      sess,
+		streams:   map[uint16]*sStream{},
+		slot:      slot,
+		remote:    c.RemoteAddr().String(), // ip:port for GET /v1/sessions
+		started:   time.Now(),
+	}
 	a.mu.Lock()
 	a.conns[connKey] = sh
 	a.mu.Unlock()

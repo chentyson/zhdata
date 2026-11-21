@@ -7,7 +7,7 @@
 协议 magic：`zhv7`（握手带每进程随机 16B `device_id`，服务端显式回认证 OK/reject）。
 服务端同时接受 `zhv6` / `zhv5` / `zhv4` 旧客户端。
 
-版本：`0.15.2`（`zhdata -version` → `zhdata 0.15.2`）。
+版本：`0.15.3`（`zhdata -version` → `zhdata 0.15.3`）。
 
 ## 构建
 
@@ -50,6 +50,7 @@ curl -x http://127.0.0.1:10808   http://example.com
 | `GET /v1/version` | 核心版本 |
 | `PUT /v1/users` | 全量替换 API 用户集（与文件/sqlite 源取并集，API 策略覆盖同名 uuid） |
 | `GET /v1/stats` | `sessions_active` + 按 uuid 的 `devices` / `up` / `down` 累计字节 |
+| `GET /v1/sessions` | 活会话明细（面板入站连接列表）：`{"ts":..,"sessions":[{uuid,device,slot,remote,started_at,relay}]}`，按建立时间升序；relay 进程列的是活管道（`relay=true`） |
 | `POST /v1/users/kick` | 按 uuid 切断会话（relay 模式下同时切断该 uuid 的字节管道） |
 | `POST /v1/reload` | 立即重读文件/sqlite 用户源 |
 | `GET /v1/relay` | relay 状态：`{"enabled":..,"upstream":[..],"pipes":N}` |
@@ -82,7 +83,7 @@ conn, err := cli.DialContext(ctx, "api.example.com", 443) // 内存流直连，�
 
 ## 发布
 
-tag 纯 semver（`v0.15.2`）→ `.github/workflows/release.yml` 构建六平台并上传
+tag 纯 semver（`v0.15.3`）→ `.github/workflows/release.yml` 构建六平台并上传
 `zhdata-{windows,linux,macos}-{64,arm64}.zip`。zhenhanvn 按 `bin/zhdata/zhdata(.exe)` +
 `-c {0}` 启动，契约见接口文档 §2/§4。
 

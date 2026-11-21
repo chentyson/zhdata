@@ -13,7 +13,7 @@ import (
 // Version is the core version. `zhdata -version` prints "zhdata <Version>"
 // and GET /v1/version reports the same string; both stay parseable by
 // zhenhanvn's `v?(?<version>\d+\.\d+\.\d+)`.
-const Version = "0.15.2"
+const Version = "0.15.3"
 
 // Log level tokens for SetLogLevel — same gate as the CLI -loglevel flag.
 const (

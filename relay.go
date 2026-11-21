@@ -56,6 +56,9 @@ type relayPipe struct {
 	uuid      string
 	deviceID  [16]byte
 	hasDevice bool
+	slot      byte
+	remote    string    // downstream peer address (the panel's client machine)
+	started   time.Time // when the pipe was accepted
 	down      net.Conn
 	up        net.Conn
 	once      sync.Once
@@ -123,6 +126,33 @@ func (rs *relayState) snapshot() (enabled bool, upstream []string, pipes int) {
 	rs.mu.Lock()
 	defer rs.mu.Unlock()
 	return rs.enabled, append([]string(nil), rs.upstream...), len(rs.pipes)
+}
+
+// listPipes reports the live pipes as session rows for GET /v1/sessions. A
+// relay process terminates no tunnel of its own, so this IS its session set
+// (relay=true); read-only.
+func (rs *relayState) listPipes() []sessionInfo {
+	if rs == nil {
+		return nil
+	}
+	rs.mu.Lock()
+	defer rs.mu.Unlock()
+	out := make([]sessionInfo, 0, len(rs.pipes))
+	for p := range rs.pipes {
+		dev := ""
+		if p.hasDevice {
+			dev = deviceHex(p.deviceID)
+		}
+		out = append(out, sessionInfo{
+			UUID:      p.uuid,
+			Device:    dev,
+			Slot:      int(p.slot),
+			Remote:    p.remote,
+			StartedAt: p.started.Unix(),
+			Relay:     true,
+		})
+	}
+	return out
 }
 
 // apply is the PUT /v1/relay mutation: replace the upstream list and/or the
@@ -265,7 +295,17 @@ func (a *serverApp) handleRelay(c net.Conn, head []byte, uuid, version string, s
 		return
 	}
 	tuneTCP(uc)
-	p := &relayPipe{app: a, uuid: uuid, deviceID: deviceID, hasDevice: hasDevice, down: c, up: uc}
+	p := &relayPipe{
+		app:       a,
+		uuid:      uuid,
+		deviceID:  deviceID,
+		hasDevice: hasDevice,
+		slot:      slot,
+		remote:    c.RemoteAddr().String(), // downstream peer ip:port
+		started:   time.Now(),
+		down:      c,
+		up:        uc,
+	}
 	a.relay.add(p)
 	a.estab.Add(1)
 	logInfo("server", "relay pipe uuid=%s device=%s slot=%d from %s -> %s", short(uuid), shortDevice(deviceID), slot, raddr, upAddr)
