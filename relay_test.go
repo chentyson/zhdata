@@ -308,6 +308,17 @@ func TestRelayAdminHotSwitch(t *testing.T) {
 		t.Fatalf("after disable: pipes=%d enabled=%v (existing pipe must survive, enabled must read false)", p, enabled)
 	}
 
+	// The s-ui panel always sends both fields (enabled = len(upstream) > 0), so
+	// "clear the list and switch off" is the real disable body: it must be 200,
+	// not the empty-list-while-enabled 400 above.
+	code, out = adminJSON(t, http.MethodPut, admin.URL+"/v1/relay", "", `{"upstream":[],"enabled":false}`)
+	if code != http.StatusOK || out["enabled"] != false || out["upstream"] != float64(0) || out["ok"] != true {
+		t.Fatalf(`PUT {"upstream":[],"enabled":false}: %d %v`, code, out)
+	}
+	if p, enabled, ups := relayPipes(t, e); p != 1 || enabled || len(ups) != 0 {
+		t.Fatalf("after clear+disable: pipes=%d enabled=%v upstream=%v", p, enabled, ups)
+	}
+
 	// re-enable: the third connection is relayed again
 	code, out = adminJSON(t, http.MethodPut, admin.URL+"/v1/relay", "", `{"upstream":["`+e.final.Addr()+`"],"enabled":true}`)
 	if code != http.StatusOK || out["enabled"] != true || out["upstream"] != float64(1) {
