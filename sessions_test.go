@@ -16,6 +16,7 @@ import (
 
 type sessionsPayload struct {
 	TS       int64         `json:"ts"`
+	Total    int64         `json:"total"`
 	Sessions []sessionInfo `json:"sessions"`
 }
 
@@ -50,9 +51,10 @@ func TestSessionsListLiveSessions(t *testing.T) {
 	defer srv.Close()
 	base := adminTestServer(t, srv, "").URL
 
-	// Empty set is an empty JSON array, not null (the panel renders it directly).
+	// Empty set is an empty JSON array, not null, and total reads 0 (the panel
+	// renders both directly).
 	if code, raw := adminHTTP(t, http.MethodGet, base+"/v1/sessions", "", ""); code != http.StatusOK ||
-		!strings.Contains(string(raw), `"sessions":[]`) {
+		!strings.Contains(string(raw), `"sessions":[]`) || !strings.Contains(string(raw), `"total":0`) {
 		t.Fatalf("empty sessions: code=%d body=%q", code, raw)
 	}
 
@@ -100,6 +102,9 @@ func TestSessionsListLiveSessions(t *testing.T) {
 	if p.TS <= 0 {
 		t.Fatalf("ts: %v", p.TS)
 	}
+	if p.Total != int64(want) {
+		t.Fatalf("total: want %d, got %d", want, p.Total)
+	}
 	if len(p.Sessions) != want {
 		t.Fatalf("sessions: want %d, got %d (%+v)", want, len(p.Sessions), p.Sessions)
 	}
@@ -127,8 +132,8 @@ func TestSessionsListLiveSessions(t *testing.T) {
 		if row.StartedAt > p.TS {
 			t.Fatalf("row %d started_at %d after ts %d", i, row.StartedAt, p.TS)
 		}
-		if i > 0 && p.Sessions[i-1].StartedAt > row.StartedAt {
-			t.Fatalf("sessions must be ordered by started_at ascending: %d then %d",
+		if i > 0 && p.Sessions[i-1].StartedAt < row.StartedAt {
+			t.Fatalf("sessions must be ordered by started_at descending (newest first): %d then %d",
 				p.Sessions[i-1].StartedAt, row.StartedAt)
 		}
 		key := row.UUID + "|" + row.Device + "|" + fmt.Sprint(row.Slot)
@@ -171,7 +176,10 @@ func TestSessionsListLiveSessions(t *testing.T) {
 	if code != http.StatusOK || resp["kicked"] == nil || resp["kicked"].(float64) < 6 {
 		t.Fatalf("kick: %d %v", code, resp)
 	}
-	waitFor(t, func() bool { return len(sessionsOf(t, base, "").Sessions) == 0 }, "kick emptied the session list")
+	waitFor(t, func() bool {
+		p := sessionsOf(t, base, "")
+		return p.Total == 0 && len(p.Sessions) == 0
+	}, "kick emptied the session list (total and rows both 0)")
 }
 
 // A -backend zhdata process terminates no tunnel of its own: its list is the
@@ -261,5 +269,140 @@ func TestSessionsListAuth(t *testing.T) {
 	}
 	if code, _ := adminHTTP(t, http.MethodGet, base+"/v1/sessions", "tok", ""); code != http.StatusOK {
 		t.Fatalf("with token: want 200, got %d", code)
+	}
+}
+
+// ?limit takes the newest n rows (rows come back started_at descending), is
+// clamped into 10..100, falls back to the default 50 when unparseable, and is
+// only an upper bound - never a paging cursor. "total" always counts every live
+// session, independent of the window.
+func TestSessionsLimitClampAndTotal(t *testing.T) {
+	const uuid = "sess-limit-001"
+	srv, err := newServerApp(serverConfig{
+		listen:    "127.0.0.1:0",
+		usersPath: usersFileWith(t, uuid),
+		backend:   "direct",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer srv.Close()
+	base := adminTestServer(t, srv, "").URL
+
+	query := func(q string) sessionsPayload {
+		t.Helper()
+		code, raw := adminHTTP(t, http.MethodGet, base+"/v1/sessions"+q, "", "")
+		if code != http.StatusOK {
+			t.Fatalf("GET /v1/sessions%s: %d %q", q, code, raw)
+		}
+		var p sessionsPayload
+		if err := json.Unmarshal(raw, &p); err != nil {
+			t.Fatalf("decode %s: %v (%q)", q, err, raw)
+		}
+		return p
+	}
+
+	hold := make([]net.Conn, 0, 14)
+	defer func() {
+		for _, c := range hold {
+			c.Close()
+		}
+	}()
+
+	// Twelve earlier sessions, then - a second later - two more, so "newest
+	// first" is provable rather than just "some order".
+	for _, d := range []byte{21, 22, 23} {
+		dev := probeDevice(d)
+		for slot := byte(0); slot < 4; slot++ {
+			resp, c := relayProbe(t, srv.Addr(), uuid, dev, slot)
+			if isAuthReject(resp) {
+				t.Fatalf("probe device=%d slot=%d rejected: %x", d, slot, resp)
+			}
+			hold = append(hold, c)
+		}
+	}
+	waitFor(t, func() bool { return query("").Total == 12 }, "twelve sessions up")
+	time.Sleep(1200 * time.Millisecond)
+
+	newest := deviceHex(probeDevice(24))
+	for slot := byte(0); slot < 2; slot++ {
+		resp, c := relayProbe(t, srv.Addr(), uuid, probeDevice(24), slot)
+		if isAuthReject(resp) {
+			t.Fatalf("late probe slot=%d rejected: %x", slot, resp)
+		}
+		hold = append(hold, c)
+	}
+	const total = 14
+	waitFor(t, func() bool { return query("").Total == total }, "fourteen sessions up")
+
+	full := query("")
+	if full.Total != total || len(full.Sessions) != total {
+		t.Fatalf("default window: total=%d rows=%d (want %d/%d)", full.Total, len(full.Sessions), total, total)
+	}
+	for i := 1; i < len(full.Sessions); i++ {
+		if full.Sessions[i-1].StartedAt < full.Sessions[i].StartedAt {
+			t.Fatalf("rows must be started_at descending: %d then %d",
+				full.Sessions[i-1].StartedAt, full.Sessions[i].StartedAt)
+		}
+	}
+	// The two sessions opened a second later lead the list.
+	for i := 0; i < 2; i++ {
+		if full.Sessions[i].Device != newest {
+			t.Fatalf("row %d must be the newest device: %+v", i, full.Sessions[i])
+		}
+	}
+
+	cases := []struct {
+		q    string
+		rows int
+	}{
+		{"?limit=11", 11},   // inside the range
+		{"?limit=99", 14},   // inside the range, above total
+		{"?limit=10", 10},   // lower boundary
+		{"?limit=3", 10},    // below the range -> floor
+		{"?limit=1", 10},    // below the range -> floor
+		{"?limit=0", 10},    // below the range -> floor
+		{"?limit=-5", 10},   // below the range -> floor
+		{"?limit=100", 14},  // upper boundary (ceiling, above total)
+		{"?limit=1000", 14}, // above the range -> ceiling, still >= total
+		{"?limit=abc", 14},  // unparseable -> default 50
+		{"?limit=", 14},     // empty -> default
+		{"?limit=50", 14},   // default, above total
+	}
+	for _, tc := range cases {
+		p := query(tc.q)
+		if p.Total != total {
+			t.Fatalf("%s: total=%d, want %d (total ignores limit)", tc.q, p.Total, total)
+		}
+		if len(p.Sessions) != tc.rows {
+			t.Fatalf("%s: rows=%d, want %d", tc.q, len(p.Sessions), tc.rows)
+		}
+		if len(p.Sessions) > 0 && p.Sessions[0].Device != newest {
+			t.Fatalf("%s: window must start at the newest session: %+v", tc.q, p.Sessions[0])
+		}
+		if len(p.Sessions) > 0 {
+			for i := 1; i < len(p.Sessions); i++ {
+				if p.Sessions[i-1].StartedAt < p.Sessions[i].StartedAt {
+					t.Fatalf("%s: window not newest-first: %+v", tc.q, p.Sessions)
+				}
+			}
+		}
+	}
+
+	// limit is not a cursor: the same query returns the same head of the list.
+	a, b := query("?limit=11"), query("?limit=11")
+	for i := range a.Sessions {
+		if a.Sessions[i].Device != b.Sessions[i].Device || a.Sessions[i].Slot != b.Sessions[i].Slot {
+			t.Fatalf("?limit=11 not deterministic: %v vs %v", a.Sessions, b.Sessions)
+		}
+	}
+	narrow := query("?limit=11")
+	if len(narrow.Sessions) != 11 || len(full.Sessions) < 11 {
+		t.Fatalf("?limit=11 window: %d rows vs full %d", len(narrow.Sessions), len(full.Sessions))
+	}
+	for i := range narrow.Sessions {
+		if narrow.Sessions[i].Device != full.Sessions[i].Device || narrow.Sessions[i].Slot != full.Sessions[i].Slot {
+			t.Fatalf("?limit=11 must be the head of the full list: %v vs %v", narrow.Sessions, full.Sessions[:11])
+		}
 	}
 }

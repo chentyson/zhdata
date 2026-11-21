@@ -50,7 +50,7 @@ curl -x http://127.0.0.1:10808   http://example.com
 | `GET /v1/version` | 核心版本 |
 | `PUT /v1/users` | 全量替换 API 用户集（与文件/sqlite 源取并集，API 策略覆盖同名 uuid） |
 | `GET /v1/stats` | `sessions_active` + 按 uuid 的 `devices` / `up` / `down` 累计字节 |
-| `GET /v1/sessions` | 活会话明细（面板入站连接列表）：`{"ts":..,"sessions":[{uuid,device,slot,remote,started_at,relay}]}`，按建立时间升序；relay 进程列的是活管道（`relay=true`） |
+| `GET /v1/sessions` | 活会话明细（面板入站连接列表）：`{"ts":..,"total":N,"sessions":[{uuid,device,slot,remote,started_at,relay}]}`，按建立时间**倒序**；`?limit=n` 取最近 n 条（默认 50，钳到 10–100，不是分页），`total` 恒为全量；relay 进程列的是活管道（`relay=true`） |
 | `POST /v1/users/kick` | 按 uuid 切断会话（relay 模式下同时切断该 uuid 的字节管道） |
 | `POST /v1/reload` | 立即重读文件/sqlite 用户源 |
 | `GET /v1/relay` | relay 状态：`{"enabled":..,"upstream":[..],"pipes":N}` |

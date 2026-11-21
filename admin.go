@@ -7,7 +7,9 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -24,7 +26,8 @@ import (
 //	GET  /v1/version      -> {"version":"0.15.3"}
 //	PUT  /v1/users        -> replace the API user set; {"ok":true,"keys":N}
 //	GET  /v1/stats        -> {"ts":..,"sessions_active":..,"users":[..]}
-//	GET  /v1/sessions     -> {"ts":..,"sessions":[{uuid,device,slot,remote,started_at,relay},..]}
+//	GET  /v1/sessions     -> {"ts":..,"total":N,"sessions":[{uuid,device,slot,remote,started_at,relay},..]}
+//	                          ?limit=n takes the newest n rows (default 50, clamped 10..100)
 //	POST /v1/users/kick   -> {"kicked":N}
 //	POST /v1/reload       -> force file-source reload now (§1.5 "optional P1")
 //	GET  /v1/relay        -> {"enabled":..,"upstream":[..],"pipes":N}
@@ -356,29 +359,73 @@ func (a *serverApp) listSessions() []sessionInfo {
 	}
 	a.mu.Unlock()
 	rows = append(rows, a.relay.listPipes()...)
+	// Newest first: the panel renders this list directly, and ?limit takes the
+	// head of it. Ties get a total order (uuid, slot, device, peer) so the same
+	// query returns the same rows on every poll - a 5s panel refresh must not
+	// shuffle rows that did not change.
 	sort.Slice(rows, func(i, j int) bool {
 		if rows[i].StartedAt != rows[j].StartedAt {
-			return rows[i].StartedAt < rows[j].StartedAt
+			return rows[i].StartedAt > rows[j].StartedAt
 		}
 		if rows[i].UUID != rows[j].UUID {
 			return rows[i].UUID < rows[j].UUID
 		}
-		return rows[i].Slot < rows[j].Slot
+		if rows[i].Slot != rows[j].Slot {
+			return rows[i].Slot < rows[j].Slot
+		}
+		if rows[i].Device != rows[j].Device {
+			return rows[i].Device < rows[j].Device
+		}
+		return rows[i].Remote < rows[j].Remote
 	})
 	return rows
 }
 
-// GET /v1/sessions — the panel's inbound connection list: one row per live
-// tunnel session, oldest first. No side effects. Per-session byte counters are
-// deliberately out of P0 (they would need per-session traffic accounting;
-// GET /v1/stats keeps the per-uuid totals).
+// The panel's list window. Outside the legal range the value is clamped to the
+// boundary; anything unparseable falls back to the default. limit is only an
+// upper bound on how many rows come back — it is not a paging cursor.
+const (
+	sessionsLimitDefault = 50
+	sessionsLimitMin     = 10
+	sessionsLimitMax     = 100
+)
+
+func parseSessionsLimit(q url.Values) int {
+	raw := strings.TrimSpace(q.Get("limit"))
+	if raw == "" {
+		return sessionsLimitDefault
+	}
+	n, err := strconv.Atoi(raw)
+	if err != nil {
+		return sessionsLimitDefault
+	}
+	if n < sessionsLimitMin {
+		return sessionsLimitMin
+	}
+	if n > sessionsLimitMax {
+		return sessionsLimitMax
+	}
+	return n
+}
+
+// GET /v1/sessions[?limit=n] — the panel's inbound connection list: one row per
+// live tunnel session, newest first, at most n rows (default 50, clamped into
+// 10..100). "total" is the full live-session count regardless of limit. No side
+// effects. Per-session byte counters are deliberately out of P0 (they would
+// need per-session traffic accounting; GET /v1/stats keeps the per-uuid totals).
 func (api *adminAPI) handleSessions(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		methodNotAllowed(w, http.MethodGet)
 		return
 	}
+	rows := api.app.listSessions()
+	total := len(rows)
+	if n := parseSessionsLimit(r.URL.Query()); n < total {
+		rows = rows[:n]
+	}
 	writeAdminJSON(w, http.StatusOK, map[string]any{
 		"ts":       time.Now().Unix(),
-		"sessions": api.app.listSessions(),
+		"total":    total,
+		"sessions": rows,
 	})
 }
