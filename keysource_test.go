@@ -232,3 +232,81 @@ func contains(s []string, x string) bool {
 	}
 	return false
 }
+
+// ---- per-source observability (admin user_sources) ----
+
+func sourceOf(t *testing.T, srcs []userSource, path string) userSource {
+	t.Helper()
+	for _, s := range srcs {
+		if s.Path == path {
+			return s
+		}
+	}
+	t.Fatalf("source %q missing from %v", path, srcs)
+	return userSource{}
+}
+
+// A misconfigured -users path must be visible in the store's per-source
+// records (last error, last successful-load key count, last attempt time),
+// not only in the repeating [users] warning line. All three load paths —
+// startup, reloadIfChanged (20s watch), reloadNow (forced) — update them.
+func TestKeyStoreSourceObservability(t *testing.T) {
+	dir := t.TempDir()
+	good := filepath.Join(dir, "good.txt")
+	if err := os.WriteFile(good, []byte("obs-a\nobs-b\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	bad := filepath.Join(dir, "bad.txt") // deliberately absent at startup
+
+	ks, err := newKeyStore(bad + "," + good)
+	if err != nil {
+		t.Fatal(err)
+	}
+	srcs := ks.sources()
+	if len(srcs) != 2 || srcs[0].Path > srcs[1].Path {
+		t.Fatalf("user_sources must have one row per path, sorted by path: %v", srcs)
+	}
+	badSt := sourceOf(t, srcs, bad)
+	if badSt.Keys != 0 || badSt.LastError == "" || badSt.At <= 0 {
+		t.Fatalf("startup broken path must show keys=0 + last_error: %+v", badSt)
+	}
+	if goodSt := sourceOf(t, srcs, good); goodSt.Keys != 2 || goodSt.LastError != "" || goodSt.At <= 0 {
+		t.Fatalf("startup good path: %+v", goodSt)
+	}
+	if ks.keysTotal() != 2 {
+		t.Fatalf("keys_total at startup: %d", ks.keysTotal())
+	}
+
+	// operator creates the missing file; the next 20s pass clears the error
+	// and the source starts contributing keys
+	if err := os.WriteFile(bad, []byte("obs-c\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if !ks.reloadIfChanged() {
+		t.Fatal("expected reload after the missing path appeared")
+	}
+	fixed := sourceOf(t, ks.sources(), bad)
+	if fixed.LastError != "" || fixed.Keys != 1 || fixed.At < badSt.At {
+		t.Fatalf("last_error must clear after fix (keys from this load expected): %+v", fixed)
+	}
+	if ks.keysTotal() != 3 {
+		t.Fatalf("keys_total after fix: %d", ks.keysTotal())
+	}
+
+	// broken again: the forced reloadNow path records the error too, and keys
+	// stays at the last successful load's count while it is failing
+	if err := os.Remove(bad); err != nil {
+		t.Fatal(err)
+	}
+	total, errs := ks.reloadNow()
+	if len(errs) != 1 || total != 2 {
+		t.Fatalf("forced reload with one source missing: total=%d errs=%v", total, errs)
+	}
+	again := sourceOf(t, ks.sources(), bad)
+	if again.LastError == "" || again.Keys != 1 || again.At < fixed.At {
+		t.Fatalf("failing source must keep keys from its last successful load: %+v", again)
+	}
+	if goodSt := sourceOf(t, ks.sources(), good); goodSt.Keys != 2 || goodSt.LastError != "" {
+		t.Fatalf("good source after forced reload: %+v", goodSt)
+	}
+}

@@ -27,11 +27,13 @@ import (
 //	PUT  /v1/users        -> replace the API user set; {"ok":true,"keys":N}
 //	                          entries may carry optional account fields
 //	                          expiry/quota/used for the in-tunnel query (§query host)
-//	GET  /v1/stats        -> {"ts":..,"sessions_active":..,"users":[..]}
+//	GET  /v1/stats        -> {"ts":..,"sessions_active":..,"users":[..],
+//	                          "keys_total":N,"user_sources":[{path,keys,last_error,at},..]}
 //	GET  /v1/sessions     -> {"ts":..,"total":N,"sessions":[{uuid,device,slot,remote,started_at,relay},..]}
 //	                          ?limit=n takes the newest n rows (default 50, clamped 10..100)
 //	POST /v1/users/kick   -> {"kicked":N}
-//	POST /v1/reload       -> force file-source reload now (§1.5 "optional P1")
+//	POST /v1/reload       -> force file-source reload now (§1.5 "optional P1"),
+//	                          same per-source "user_sources" detail as stats
 //	GET  /v1/relay        -> {"enabled":..,"upstream":[..],"pipes":N}
 //	PUT  /v1/relay        -> {"upstream":[..],"enabled":bool} -> {"ok":true,..}
 //
@@ -242,19 +244,29 @@ func (api *adminAPI) handleStats(w http.ResponseWriter, r *http.Request) {
 		"ts":              time.Now().Unix(),
 		"sessions_active": active,
 		"users":           users,
+		// Key-source observability, additive: an older panel ignores both and
+		// keeps working. keys_total is the size of the effective auth set
+		// (file/sqlite sources ∪ API users); user_sources shows per-path load
+		// results so a wrong -users path is visible in the panel instead of
+		// only as a repeating [users] [warning] line in journald.
+		"keys_total":     app.ks.keysTotal(),
+		"user_sources":   app.ks.sources(),
 	})
 }
 
 // POST /v1/reload — force an immediate re-read of the file/sqlite user
 // sources (contract §1.5, optional P1 — implemented). The API user set is
-// untouched; "keys" reports the merged total afterwards.
+// untouched; "keys" reports the merged total afterwards. The response carries
+// the same "user_sources" per-path detail as GET /v1/stats — operators poke
+// this endpoint right after touching -users config, so it is where they
+// actually look for a bad path.
 func (api *adminAPI) handleReload(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		methodNotAllowed(w, http.MethodPost)
 		return
 	}
 	total, errs := api.app.ks.reloadNow()
-	resp := map[string]any{"ok": true, "keys": total}
+	resp := map[string]any{"ok": true, "keys": total, "user_sources": api.app.ks.sources()}
 	if len(errs) > 0 {
 		msgs := make([]string, 0, len(errs))
 		for _, e := range errs {

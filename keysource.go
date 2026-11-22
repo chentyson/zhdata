@@ -37,7 +37,32 @@ type keyStore struct {
 	apiPolicies  map[string]userPolicy  // admin API user set: uuid -> policy (0 = unlimited)
 	apiAccounts  map[string]accountInfo // admin API user set: uuid -> account metadata
 	sigs         map[string]string      // path -> "mtimeNano:size"
+	srcStats     map[string]userSource  // path -> last load outcome (admin user_sources)
 	loaded       bool
+}
+
+// userSource is the observability record for ONE -users path. Before this
+// existed a misconfigured path (typo in -users, s-ui DB moved) only surfaced
+// as a repeating "[users] [warning] ...: no such file or directory" line in
+// journald; the panel could not see it at all. The admin API now exposes these
+// records (GET /v1/stats "user_sources", POST /v1/reload likewise), so the
+// operator sees the broken source in the UI.
+//
+// Semantics (what the JSON fields mean):
+//
+//	Keys      keys the source contributed at its LAST SUCCESSFUL load
+//	          (0 if it never loaded; kept at that number while it is failing,
+//	          so the panel still sees what the path last provided)
+//	LastError error of the last attempt; "" when it loaded cleanly
+//	At        unix seconds of the last load ATTEMPT (success or failure)
+//
+// Field names + json tags are exported so admin.go can serialize the snapshot
+// as-is (additive fields: an older panel ignores them).
+type userSource struct {
+	Path      string `json:"path"`
+	Keys      int    `json:"keys"`
+	LastError string `json:"last_error"`
+	At        int64  `json:"at"`
 }
 
 // apiUser is one entry of the admin API user set (zhdata-admin-api.md §1.2).
@@ -78,9 +103,10 @@ func newKeyStore(spec string) (*keyStore, error) {
 		fileAccounts: map[string]accountInfo{},
 		apiAccounts:  map[string]accountInfo{},
 		sigs:         map[string]string{},
+		srcStats:     map[string]userSource{},
 	}
-	keys, policies, accounts, per, errs := ks.collect()
-	for _, err := range errs {
+	keys, policies, accounts, per, srcErrs := ks.collect()
+	for _, err := range srcErrList(ks.paths, srcErrs) {
 		logWarn("users", "%v", err)
 	}
 	if len(keys) == 0 {
@@ -89,6 +115,14 @@ func newKeyStore(spec string) (*keyStore, error) {
 	ks.fileKeys = keys
 	ks.filePolicies = policies
 	ks.fileAccounts = accounts
+	// record the startup attempt in the per-source view too. At startup there
+	// is no previous state, so noteSourceResultsLocked emits no transition
+	// lines (the warnings above are the startup visibility); the record itself
+	// is what GET /v1/stats later serves, which is how a wrong -users path
+	// becomes visible in the panel.
+	ks.mu.Lock()
+	ks.noteSourceResultsLocked(per, srcErrs)
+	ks.mu.Unlock()
 	ks.reSigs()
 	ks.loaded = true
 	ks.mergeLocked()
@@ -157,6 +191,28 @@ func (ks *keyStore) apiCount() int {
 	ks.mu.RLock()
 	defer ks.mu.RUnlock()
 	return len(ks.apiPolicies)
+}
+
+// keysTotal reports the size of the effective key set (file/sqlite sources ∪
+// API users) — what GET /v1/stats "keys_total" shows the panel.
+func (ks *keyStore) keysTotal() int {
+	ks.mu.RLock()
+	defer ks.mu.RUnlock()
+	return len(ks.keys)
+}
+
+// sources snapshots the per-source records for the admin API, sorted by path:
+// the panel renders this list directly, so the order must be stable across
+// polls (same rationale as the /v1/sessions sort).
+func (ks *keyStore) sources() []userSource {
+	ks.mu.RLock()
+	defer ks.mu.RUnlock()
+	out := make([]userSource, 0, len(ks.srcStats))
+	for _, st := range ks.srcStats {
+		out = append(out, st)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].Path < out[j].Path })
+	return out
 }
 
 // mergeLocked recomputes the effective keys/policies views from the file
@@ -245,24 +301,33 @@ func (ks *keyStore) reloadIfChanged() bool {
 	if !changed {
 		return false
 	}
-	keys, policies, accounts, per, errs := ks.collect()
+	keys, policies, accounts, per, srcErrs := ks.collect()
 	if len(keys) == 0 {
-		logWarn("users", "reload produced 0 keys, keeping previous (%d); errors: %v", len(ks.snapshot()), joinErrs(errs))
+		// record the attempt even though the fail-safe keeps the previous key
+		// set: the per-source errors (and the timestamp) are exactly what the
+		// panel needs to see why.
+		ks.mu.Lock()
+		warns, infos := ks.noteSourceResultsLocked(per, srcErrs)
+		ks.mu.Unlock()
+		logWarn("users", "reload produced 0 keys, keeping previous (%d); errors: %v", len(ks.snapshot()), joinErrs(srcErrList(ks.paths, srcErrs)))
+		logSourceTransitions(warns, infos)
 		ks.reSigs()
 		return false
 	}
-	for _, err := range errs {
+	for _, err := range srcErrList(ks.paths, srcErrs) {
 		logWarn("users", "%v", err)
 	}
 	ks.mu.Lock()
 	ks.fileKeys = keys
 	ks.filePolicies = policies
 	ks.fileAccounts = accounts
+	warns, infos := ks.noteSourceResultsLocked(per, srcErrs)
 	ks.mergeLocked() // API user set survives file reloads (it is not file-derived)
 	total, apiN := len(ks.keys), len(ks.apiPolicies)
 	limited := countLimited(ks.policies)
 	ks.sigs = sigs
 	ks.mu.Unlock()
+	logSourceTransitions(warns, infos)
 	logInfo("users", "hot-reloaded %d keys = %d file + %d api (%d device-limited) %v", total, len(keys), apiN, limited, per)
 	return true
 }
@@ -271,29 +336,41 @@ func (ks *keyStore) reloadIfChanged() bool {
 // mtime/size signature check (admin POST /v1/reload, contract §1.5 — P1).
 // Same fail-safe as reloadIfChanged: total failure keeps the previous keys.
 func (ks *keyStore) reloadNow() (total int, errs []error) {
-	keys, policies, accounts, per, errs := ks.collect()
+	keys, policies, accounts, per, srcErrs := ks.collect()
+	errs = srcErrList(ks.paths, srcErrs)
 	if len(keys) == 0 {
+		ks.mu.Lock()
+		warns, infos := ks.noteSourceResultsLocked(per, srcErrs)
+		ks.mu.Unlock()
 		logWarn("users", "forced reload produced 0 file keys, keeping previous; errors: %v", joinErrs(errs))
+		logSourceTransitions(warns, infos)
 		return len(ks.snapshot()), errs
 	}
 	ks.mu.Lock()
 	ks.fileKeys = keys
 	ks.filePolicies = policies
 	ks.fileAccounts = accounts
+	warns, infos := ks.noteSourceResultsLocked(per, srcErrs)
 	ks.mergeLocked()
 	total, apiN := len(ks.keys), len(ks.apiPolicies)
 	limited := countLimited(ks.policies)
 	ks.mu.Unlock()
+	logSourceTransitions(warns, infos)
 	ks.reSigs()
 	logInfo("users", "reloaded on demand: %d keys = %d file + %d api (%d device-limited) %v", total, len(keys), apiN, limited, per)
 	return total, errs
 }
 
-func (ks *keyStore) collect() (keys []string, policies map[string]userPolicy, accounts map[string]accountInfo, per map[string]int, errs []error) {
+// collect re-reads every configured source once. per reports the keys each
+// source contributed (paths that errored are absent from per); srcErrs maps
+// the failing path -> its bare error (the path is the map key, callers do not
+// need it wrapped twice).
+func (ks *keyStore) collect() (keys []string, policies map[string]userPolicy, accounts map[string]accountInfo, per map[string]int, srcErrs map[string]error) {
 	set := map[string]bool{}
 	policies = map[string]userPolicy{}
 	accounts = map[string]accountInfo{}
 	per = map[string]int{}
+	srcErrs = map[string]error{}
 	for _, p := range ks.paths {
 		var us []string
 		var ps map[string]userPolicy
@@ -305,7 +382,7 @@ func (ks *keyStore) collect() (keys []string, policies map[string]userPolicy, ac
 			us, ps, as, err = loadUsersWithPolicies(p)
 		}
 		if err != nil {
-			errs = append(errs, fmt.Errorf("%s: %w", p, err))
+			srcErrs[p] = err
 			continue
 		}
 		per[p] = len(us)
@@ -332,6 +409,72 @@ func (ks *keyStore) collect() (keys []string, policies map[string]userPolicy, ac
 	}
 	sort.Strings(keys)
 	return
+}
+
+// noteSourceResultsLocked merges one collect() pass into the per-source
+// observability records. Call with ks.mu held. Every configured path gets an
+// updated record (keys from the last successful load, last error, attempt
+// time), which is what makes all three load paths — startup, the 20s
+// reloadIfChanged and the forced reloadNow — observable through the API.
+//
+// It returns transition lines for the caller to log once it has unlocked:
+// a warning the FIRST time a previously-clean source starts failing and an
+// info when a failing source loads clean again. A source that is still
+// failing does not re-transition, so the 20s watch does not double up on the
+// per-path warning the reload paths already log (those stay as they were).
+// Startup passes have no previous state, so the newKeyStore warnings above
+// remain the only startup line.
+func (ks *keyStore) noteSourceResultsLocked(per map[string]int, srcErrs map[string]error) (warns, infos []string) {
+	if ks.srcStats == nil {
+		ks.srcStats = map[string]userSource{}
+	}
+	at := time.Now().Unix()
+	for _, p := range ks.paths {
+		prev, had := ks.srcStats[p]
+		st := userSource{Path: p, Keys: prev.Keys, At: at}
+		if err, failed := srcErrs[p]; failed {
+			// Keys stays at the last successful load's count: while the
+			// source is broken, the effective set comes from the fail-safe
+			// (previous keys), so the last number it contributed is the
+			// honest thing to show.
+			st.LastError = err.Error()
+			if had && prev.LastError == "" {
+				// clean before, failing now: the one-time transition warning
+				warns = append(warns, fmt.Sprintf("source %s failing: %v", p, err))
+			}
+		} else {
+			st.Keys = per[p] // per holds 0 for a source that loaded but had no users
+			if had && prev.LastError != "" {
+				infos = append(infos, fmt.Sprintf("source %s recovered: %d keys", p, st.Keys))
+			}
+		}
+		ks.srcStats[p] = st
+	}
+	return warns, infos
+}
+
+// logSourceTransitions emits the transition lines from noteSourceResultsLocked
+// (one warning per newly-failing source, one info per recovered one).
+func logSourceTransitions(warns, infos []string) {
+	for _, w := range warns {
+		logWarn("users", "%s", w)
+	}
+	for _, s := range infos {
+		logInfo("users", "%s", s)
+	}
+}
+
+// srcErrList unwraps collect's per-path error map back into a path-ordered
+// []error: warnings (admin POST /v1/reload) and the [users] log lines must not
+// shuffle between runs, and map iteration order is randomized.
+func srcErrList(paths []string, srcErrs map[string]error) []error {
+	var out []error
+	for _, p := range paths {
+		if err, ok := srcErrs[p]; ok {
+			out = append(out, fmt.Errorf("%s: %w", p, err))
+		}
+	}
+	return out
 }
 
 func joinErrs(errs []error) string {

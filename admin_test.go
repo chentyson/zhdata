@@ -66,10 +66,21 @@ type statsUserRow struct {
 	Down    int64  `json:"down"`
 }
 
+// statsSourceRow mirrors the per-source user_sources rows (v0.15.5 additive
+// stats/reload fields).
+type statsSourceRow struct {
+	Path      string `json:"path"`
+	Keys      int    `json:"keys"`
+	LastError string `json:"last_error"`
+	At        int64  `json:"at"`
+}
+
 type statsPayload struct {
-	TS             int64          `json:"ts"`
-	SessionsActive int            `json:"sessions_active"`
-	Users          []statsUserRow `json:"users"`
+	TS             int64            `json:"ts"`
+	SessionsActive int              `json:"sessions_active"`
+	Users          []statsUserRow   `json:"users"`
+	KeysTotal      int              `json:"keys_total"`
+	Sources        []statsSourceRow `json:"user_sources"`
 }
 
 func statsOf(t *testing.T, base, token string) statsPayload {
@@ -92,6 +103,15 @@ func statsRow(s statsPayload, uuid string) (statsUserRow, bool) {
 		}
 	}
 	return statsUserRow{}, false
+}
+
+func statsSourceRowOf(rows []statsSourceRow, path string) (statsSourceRow, bool) {
+	for _, r := range rows {
+		if r.Path == path {
+			return r, true
+		}
+	}
+	return statsSourceRow{}, false
 }
 
 // ---- tests ----
@@ -335,10 +355,14 @@ func TestAdminStatsCounts(t *testing.T) {
 	defer srv.Close()
 	base := adminTestServer(t, srv, "").URL
 
-	// empty stats shape must match the contract (users: [], not null)
+	// empty stats shape must match the contract (users: [], not null); the
+	// additive key-source fields are present from the first poll too
 	s0 := statsOf(t, base, "")
 	if s0.SessionsActive != 0 || s0.Users == nil || len(s0.Users) != 0 || s0.TS <= 0 {
 		t.Fatalf("empty stats shape: %+v", s0)
+	}
+	if s0.KeysTotal != 1 || len(s0.Sources) != 1 || s0.Sources[0].LastError != "" || s0.Sources[0].Keys != 1 {
+		t.Fatalf("stats key-source shape: %+v", s0)
 	}
 
 	cli, err := newClientApp(clientConfig{
@@ -385,6 +409,80 @@ func TestAdminStatsCounts(t *testing.T) {
 	}
 	if s2.SessionsActive != 1 {
 		t.Fatalf("sessions_active after traffic: %d", s2.SessionsActive)
+	}
+}
+
+// The additive key-source observability fields of GET /v1/stats (and the same
+// user_sources detail in POST /v1/reload, the operator's config-check path):
+// a wrong -users path must be visible in the panel, keys_total tracks the
+// effective auth set including admin-pushed users.
+func TestAdminStatsUserSources(t *testing.T) {
+	dir := t.TempDir()
+	good := filepath.Join(dir, "good.txt")
+	if err := os.WriteFile(good, []byte("src-a\nsrc-b\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	bad := filepath.Join(dir, "bad.txt") // typo'd path: absent at startup
+	srv, err := newServerApp(serverConfig{
+		listen:      "127.0.0.1:0",
+		usersPath:   bad + "," + good,
+		backend:     "direct",
+		maxSessions: 10,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer srv.Close()
+	base := adminTestServer(t, srv, "").URL
+
+	s := statsOf(t, base, "")
+	if s.KeysTotal != 2 || s.KeysTotal != len(srv.ks.snapshot()) {
+		t.Fatalf("keys_total: %d (effective=%v)", s.KeysTotal, srv.ks.snapshot())
+	}
+	if len(s.Sources) != 2 || s.Sources[0].Path > s.Sources[1].Path {
+		t.Fatalf("user_sources shape: %+v", s.Sources)
+	}
+	badRow, ok := statsSourceRowOf(s.Sources, bad)
+	if !ok || badRow.Keys != 0 || badRow.LastError == "" || badRow.At <= 0 {
+		t.Fatalf("broken source must show keys=0 + non-empty last_error: %+v (ok=%v)", s.Sources, ok)
+	}
+	if goodRow, ok := statsSourceRowOf(s.Sources, good); !ok || goodRow.Keys != 2 || goodRow.LastError != "" || goodRow.At <= 0 {
+		t.Fatalf("good source row: %+v (ok=%v)", s.Sources, ok)
+	}
+
+	// keys_total counts admin-pushed users too (effective set, union semantics)
+	if code, resp := adminJSON(t, http.MethodPut, base+"/v1/users", "", `{"users":[{"uuid":"api-src-1"}]}`); code != http.StatusOK || resp["keys"] != float64(1) {
+		t.Fatalf("PUT /v1/users: %d %v", code, resp)
+	}
+	if s = statsOf(t, base, ""); s.KeysTotal != 3 {
+		t.Fatalf("keys_total must include admin users: %d", s.KeysTotal)
+	}
+
+	// fix the path, then check via POST /v1/reload: last_error clears, the
+	// source's keys show up, and the same rows are in the reload response
+	if err := os.WriteFile(bad, []byte("src-c\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	code, r := adminJSON(t, http.MethodPost, base+"/v1/reload", "", "")
+	if code != http.StatusOK || r["keys"] != float64(4) || r["warnings"] != nil {
+		t.Fatalf("POST /v1/reload: %d %v", code, r)
+	}
+	raw, err := json.Marshal(r["user_sources"])
+	if err != nil {
+		t.Fatalf("reload user_sources missing: %v", r)
+	}
+	var rows []statsSourceRow
+	if err := json.Unmarshal(raw, &rows); err != nil {
+		t.Fatalf("reload user_sources shape: %v (%v)", err, r["user_sources"])
+	}
+	if len(rows) != 2 {
+		t.Fatalf("reload user_sources rows: %+v", rows)
+	}
+	if row, ok := statsSourceRowOf(rows, bad); !ok || row.LastError != "" || row.Keys != 1 {
+		t.Fatalf("fixed source in reload response: %+v (ok=%v)", rows, ok)
+	}
+	if s = statsOf(t, base, ""); s.KeysTotal != 4 {
+		t.Fatalf("keys_total after fix: %d", s.KeysTotal)
 	}
 }
 
