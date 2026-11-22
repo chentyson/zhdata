@@ -13,7 +13,15 @@ import (
 // Version is the core version. `zhdata -version` prints "zhdata <Version>"
 // and GET /v1/version reports the same string; both stay parseable by
 // zhenhanvn's `v?(?<version>\d+\.\d+\.\d+)`.
-const Version = "0.15.3"
+const Version = "0.15.4"
+
+// Reserved in-tunnel account query defaults (v0.15.4; -query-host/-query-url,
+// see zhdata-核心接口文档.md §3.8). The CLI uses these as flag defaults; the
+// query handler lives in query.go.
+const (
+	DefaultQueryHost = "query.zhdata"
+	DefaultQueryURL  = "http://127.0.0.1:62444/62444/query?key=%s"
+)
 
 // Log level tokens for SetLogLevel — same gate as the CLI -loglevel flag.
 const (
@@ -76,6 +84,8 @@ type ServerOptions struct {
 	Decoy       string // host:port to splice non-protocol traffic
 	AdminAddr   string // admin API listen address (empty = off)
 	AdminToken  string // optional Bearer token for admin /v1/*
+	QueryHost   string // reserved account-query hostname (DefaultQueryHost; empty = off)
+	QueryURL    string // account source URL for the query handler, %s = uuid (empty = off)
 	Verbose     bool
 }
 
@@ -96,6 +106,8 @@ func NewServer(o *ServerOptions) (*Server, error) {
 		decoy:       o.Decoy,
 		adminAddr:   o.AdminAddr,
 		adminToken:  o.AdminToken,
+		queryHost:   o.QueryHost,
+		queryURL:    o.QueryURL,
 		verbose:     o.Verbose,
 	})
 }

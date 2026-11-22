@@ -33,7 +33,7 @@ func makeSuiDB(t *testing.T, uuids ...string) string {
 
 func TestReadUsersFromDB(t *testing.T) {
 	p := makeSuiDB(t, "UPPER-Aaa", "b-bb")
-	u, _, err := readUsersFromDB(p)
+	u, _, _, err := readUsersFromDB(p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -43,13 +43,101 @@ func TestReadUsersFromDB(t *testing.T) {
 	}
 }
 
+// optional account columns (v0.15.4): expiry + quota columns are picked up
+// when present and skipped silently when absent.
+func TestReadUsersFromDBAccountColumns(t *testing.T) {
+	p := filepath.Join(t.TempDir(), "acct.db")
+	db, err := sql.Open("sqlite", p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = db.Exec(`CREATE TABLE client (id integer primary key, uuid text, expired_at integer, quota integer, max_devices integer);`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = db.Exec(`INSERT INTO client (uuid,expired_at,quota,max_devices) VALUES ('acct-uu',1780000000,107374182400,2), ('acct-bare',NULL,NULL,NULL)`); err != nil {
+		t.Fatal(err)
+	}
+	db.Close()
+
+	us, policies, accounts, err := readUsersFromDB(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(us) != 2 {
+		t.Fatalf("users: %v", us)
+	}
+	if pol := policies["acct-uu"]; pol.MaxDevices != 2 {
+		t.Fatalf("policy column lost: %+v", pol)
+	}
+	acc, ok := accounts["acct-uu"]
+	if !ok || acc.Expiry != 1780000000 || acc.Quota != 107374182400 {
+		t.Fatalf("account columns not read: %+v ok=%v", acc, ok)
+	}
+	if _, ok := accounts["acct-bare"]; ok {
+		t.Fatal("NULL/absent account fields must not create a record")
+	}
+}
+
+// a panel can expose its users as a VIEW over a JSON config column (s-ui keeps
+// the zhdata uuid inside clients.config, not in a column); views and the used
+// column are picked up like any table (v0.15.4).
+func TestReadUsersFromDBViewOverJSONConfig(t *testing.T) {
+	p := filepath.Join(t.TempDir(), "s-ui.db")
+	db, err := sql.Open("sqlite", p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = db.Exec(`CREATE TABLE clients (id integer primary key, name text, config blob, expiry integer, volume integer, up integer, down integer);`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = db.Exec(`INSERT INTO clients (name,config,expiry,volume,up,down) VALUES ('C49801','{"zhdata":{"uuid":"SUI-UU-1"}}',1780000000,644245094400,8284166083,268733272548);`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = db.Exec(`CREATE VIEW zhdata_users AS SELECT json_extract(config,'$.zhdata.uuid') uuid, expiry, volume, (up+down) used FROM clients WHERE json_extract(config,'$.zhdata.uuid') IS NOT NULL;`); err != nil {
+		t.Fatal(err)
+	}
+	db.Close()
+
+	us, _, accounts, err := readUsersFromDB(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(us) != 1 || us[0] != "sui-uu-1" {
+		t.Fatalf("view uuid not read (or not lowercased): %v", us)
+	}
+	acc, ok := accounts["sui-uu-1"]
+	if !ok || acc.Expiry != 1780000000 || acc.Quota != 644245094400 || acc.Used != 277017438631 {
+		t.Fatalf("view account fields not read: %+v ok=%v", acc, ok)
+	}
+}
+
 func TestReadUsersFromDBNoUuidTable(t *testing.T) {
 	p := filepath.Join(t.TempDir(), "x.db")
 	db, _ := sql.Open("sqlite", p)
 	db.Exec(`CREATE TABLE foo (a text)`)
 	db.Close()
-	if _, _, err := readUsersFromDB(p); err == nil {
+	if _, _, _, err := readUsersFromDB(p); err == nil {
 		t.Fatal("expected error when no uuid column exists")
+	}
+}
+
+// the JSON object users format can carry the optional account fields
+// (v0.15.4); txt lines and plain uuid arrays cannot, and stay as-is.
+func TestLoadUsersAccountFields(t *testing.T) {
+	p := filepath.Join(t.TempDir(), "u.json")
+	os.WriteFile(p, []byte(`{"users":[{"uuid":"J-1","expiry":1780000000,"quota":107374182400,"used":7},{"uuid":"j-2"}]}`), 0o644)
+	us, _, accs, err := loadUsersWithPolicies(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(us) != 2 {
+		t.Fatalf("users: %v", us)
+	}
+	if acc := accs["j-1"]; acc.Expiry != 1780000000 || acc.Quota != 107374182400 || acc.Used != 7 {
+		t.Fatalf("json account fields not wired: %+v", acc)
+	}
+	if _, ok := accs["j-2"]; ok {
+		t.Fatal("entry without account fields must not create a record")
 	}
 }
 

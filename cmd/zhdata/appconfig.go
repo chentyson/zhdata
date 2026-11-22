@@ -34,6 +34,8 @@ type appConfig struct {
 	Pprof       string          `json:"pprof"`
 	Admin       string          `json:"admin"`       // server: admin API listen addr (e.g. 127.0.0.1:6070); empty = off
 	AdminToken  string          `json:"admin_token"` // server: optional Bearer token for admin /v1/* routes
+	QueryHost   string          `json:"query_host"`  // server: reserved account-query hostname (default query.zhdata); empty = off
+	QueryURL    string          `json:"query_url"`   // server: account source URL for the query handler, %s = uuid; empty = off
 	LogLevel    string          `json:"loglevel"`    // error|warning|info|debug (default info; verbose=true == debug)
 }
 
@@ -87,6 +89,8 @@ type coreParams struct {
 	pprof       string
 	admin       string
 	adminToken  string
+	queryHost   string
+	queryURL    string
 	loglevel    string
 	maxClients  int
 	maxSessions int
@@ -135,6 +139,8 @@ func resolveParams(fl coreParams, set map[string]bool, cfg *appConfig) (corePara
 	pick("pprof", &out.pprof, cfg.Pprof)
 	pick("admin", &out.admin, cfg.Admin)
 	pick("admin-token", &out.adminToken, cfg.AdminToken)
+	pick("query-host", &out.queryHost, cfg.QueryHost)
+	pick("query-url", &out.queryURL, cfg.QueryURL)
 	pick("loglevel", &out.loglevel, cfg.LogLevel)
 	pickInt("max-clients", &out.maxClients, cfg.MaxClients)
 	pickInt("max-sessions", &out.maxSessions, cfg.MaxSessions)

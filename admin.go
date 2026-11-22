@@ -23,8 +23,10 @@ import (
 //
 // Endpoints (all application/json):
 //
-//	GET  /v1/version      -> {"version":"0.15.3"}
+//	GET  /v1/version      -> {"version":"0.15.4"}
 //	PUT  /v1/users        -> replace the API user set; {"ok":true,"keys":N}
+//	                          entries may carry optional account fields
+//	                          expiry/quota/used for the in-tunnel query (§query host)
 //	GET  /v1/stats        -> {"ts":..,"sessions_active":..,"users":[..]}
 //	GET  /v1/sessions     -> {"ts":..,"total":N,"sessions":[{uuid,device,slot,remote,started_at,relay},..]}
 //	                          ?limit=n takes the newest n rows (default 50, clamped 10..100)
@@ -132,6 +134,11 @@ func (api *adminAPI) handleVersion(w http.ResponseWriter, r *http.Request) {
 type adminUserJSON struct {
 	UUID       string `json:"uuid"`
 	MaxDevices int    `json:"max_devices"`
+	// optional account metadata (v0.15.4): the in-tunnel account query
+	// answers with these when it has nothing better; 0 = not provided
+	Expiry int64 `json:"expiry"` // unix seconds
+	Quota  int64 `json:"quota"`  // bytes
+	Used   int64 `json:"used"`   // bytes
 }
 
 type adminUsersReq struct {
@@ -159,7 +166,7 @@ func (api *adminAPI) handleUsersPut(w http.ResponseWriter, r *http.Request) {
 		if k == "" || k == "null" {
 			continue
 		}
-		users = append(users, apiUser{UUID: k, MaxDevices: u.MaxDevices})
+		users = append(users, apiUser{UUID: k, MaxDevices: u.MaxDevices, Expiry: u.Expiry, Quota: u.Quota, Used: u.Used})
 	}
 	apiN, total := api.app.ks.setAPIUsers(users)
 	logInfo("admin", "PUT /v1/users: api=%d total=%d", apiN, total)

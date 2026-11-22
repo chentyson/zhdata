@@ -292,6 +292,44 @@ curl -X PUT -H "Authorization: Bearer <token>" -H 'Content-Type: application/jso
 curl -H "Authorization: Bearer <token>" http://127.0.0.1:6070/v1/relay
 ```
 
+### 3.8 隧道内账户查询（保留域名 `query.zhdata`，v0.15.4 起，仅 server 模式）
+
+用途：zhenhanvn 查询**当前隧道所认证 uuid** 的账户（到期时间 + 流量配额/已用）。zhdata 节点可能只能经（多级）隧道到达，带外地查面板端口行不通，所以查询走隧道本身：GUI 经本地 socks 口发一次普通 HTTP 请求 `GET http://query.zhdata/62444/query?key=<uuid>`。协议层上它就是一次普通 `tOpen`（目标域名 `query.zhdata`，任意端口），最终 zhdata 服务端收到后**不拨后端**，直接在该流内回一个标准 HTTP/1.1 响应（JSON）。**客户端无需任何更新**；`-backend zhdata` relay 不解析帧，原样透传，由最后一跳服务端应答。
+
+- **启用**：`-query-host <name>`（config `query_host`，默认 `query.zhdata`），空 = 关闭。匹配：`tOpen` 目标是域名且（小写）等于配置值，端口不限。
+- **应答优先级**：
+  1. key 源里有该 uuid 的账户字段 → `code 200`（见下表字段来源；`up/down/devs` 取服务端实时计数，与 `GET /v1/stats` 同源）；
+  2. 否则若配了 `-query-url`（config `query_url`，默认 `http://127.0.0.1:62444/62444/query?key=%s`，`%s` 替换为 uuid，空 = 关闭）：向该 URL 发 HTTP GET（独立 client、5s 超时、不吃代理环境变量），上游**响应体字节原样透传**（面板回什么 JSON 就转什么，含其自身的 code）；拉取失败 → `code 502`；
+  3. 都没有数据源 → `code 404`。
+- **请求里的 `key=` 不参与匹配**：隧道已经认证，应答永远是会话自身 uuid（不能用 `key=` 冒充查别人）；请求内容/path 一律不解析、忽略。
+- **HTTP 帧格式**：`HTTP/1.1 200 OK` + `Content-Type: application/json` + `Content-Length` + `Connection: close` + 空行 + JSON 体。响应走与真实后端流完全相同的 tOpenAck / tData / tClose 路径（同样的排序、流控与 `addTraffic` 计账）。
+- **GUI 契约**：只接受 `code==200` 且 `data` 非空；`data` 里其余字段（`name/email/enable` 等）可有可无，字段名大小写敏感（全小写）。三个分支的确切 JSON：
+
+```jsonc
+// a) key 源带账户字段（expiry 0 ⇒ unlimited_time:true；quota 0 ⇒ unlimited_traffic:true；*_str 为服务端本地时区）
+{"code":200,"msg":"ok","data":{"expiry":1780000000,"expiry_str":"2026-06-28 21:33:20","unlimited_time":false,
+ "volume":107374182400,"volume_str":"100.0 GB","unlimited_traffic":false,
+ "used":12345678,"used_str":"11.8 MB","up":123456,"down":789012,"devs":2}}
+// b) -query-url：上游面板 body 原样（示例为其自身 404）
+{"code":404,"msg":"not found"}
+// b') 上游不可达
+{"code":502,"msg":"account source unreachable"}
+// c) 两边都没有数据
+{"code":404,"msg":"no account info for this uuid"}
+```
+
+账户字段来源（都是可选，缺了静默跳过；记录全 0 视为「未提供」）：
+
+| 来源 | 写法 |
+|---|---|
+| `PUT /v1/users` | 条目可选字段 `expiry`（unix 秒）/`quota`（字节）/`used`（字节），如 `{"users":[{"uuid":"...","max_devices":0,"expiry":1780000000,"quota":107374182400,"used":12345678}]}`；API 记录覆盖同名 uuid 的文件记录（与策略合并同一语义） |
+| s-ui SQLite | 自动识别可选列：到期 `expired_at`/`expired_time`/`expiry`/`expire`，配额 `traffic`/`quota`/`volume`/`total_traffic` |
+| JSON users 文件 | `{"users":[{...}]}` 对象条目可选 `expiry`/`quota`/`used` |
+| txt 行 / JSON 字符串数组 | 格式装不下账户字段，保持原样 |
+
+- 日志：tag `query`，每次查询仅一条 `info`（uuid 短码 + 结果），面板轮询不加噪音。
+- client 模式传 `-query-host`/`-query-url` 只打一条 warning 并忽略（同 `-admin`）。
+
 ## 4. 更新与发布契约
 
 | 项 | 要求（已满足） |

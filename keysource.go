@@ -21,23 +21,34 @@ import (
 // source: it is unioned with the file sources and NEVER cleared by a file
 // hot-reload (reloadIfChanged only watches file signatures). Policy merge:
 // the API entry wins for the same uuid (max_devices 0 = unlimited override).
+// Alongside policies the store keeps optional per-uuid account metadata
+// (expiry/quota/used, v0.15.4) that the in-tunnel account query answers with;
+// sources are merged the same way (API account record overrides the file one).
 type keyStore struct {
 	paths []string
 
 	mu           sync.RWMutex
-	keys         []string              // effective view: file/sqlite sources ∪ API users (merged)
-	policies     map[string]userPolicy // effective view: uuid -> policy (0 max devices = unlimited)
-	fileKeys     []string              // last collect() result from file/sqlite sources only
-	filePolicies map[string]userPolicy // policies from file/sqlite sources only
-	apiPolicies  map[string]userPolicy // admin API user set: uuid -> policy (0 = unlimited)
-	sigs         map[string]string     // path -> "mtimeNano:size"
+	keys         []string               // effective view: file/sqlite sources ∪ API users (merged)
+	policies     map[string]userPolicy  // effective view: uuid -> policy (0 max devices = unlimited)
+	accounts     map[string]accountInfo // effective view: uuid -> account metadata (query handler)
+	fileKeys     []string               // last collect() result from file/sqlite sources only
+	filePolicies map[string]userPolicy  // policies from file/sqlite sources only
+	fileAccounts map[string]accountInfo // account metadata from file/sqlite sources only
+	apiPolicies  map[string]userPolicy  // admin API user set: uuid -> policy (0 = unlimited)
+	apiAccounts  map[string]accountInfo // admin API user set: uuid -> account metadata
+	sigs         map[string]string      // path -> "mtimeNano:size"
 	loaded       bool
 }
 
 // apiUser is one entry of the admin API user set (zhdata-admin-api.md §1.2).
+// Expiry/Quota/Used are optional account fields for the in-tunnel account
+// query (0 = not provided).
 type apiUser struct {
 	UUID       string
 	MaxDevices int
+	Expiry     int64 // unix seconds
+	Quota      int64 // bytes
+	Used       int64 // bytes
 }
 
 const keyReloadInterval = 20 * time.Second
@@ -63,9 +74,12 @@ func newKeyStore(spec string) (*keyStore, error) {
 		policies:     map[string]userPolicy{},
 		filePolicies: map[string]userPolicy{},
 		apiPolicies:  map[string]userPolicy{},
+		accounts:     map[string]accountInfo{},
+		fileAccounts: map[string]accountInfo{},
+		apiAccounts:  map[string]accountInfo{},
 		sigs:         map[string]string{},
 	}
-	keys, policies, per, errs := ks.collect()
+	keys, policies, accounts, per, errs := ks.collect()
 	for _, err := range errs {
 		logWarn("users", "%v", err)
 	}
@@ -74,6 +88,7 @@ func newKeyStore(spec string) (*keyStore, error) {
 	}
 	ks.fileKeys = keys
 	ks.filePolicies = policies
+	ks.fileAccounts = accounts
 	ks.reSigs()
 	ks.loaded = true
 	ks.mergeLocked()
@@ -93,12 +108,24 @@ func (ks *keyStore) policy(uuid string) userPolicy {
 	return ks.policies[uuid]
 }
 
+// account returns the account metadata (expiry unix seconds / quota bytes /
+// used bytes) the sources provided for one uuid. ok=false when no source
+// carried any of the fields — the query handler then falls back to
+// -query-url / the 404 answer.
+func (ks *keyStore) account(uuid string) (accountInfo, bool) {
+	ks.mu.RLock()
+	defer ks.mu.RUnlock()
+	v, ok := ks.accounts[strings.ToLower(strings.TrimSpace(uuid))]
+	return v, ok
+}
+
 // setAPIUsers atomically replaces the admin API user set (PUT /v1/users).
 // An empty list clears the API set; file/sqlite sources are untouched. The
 // effective key set stays the union of both worlds. Returns the API-set size
 // and the merged total.
 func (ks *keyStore) setAPIUsers(users []apiUser) (apiN, totalN int) {
 	next := make(map[string]userPolicy, len(users))
+	nextAcc := make(map[string]accountInfo)
 	for _, u := range users {
 		k := strings.ToLower(strings.TrimSpace(u.UUID))
 		if k == "" || k == "null" {
@@ -109,9 +136,14 @@ func (ks *keyStore) setAPIUsers(users []apiUser) (apiN, totalN int) {
 			dev = 0
 		}
 		next[k] = userPolicy{MaxDevices: dev}
+		acc := accountInfo{Expiry: u.Expiry, Quota: u.Quota, Used: u.Used}
+		if acc != (accountInfo{}) {
+			nextAcc[k] = acc
+		}
 	}
 	ks.mu.Lock()
 	ks.apiPolicies = next
+	ks.apiAccounts = nextAcc
 	ks.mergeLocked()
 	apiN, totalN = len(next), len(ks.keys)
 	limited := countLimited(ks.policies)
@@ -154,8 +186,18 @@ func (ks *keyStore) mergeLocked() {
 			delete(policies, k)
 		}
 	}
+	// account records merge like policies: an API entry that carries account
+	// fields overrides the file record; one without fields leaves it intact.
+	accounts := make(map[string]accountInfo, len(ks.fileAccounts)+len(ks.apiAccounts))
+	for k, v := range ks.fileAccounts {
+		accounts[k] = v
+	}
+	for k, v := range ks.apiAccounts {
+		accounts[k] = v
+	}
 	ks.keys = keys
 	ks.policies = policies
+	ks.accounts = accounts
 }
 
 func countLimited(policies map[string]userPolicy) int {
@@ -203,7 +245,7 @@ func (ks *keyStore) reloadIfChanged() bool {
 	if !changed {
 		return false
 	}
-	keys, policies, per, errs := ks.collect()
+	keys, policies, accounts, per, errs := ks.collect()
 	if len(keys) == 0 {
 		logWarn("users", "reload produced 0 keys, keeping previous (%d); errors: %v", len(ks.snapshot()), joinErrs(errs))
 		ks.reSigs()
@@ -215,6 +257,7 @@ func (ks *keyStore) reloadIfChanged() bool {
 	ks.mu.Lock()
 	ks.fileKeys = keys
 	ks.filePolicies = policies
+	ks.fileAccounts = accounts
 	ks.mergeLocked() // API user set survives file reloads (it is not file-derived)
 	total, apiN := len(ks.keys), len(ks.apiPolicies)
 	limited := countLimited(ks.policies)
@@ -228,7 +271,7 @@ func (ks *keyStore) reloadIfChanged() bool {
 // mtime/size signature check (admin POST /v1/reload, contract §1.5 — P1).
 // Same fail-safe as reloadIfChanged: total failure keeps the previous keys.
 func (ks *keyStore) reloadNow() (total int, errs []error) {
-	keys, policies, per, errs := ks.collect()
+	keys, policies, accounts, per, errs := ks.collect()
 	if len(keys) == 0 {
 		logWarn("users", "forced reload produced 0 file keys, keeping previous; errors: %v", joinErrs(errs))
 		return len(ks.snapshot()), errs
@@ -236,6 +279,7 @@ func (ks *keyStore) reloadNow() (total int, errs []error) {
 	ks.mu.Lock()
 	ks.fileKeys = keys
 	ks.filePolicies = policies
+	ks.fileAccounts = accounts
 	ks.mergeLocked()
 	total, apiN := len(ks.keys), len(ks.apiPolicies)
 	limited := countLimited(ks.policies)
@@ -245,18 +289,20 @@ func (ks *keyStore) reloadNow() (total int, errs []error) {
 	return total, errs
 }
 
-func (ks *keyStore) collect() (keys []string, policies map[string]userPolicy, per map[string]int, errs []error) {
+func (ks *keyStore) collect() (keys []string, policies map[string]userPolicy, accounts map[string]accountInfo, per map[string]int, errs []error) {
 	set := map[string]bool{}
 	policies = map[string]userPolicy{}
+	accounts = map[string]accountInfo{}
 	per = map[string]int{}
 	for _, p := range ks.paths {
 		var us []string
 		var ps map[string]userPolicy
+		var as map[string]accountInfo
 		var err error
 		if isSqliteFile(p) {
-			us, ps, err = readUsersFromDB(p)
+			us, ps, as, err = readUsersFromDB(p)
 		} else {
-			us, ps, err = loadUsersWithPolicies(p)
+			us, ps, as, err = loadUsersWithPolicies(p)
 		}
 		if err != nil {
 			errs = append(errs, fmt.Errorf("%s: %w", p, err))
@@ -271,6 +317,11 @@ func (ks *keyStore) collect() (keys []string, policies map[string]userPolicy, pe
 			if pol, ok := ps[k]; ok && pol.MaxDevices > 0 {
 				if old, exists := policies[k]; !exists || old.MaxDevices == 0 || pol.MaxDevices > old.MaxDevices {
 					policies[k] = pol
+				}
+			}
+			if acc, ok := as[k]; ok {
+				if _, seen := accounts[k]; !seen {
+					accounts[k] = acc // first source providing account fields wins
 				}
 			}
 		}
@@ -304,27 +355,33 @@ func isSqliteFile(p string) bool {
 	return string(magic[:]) == "SQLite format 3"
 }
 
-// readUsersFromDB reads keys and optional per-user policies from an s-ui
-// style sqlite database by finding every table that has a "uuid" column
-// (schema-adaptive, read-only). Optional policy columns: max_devices,
-// max_clients, devices, device_limit.
-func readUsersFromDB(path string) ([]string, map[string]userPolicy, error) {
+// readUsersFromDB reads keys, optional per-user policies and optional account
+// metadata from an s-ui style sqlite database by finding every table that has
+// a "uuid" column (schema-adaptive, read-only). Optional policy columns:
+// max_devices, max_clients, devices, device_limit. Optional account columns
+// (v0.15.4, in-tunnel query): expired_at|expired_time|expiry|expire for the
+// expiry (unix seconds) and traffic|quota|volume|total_traffic for the quota
+// (bytes); every optional column is skipped silently when absent.
+func readUsersFromDB(path string) ([]string, map[string]userPolicy, map[string]accountInfo, error) {
 	policies := map[string]userPolicy{}
+	accounts := map[string]accountInfo{}
 	db, err := openReadonlyDB(path)
 	if err != nil {
-		return nil, policies, err
+		return nil, policies, accounts, err
 	}
 	defer db.Close()
-	rows, err := db.Query("SELECT name FROM sqlite_master WHERE type='table'")
+	// Views count too: a panel can expose its users as a view (e.g. pulling the
+	// uuid out of a JSON config column) instead of duplicating a table.
+	rows, err := db.Query("SELECT name FROM sqlite_master WHERE type IN ('table','view')")
 	if err != nil {
-		return nil, policies, err
+		return nil, policies, accounts, err
 	}
 	var tables []string
 	for rows.Next() {
 		var t string
 		if err = rows.Scan(&t); err != nil {
 			rows.Close()
-			return nil, policies, err
+			return nil, policies, accounts, err
 		}
 		tables = append(tables, t)
 	}
@@ -337,36 +394,39 @@ func readUsersFromDB(path string) ([]string, map[string]userPolicy, error) {
 			continue
 		}
 		used++
-		polCol := firstColumn(db, t, "max_devices", "max_clients", "devices", "device_limit")
-		if polCol == "" {
-			q := "SELECT uuid FROM " + quoteIdent(t)
-			r2, err := db.Query(q)
-			if err != nil {
-				continue
-			}
-			for r2.Next() {
-				var u sql.NullString
-				if err = r2.Scan(&u); err != nil {
-					break
-				}
-				k := strings.ToLower(strings.TrimSpace(u.String))
-				if k != "" && k != "null" {
-					out = append(out, k)
-				}
-			}
-			r2.Close()
-			continue
+		// Dynamic column list: uuid + whichever optional columns exist.
+		cols := []string{quoteIdent("uuid")}
+		idxPol, idxExp, idxQuota, idxUsed := -1, -1, -1, -1
+		if c := firstColumn(db, t, "max_devices", "max_clients", "devices", "device_limit"); c != "" {
+			idxPol = len(cols)
+			cols = append(cols, quoteIdent(c))
 		}
-
-		q := "SELECT uuid, " + quoteIdent(polCol) + " FROM " + quoteIdent(t)
+		if c := firstColumn(db, t, "expired_at", "expired_time", "expiry", "expire"); c != "" {
+			idxExp = len(cols)
+			cols = append(cols, quoteIdent(c))
+		}
+		if c := firstColumn(db, t, "traffic", "quota", "volume", "total_traffic"); c != "" {
+			idxQuota = len(cols)
+			cols = append(cols, quoteIdent(c))
+		}
+		if c := firstColumn(db, t, "used", "used_traffic", "traffic_used", "total_used"); c != "" {
+			idxUsed = len(cols)
+			cols = append(cols, quoteIdent(c))
+		}
+		q := "SELECT " + strings.Join(cols, ", ") + " FROM " + quoteIdent(t)
 		r2, err := db.Query(q)
 		if err != nil {
 			continue
 		}
+		var u sql.NullString
+		num := make([]sql.NullInt64, len(cols)-1)
+		vals := make([]any, len(cols))
+		vals[0] = &u
+		for i := range num {
+			vals[i+1] = &num[i]
+		}
 		for r2.Next() {
-			var u sql.NullString
-			var pol sql.NullInt64
-			if err = r2.Scan(&u, &pol); err != nil {
+			if err = r2.Scan(vals...); err != nil {
 				break
 			}
 			k := strings.ToLower(strings.TrimSpace(u.String))
@@ -374,16 +434,29 @@ func readUsersFromDB(path string) ([]string, map[string]userPolicy, error) {
 				continue
 			}
 			out = append(out, k)
-			if pol.Valid && pol.Int64 > 0 {
-				policies[k] = userPolicy{MaxDevices: int(pol.Int64)}
+			if idxPol >= 0 && num[idxPol-1].Valid && num[idxPol-1].Int64 > 0 {
+				policies[k] = userPolicy{MaxDevices: int(num[idxPol-1].Int64)}
+			}
+			acc := accountInfo{}
+			if idxExp >= 0 && num[idxExp-1].Valid && num[idxExp-1].Int64 > 0 {
+				acc.Expiry = num[idxExp-1].Int64
+			}
+			if idxQuota >= 0 && num[idxQuota-1].Valid && num[idxQuota-1].Int64 > 0 {
+				acc.Quota = num[idxQuota-1].Int64
+			}
+			if idxUsed >= 0 && num[idxUsed-1].Valid && num[idxUsed-1].Int64 > 0 {
+				acc.Used = num[idxUsed-1].Int64
+			}
+			if acc != (accountInfo{}) {
+				accounts[k] = acc
 			}
 		}
 		r2.Close()
 	}
 	if used == 0 {
-		return nil, policies, fmt.Errorf("no table with a 'uuid' column in %s", path)
+		return nil, policies, accounts, fmt.Errorf("no table or view with a 'uuid' column in %s", path)
 	}
-	return out, policies, nil
+	return out, policies, accounts, nil
 }
 
 func openReadonlyDB(path string) (*sql.DB, error) {

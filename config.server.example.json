@@ -7,6 +7,8 @@
   "decoy": "",
   "admin": "127.0.0.1:6070",
   "admin_token": "",
+  "query_host": "query.zhdata",
+  "query_url": "http://127.0.0.1:62444/62444/query?key=%s",
   "loglevel": "info",
   "verbose": false
 }

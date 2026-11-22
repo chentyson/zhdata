@@ -26,6 +26,8 @@ type serverConfig struct {
 	decoy       string // optional host:port for fallback splice of non-protocol traffic
 	adminAddr   string // admin API listen address (zhdata-admin-api.md §1); empty = off
 	adminToken  string // optional Bearer token for /v1/* admin endpoints
+	queryHost   string // reserved account-query hostname (queryHost); empty = off
+	queryURL    string // account source URL for the query handler, %s = uuid; empty = off
 	verbose     bool
 }
 
@@ -800,6 +802,13 @@ func (a *serverApp) dispatch(sh *sSession, f *Frame) {
 			sh.smu.Lock()
 			sh.streams[f.SID] = st
 			sh.smu.Unlock()
+			// Reserved account-query hostname: answered locally (no backend
+			// dial), any port, domain target only. Relay hops pass the
+			// frames through untouched; the final server answers here.
+			if a.cfg.queryHost != "" && atyp == atypDomain && strings.EqualFold(addrHost(atyp, addr), a.cfg.queryHost) {
+				go a.answerQuery(sh, st)
+				return
+			}
 			go a.openBackend(sh, st, atyp, addr, port)
 			return
 		}
@@ -1209,6 +1218,16 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 		a.closeStream(st, true)
 		return
 	}
+	a.serveBackend(sh, st, bc, addrStr(atyp, addr, port), a.cfg.backend)
+}
+
+// serveBackend attaches an established backend conn to the stream: pre-dial
+// upload frames are replayed in order, then the uplink/downlink pumps run
+// until the backend EOFs or errors, ending in the normal close path (final
+// tAck + tClose + closeStream). The account-query handler passes a local
+// in-memory conn here, so query streams get the same framing, flow control
+// and addTraffic accounting as any real backend stream.
+func (a *serverApp) serveBackend(sh *sSession, st *sStream, bc net.Conn, target, via string) {
 	st.mu.Lock()
 	if st.closed {
 		st.mu.Unlock()
@@ -1231,8 +1250,7 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 			continue
 		}
 		bc.SetWriteDeadline(deadline(backendWriteTO))
-		if _, err = bc.Write(b); err != nil {
-			werr = err
+		if _, werr = bc.Write(b); werr != nil {
 			break
 		}
 		st.written += int64(len(b))
@@ -1271,7 +1289,7 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 	// wake any lane parked pre-dial (nothing could emit until now)
 	st.wakeAll()
 	if werr != nil {
-		logWarn("server", "backend pre-write failed sid=%d target=%s reason=%v", st.sid, addrStr(atyp, addr, port), werr)
+		logWarn("server", "backend pre-write failed sid=%d target=%s reason=%v", st.sid, target, werr)
 		a.closeStream(st, true)
 		return
 	}
@@ -1281,7 +1299,7 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 		}
 	}
 	sh.sess.sendCtrl(Frame{Typ: tOpenAck, SID: st.sid})
-	a.logf("backend connected %s (%s)", addrStr(atyp, addr, port), a.cfg.backend)
+	a.logf("backend connected %s (%s)", target, via)
 	go a.pumpUp(st, sh)
 
 	// pump backend -> client (downlink flows through the owner session)
@@ -1365,9 +1383,9 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 	}
 	sh.sess.sendOrdered(Frame{Typ: tClose, SID: st.sid})
 	if (rerr != nil && !errors.Is(rerr, io.EOF)) || total == 0 {
-		logWarn("server", "backend no response sid=%d target=%s bytes=%d reason=%v", st.sid, addrStr(atyp, addr, port), total, rerr)
+		logWarn("server", "backend no response sid=%d target=%s bytes=%d reason=%v", st.sid, target, total, rerr)
 	} else {
-		logDbg("server", "backend pump done sid=%d target=%s bytes=%d", st.sid, addrStr(atyp, addr, port), total)
+		logDbg("server", "backend pump done sid=%d target=%s bytes=%d", st.sid, target, total)
 	}
 	a.closeStream(st, false)
 }

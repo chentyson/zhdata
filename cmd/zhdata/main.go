@@ -36,6 +36,8 @@ func main() {
 	pprofAddr := flag.String("pprof", "", "enable net/http/pprof (goroutine/heap dumps) on this address, e.g. 127.0.0.1:6060; empty = off")
 	admin := flag.String("admin", "", "server: admin API listen address e.g. 127.0.0.1:6070 (bind loopback; empty = off, see zhdata-admin-api.md)")
 	adminToken := flag.String("admin-token", "", "server: optional Bearer token required on every admin /v1/* call")
+	queryHost := flag.String("query-host", zhdata.DefaultQueryHost, "server: reserved hostname answered in-tunnel with the session uuid's account info (expiry/quota/used); empty = off")
+	queryURL := flag.String("query-url", zhdata.DefaultQueryURL, "server: account source URL fetched when the key store has no account fields, %s = uuid; empty = off")
 	configPath := flag.String("c", "", "JSON config file (zhenhanvn core mode, see config.client.example.json); explicit flags below override it")
 	logLevelFlag := flag.String("loglevel", "info", "log level: error | warning | info | debug (debug == same detail as -v)")
 	showVer := flag.Bool("version", false, "print version")
@@ -71,6 +73,8 @@ func main() {
 		pprof:       *pprofAddr,
 		admin:       *admin,
 		adminToken:  *adminToken,
+		queryHost:   *queryHost,
+		queryURL:    *queryURL,
 		loglevel:    *logLevelFlag,
 		maxClients:  *maxClients,
 		maxSessions: *maxSessions,
@@ -139,6 +143,8 @@ func main() {
 			Decoy:       p.decoy,
 			AdminAddr:   p.admin,
 			AdminToken:  p.adminToken,
+			QueryHost:   p.queryHost,
+			QueryURL:    p.queryURL,
 			Verbose:     p.verbose,
 		})
 		if err != nil {
@@ -152,6 +158,9 @@ func main() {
 		}
 		if p.admin != "" {
 			zhdata.LogWarn("main", "admin API is server-side only: -admin %q ignored in client mode", p.admin)
+		}
+		if p.queryHost != zhdata.DefaultQueryHost || p.queryURL != zhdata.DefaultQueryURL {
+			zhdata.LogWarn("main", "account query is server-side only: -query-host/-query-url ignored in client mode")
 		}
 		app, err := zhdata.NewClientApp(&zhdata.ClientOptions{
 			Listen:   p.listen,
