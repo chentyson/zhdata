@@ -2,7 +2,11 @@ package zhdata
 
 import (
 	"crypto/cipher"
+	"errors"
+	"fmt"
+	"io"
 	"net"
+	"os"
 	"sync"
 	"time"
 )
@@ -74,7 +78,14 @@ type session struct {
 	loQ       chan Frame
 	done      chan struct{}
 	closeOnce sync.Once
-	writerEnd chan struct{}
+	// closeCause records WHY we closed this session ourselves (idle recycle,
+	// shutdown, a failed local write, a jammed ctrl queue). The reader of a
+	// socket we closed ourselves only ever sees net.ErrClosed, which is
+	// indistinguishable from the peer dropping the line; run() swaps the cause
+	// in so callers log the truth instead of a fake "connection lost".
+	closeMu    sync.Mutex
+	closeCause error
+	writerEnd  chan struct{}
 	// onData, when set, is called by writer() after a tData frame has been
 	// written to the socket (server: downlink window credit).
 	onData func(f Frame)
@@ -104,11 +115,38 @@ func tuneTCP(c net.Conn) {
 	}
 }
 
-func (s *session) close() {
+func (s *session) close() { s.closeWithCause(nil) }
+
+// closeWithCause closes the session and remembers why. The cause is stored
+// before conn.Close() so a reader woken by the close always sees it.
+func (s *session) closeWithCause(cause error) {
 	s.closeOnce.Do(func() {
+		if cause != nil {
+			s.closeMu.Lock()
+			s.closeCause = cause
+			s.closeMu.Unlock()
+		}
 		close(s.done)
 		s.conn.Close()
 	})
+}
+
+func (s *session) cause() error {
+	s.closeMu.Lock()
+	defer s.closeMu.Unlock()
+	return s.closeCause
+}
+
+// errCtrlJammed labels the self-close of a session whose writer is stuck.
+var errCtrlJammed = errors.New("ctrl queue jammed (writer stuck)")
+
+// isClosedConnErr reports the error Go hands a blocked Read/Write when WE close
+// the socket underneath it. Such an error carries no information about why the
+// session ended, so it is replaced by the recorded close cause.
+func isClosedConnErr(err error) bool {
+	return errors.Is(err, net.ErrClosed) ||
+		errors.Is(err, io.ErrClosedPipe) ||
+		errors.Is(err, os.ErrClosed)
 }
 
 // sendCtrl enqueues a control frame. Callers include openStreamLocked(), which
@@ -122,7 +160,7 @@ func (s *session) sendCtrl(f Frame) {
 	case <-s.done:
 	default:
 		logErr("session", "%s ctrl queue jammed (writer stuck) -> close", s.name)
-		s.close()
+		s.closeWithCause(errCtrlJammed)
 	}
 }
 
@@ -209,7 +247,11 @@ func (s *session) writer() {
 		if _, err := s.conn.Write(buf); err != nil {
 			logWarn("session", "%s write err after %v (frame typ=%d sid=%d len=%d): %v",
 				s.name, time.Since(t0).Round(time.Millisecond), f.Typ, f.SID, len(f.Payload), err)
-			s.close()
+			// Record it as the close cause: the reader on this socket is about
+			// to wake up with a bare "closed connection" and would otherwise
+			// report a session death whose reason is invisible.
+			s.closeWithCause(fmt.Errorf("local write err after %v (typ=%d sid=%d len=%d): %w",
+				time.Since(t0).Round(time.Millisecond), f.Typ, f.SID, len(f.Payload), err))
 			return
 		}
 		if f.Typ == tData && s.onData != nil {
@@ -243,6 +285,14 @@ func (s *session) run(dispatch func(*Frame)) error {
 		s.conn.SetReadDeadline(deadline(idleTimeout))
 		f, err := readFrameEnc(s.conn, s.rx)
 		if err != nil {
+			// A socket WE closed ourselves reports a bare closed-connection
+			// error here, which says nothing about why the session ended (the
+			// planned idle-pool refresh looked exactly like a line failure).
+			if isClosedConnErr(err) {
+				if cause := s.cause(); cause != nil {
+					err = cause
+				}
+			}
 			lastErr = err
 			break
 		}

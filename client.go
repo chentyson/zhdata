@@ -24,12 +24,12 @@ type clientConfig struct {
 	server   string // zhdata server host:port; comma separated for multi-port
 	uuid     string
 	deviceID string // optional 16-byte hex per-process device id; empty = random
-	conns    int   // parallel tunnel sessions (1..maxSlots)
-	spread   int // max lanes one bulk stream may use (1 disables in-stream spread)
-	train    int // seconds between per-session training frames; 0 = off (v0.8 experiment)
-	migrate  int // v0.11.12: stalled-lane whole-backlog migration; 0 = off (default, download parity with v0.11.7), 1 = on
-	slotbase int // v0.11.20: first slot index (pure addressing; run a second client instance beside the first without server-side takeover conflicts)
-	dlconns  int // v0.11.13 split pools: last N sessions carry ONLY downloads (home/owner), first conns-N carry ONLY upload lanes; 0 = shared (v0.11.12)
+	conns    int    // parallel tunnel sessions (1..maxSlots)
+	spread   int    // max lanes one bulk stream may use (1 disables in-stream spread)
+	train    int    // seconds between per-session training frames; 0 = off (v0.8 experiment)
+	migrate  int    // v0.11.12: stalled-lane whole-backlog migration; 0 = off (default, download parity with v0.11.7), 1 = on
+	slotbase int    // v0.11.20: first slot index (pure addressing; run a second client instance beside the first without server-side takeover conflicts)
+	dlconns  int    // v0.11.13 split pools: last N sessions carry ONLY downloads (home/owner), first conns-N carry ONLY upload lanes; 0 = shared (v0.11.12)
 	verbose  bool
 }
 
@@ -408,7 +408,9 @@ func (a *clientApp) Close() {
 		a.mu.Lock()
 		for _, cn := range a.conns {
 			if cn.sess != nil {
-				cn.sess.close()
+				// label the close so sessionLoop exits quietly instead of
+				// reporting a shutdown as a lost session
+				cn.sess.closeWithCause(errStopping)
 			}
 		}
 		a.mu.Unlock()
@@ -761,6 +763,10 @@ func (cn *cConn) sessionLoop() {
 	a := cn.app
 	backoff := time.Second
 	goawayStreak := 0
+	// set when the previous session ended because WE closed it on purpose (the
+	// idle-pool refresh): the reconnect that follows is maintenance, not an
+	// incident, so the new establishment is logged at debug instead of info.
+	plannedRecycle := false
 	for {
 		select {
 		case <-a.stopCh:
@@ -823,10 +829,16 @@ func (cn *cConn) sessionLoop() {
 			}
 		}
 		backoff = time.Second
+		estab := logInfo
+		if plannedRecycle {
+			// a re-dial of our own making: pool maintenance, not news
+			estab = logDbg
+			plannedRecycle = false
+		}
 		if a.cfg.conns == 1 {
-			logInfo("client", "session established (gen=%d, reopen streams=%d)", gen, nstreams)
+			estab("client", "session established (gen=%d, reopen streams=%d)", gen, nstreams)
 		} else {
-			logInfo("client", "session established slot=%d (gen=%d, reopen streams=%d)", cn.idx, gen, nstreams)
+			estab("client", "session established slot=%d (gen=%d, reopen streams=%d)", cn.idx, gen, nstreams)
 		}
 		estStart := time.Now()
 		cn.lastAct.Store(estStart.UnixNano())
@@ -860,8 +872,12 @@ func (cn *cConn) sessionLoop() {
 			a.logf("slot %d lost: failing stream %d (sid=%d) instead of resuming corrupt", cn.idx, s.id, s.sid)
 			s.teardown()
 		}
-		switch err {
-		case errGoaway:
+		if a.stopped.Load() {
+			// shutting down: the close was ours, nothing to report or retry
+			return
+		}
+		switch {
+		case errors.Is(err, errGoaway):
 			// another connection holds this (uuid,slot). If our session died
 			// fast, we are the losing side of a takeover war: back off
 			// exponentially instead of churn-reconnecting at 1/s.
@@ -879,9 +895,24 @@ func (cn *cConn) sessionLoop() {
 			if !sleepSelect(a.stopCh, d) {
 				return
 			}
-		default:
+		case errors.Is(err, errIdleRecycle):
+			// The idle-pool refresh closed this session on purpose (anti-shaper,
+			// v0.11.7). Go reports the self-close as a bare "use of closed
+			// network connection", which used to be logged as a session death
+			// every 5s forever at idle. Reconnect at the flat 1s the sweep
+			// intends and keep the incident log silent.
 			goawayStreak = 0
-			a.logf("slot %d session ended: %v (retry in %v)", cn.idx, err, backoff)
+			backoff = time.Second
+			plannedRecycle = true
+			if !sleepSelect(a.stopCh, backoff) {
+				return
+			}
+		default:
+			// a session we did NOT plan to lose: line failure, server gone,
+			// our own write failed. warning, because at the default info level
+			// zhenhanvn's log window must show real drops.
+			goawayStreak = 0
+			logWarn("client", "slot %d session ended: %v (retry in %v)", cn.idx, err, backoff)
 			if !sleepSelect(a.stopCh, backoff) {
 				return
 			}
@@ -1292,55 +1323,130 @@ const (
 // are handled inside session.run and deliberately do NOT refresh lastAct.
 const sessionIdleRecycle = 25 * time.Second
 
+// errIdleRecycle labels a session WE closed on purpose to refresh the pool.
+// session.run returns it instead of Go's bare "use of closed network
+// connection", so sessionLoop can tell maintenance from a line failure.
+var errIdleRecycle = errors.New("idle recycle (planned pool refresh)")
+
+// errStopping labels the closes made by clientApp.Close().
+var errStopping = errors.New("client stopping")
+
+// recycleSummaryEvery: how often the debug channel summarises the refresh
+// instead of printing one line per re-dial.
+const recycleSummaryEvery = 60 * time.Second
+
+// homedStreamsLocked counts the app streams this slot OWNS. Only those die with
+// the session; spread-only lanes survive a redial (their frames are
+// retransmitted over the other lanes). Caller holds a.mu.
+func (cn *cConn) homedStreamsLocked() int {
+	n := 0
+	for _, s := range cn.members {
+		if s.home == cn {
+			n++
+		}
+	}
+	return n
+}
+
+// recycleLoadedHardMul: a session that owns live app streams is recycled only
+// when nothing better is available. v0.11.9 measured a "recycle storm" that RST
+// 246 quiet app streams in 20 minutes by re-dialing loaded sessions every sweep;
+// v0.12.4 measured the opposite failure — never re-dialing them leaves those
+// flows on decayed ISP buckets and cost 3x on the next download (下载红线: idle
+// sessions must keep getting refreshed). So a loaded slot is DEPRIORITISED (a
+// streamless idle slot is always refreshed first) but still refreshed once it is
+// this multiple past its own idle threshold, which caps how stale the flow
+// carrying a quiet keep-alive can become (≈50s download / 20s upload pool).
+const recycleLoadedHardMul = 2
+
+// pickRecycleVictimLocked chooses the session this sweep re-dials: the most idle
+// slot that owns no app stream; if every idle slot owns streams, the most idle
+// one only once it is recycleLoadedHardMul past its idle threshold.
+// idleTO returns the idle threshold for a slot (upload-pool slots run on a
+// shorter timer, v0.11.17). Caller holds a.mu.
+func (a *clientApp) pickRecycleVictimLocked(now time.Time, idleTO func(cn *cConn) time.Duration) (victim *cConn, vsess *session, vt time.Time, vhomed, idle int) {
+	var loaded *cConn
+	var loadedSess *session
+	var loadedT time.Time
+	var loadedHomed int
+	for _, cn := range a.conns {
+		if cn.sess == nil {
+			continue
+		}
+		tt := time.Unix(0, cn.lastAct.Load())
+		to := idleTO(cn)
+		if now.Sub(tt) < to {
+			continue
+		}
+		idle++
+		if homed := cn.homedStreamsLocked(); homed == 0 {
+			if victim == nil || tt.Before(vt) {
+				victim, vsess, vt, vhomed = cn, cn.sess, tt, 0
+			}
+			continue
+		} else if time.Duration(recycleLoadedHardMul)*to <= now.Sub(tt) {
+			if loaded == nil || tt.Before(loadedT) {
+				loaded, loadedSess, loadedT, loadedHomed = cn, cn.sess, tt, homed
+			}
+		}
+	}
+	if victim == nil && loaded != nil {
+		victim, vsess, vt, vhomed = loaded, loadedSess, loadedT, loadedHomed
+	}
+	return
+}
+
 // sessionRecycleLoop closes the single most-idle established session every
 // sweep so the pool continuously refreshes its TCP flows without ever
-// disrupting sessions that are actively transferring.
+// disrupting sessions that are actively transferring. The close is planned
+// maintenance: it is reported as one aggregated debug summary per minute, plus
+// one line per sweep only when it sacrifices a live app stream.
 func (a *clientApp) sessionRecycleLoop() {
 	t := time.NewTicker(5 * time.Second)
 	defer t.Stop()
+	summary := time.NewTicker(recycleSummaryEvery)
+	defer summary.Stop()
+	redials, sacrificed := 0, 0
+	// v0.11.17: upload-pool sessions recycle on a SHORTER idle timer (10s):
+	// speedtest-style gaps (10-25s) left the whole upload pool on decayed
+	// buckets while raw baselines dialed fresh flows (deep-valley raw x4
+	// 13.1M vs tunnel 2.1M, streams 26s vs raw 8s). Downloads keep 25s.
+	idleTO := func(cn *cConn) time.Duration {
+		if a.split && !a.dlPool(cn) {
+			return 10 * time.Second
+		}
+		return sessionIdleRecycle
+	}
 	for {
 		select {
 		case <-a.stopCh:
 			return
 		case <-t.C:
+		case <-summary.C:
+			if redials > 0 {
+				a.logf("idle pool refresh: %d session(s) re-dialed in %v (planned, not errors; %d owned live streams)",
+					redials, recycleSummaryEvery, sacrificed)
+				redials, sacrificed = 0, 0
+			}
+			continue
 		}
 		now := time.Now()
-		var victim *cConn
-		var vt time.Time
-		// v0.11.17: upload-pool sessions recycle on a SHORTER idle timer (10s):
-		// speedtest-style gaps (10-25s) left the whole upload pool on decayed
-		// buckets while raw baselines dialed fresh flows (deep-valley raw x4
-		// 13.1M vs tunnel 2.1M, streams 26s vs raw 8s). Downloads keep 25s.
-		idleTO := func(cn *cConn) time.Duration {
-			if a.split && !a.dlPool(cn) {
-				return 10 * time.Second
-			}
-			return sessionIdleRecycle
-		}
 		a.mu.Lock()
-		for _, cn := range a.conns {
-			if cn.sess == nil {
-				continue
-			}
-			tt := time.Unix(0, cn.lastAct.Load())
-			if now.Sub(tt) < idleTO(cn) {
-				continue
-			}
-			if victim == nil || tt.Before(vt) {
-				victim, vt = cn, tt
-			}
-		}
-		idle := 0
-		for _, cn := range a.conns {
-			if cn.sess != nil && now.Sub(time.Unix(0, cn.lastAct.Load())) >= idleTO(cn) {
-				idle++
-			}
-		}
+		victim, vsess, vt, vhomed, idle := a.pickRecycleVictimLocked(now, idleTO)
 		a.mu.Unlock()
-		if victim != nil {
-			logDbg("client", "recycle: slot %d idle %v -> redial (%d idle sessions)", victim.idx, now.Sub(vt).Round(time.Second), idle)
-			victim.sess.close() // sessionLoop reconnects with backoff
+		if victim == nil {
+			continue
 		}
+		redials++
+		if vhomed > 0 {
+			sacrificed += vhomed
+			logDbg("client", "recycle: slot %d idle %v -> redial (%d idle sessions, %d live stream(s))",
+				victim.idx, now.Sub(vt).Round(time.Second), idle, vhomed)
+		}
+		// close the session captured under the lock: by now sessionLoop may
+		// already have replaced cn.sess with a fresh one, and closing that
+		// would restart a session that is not idle at all.
+		vsess.closeWithCause(errIdleRecycle) // sessionLoop reconnects
 	}
 }
 

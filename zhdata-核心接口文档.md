@@ -366,11 +366,15 @@ zhenhanvn 侧解析/过滤正则（可直接用于着色/过滤）：
 | 级别 | 事件 |
 |---|---|
 | `error` | 致命错误（配置错误、启动失败、退出前）；pumpUp 写失败；会话写队列死锁 |
-| `warning` | 拨号失败/退避重试、握手/UUID 认证失败、设备数超限、session 总数超限、GOAWAY 接管、握手限频、流重置、后端 DNS/连接失败、后端无响应、队列满、用户源重载异常、kick 切断会话（`[server] kick uuid=... cut N`）、admin 绑定/serve 异常 |
-| `info` | 核心启动监听（client/server）、客户端本次进程 device_id、zhdata 服务端目标解析出的 IP 地址、会话建立、users 加载/热加载/`PUT /v1/users` 替换、admin API 启动监听、admin `POST /v1/reload` |
-| `debug` | 每流生命周期（backend connected/done、session ended、recycle 换新、重传、bucket 细节）、原 `-v` 全部内部日志 |
+| `warning` | 拨号失败/退避重试、握手/UUID 认证失败、设备数超限、session 总数超限、GOAWAY 接管、握手限频、**客户端 session 意外结束（真实断链：本机写错误、控制队列死锁、对端 EOF/读超时）**、流重置、后端 DNS/连接失败、后端无响应、队列满、用户源重载异常、kick 切断会话（`[server] kick uuid=... cut N`）、admin 绑定/serve 异常 |
+| `info` | 核心启动监听（client/server）、客户端本次进程 device_id、zhdata 服务端目标解析出的 IP 地址、会话建立（空闲回收后的重连不算，降为 `debug`）、users 加载/热加载/`PUT /v1/users` 替换、admin API 启动监听、admin `POST /v1/reload` |
+| `debug` | 每流生命周期（backend connected/done、重传、bucket 细节）、**空闲 session 计划内回收**（每 60s 一条汇总，不是故障）、回收牺牲活流的事件、服务端侧 `session ended`（客户端主动挂断表现为 `EOF`）、原 `-v` 全部内部日志 |
 
 `loglevel` 门控在**核心侧**完成：默认 `info` 时 debug 行不产生（零开销）；`debug` ≡ 旧 `-v`。环境变量 `ZHD_DEBUG=1` 追加协议帧级 trace（比 debug 更细，调试专用）。
+
+**空闲回收不产生"错误"（v0.15.5）**：客户端每 5s 巡检一次，把长时间无用户数据的 session 主动重连（ISP 对陈旧 TCP 流的桶衰减，§7.19）。v0.15.4 及以前，这次主动关闭在读取侧只报 Go 的 `use of closed network connection`，于是静止状态下每 5s 刷一条
+`[client] [debug] slot N session ended: read tcp ...: use of closed network connection (retry in 1s)`，
+与真实断链无法区分（判据：`retry in 1s` 永不退避）。现在主动关闭会带上原因（`idle recycle (planned pool refresh)` / `client stopping` / 本机写错误 / ctrl 队列死锁）：计划内回收不再走 "session ended" 路径——默认 `info` 下静止状态完全安静，`debug` 下每 60s 一条 `idle pool refresh: N session(s) re-dialed in 1m0s (planned, not errors)`；只有真正意外断链才出 `[warning] slot N session ended: <真实原因>`。回收选路同时收紧：优先换**没有 app 流**的空闲 slot，挂活流的 slot 只在超过自身阈值 2× 时才换（§7.21 回收风暴 vs §7.28 下载红线）。
 
 **查询类端点不产生日志行**（`GET /v1/stats`、`GET /v1/sessions`、`GET /v1/relay`、`GET /v1/version`）：面板会按秒级轮询，日志只在状态真正变化时出现（会话建立/结束在 `info`/`debug`，kick/PUT/reload 在 `info`/`warning`），面板要「谁在线」请直接读 `GET /v1/sessions`（§3.6）。
 

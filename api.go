@@ -13,7 +13,15 @@ import (
 // Version is the core version. `zhdata -version` prints "zhdata <Version>"
 // and GET /v1/version reports the same string; both stay parseable by
 // zhenhanvn's `v?(?<version>\d+\.\d+\.\d+)`.
-const Version = "0.15.4"
+//
+// v0.15.5 is log/behaviour only (protocol unchanged, magic zhv7): a session we
+// closed ourselves now reports WHY (idle recycle / stopping / local write err /
+// ctrl queue jam) instead of Go's bare "use of closed network connection", so
+// the idle-pool refresh no longer prints "session ended ... (retry in 1s)" every
+// 5s while nothing is running; genuine session deaths are logged at warning;
+// the idle recycle prefers streamless slots (v0.11.9 stream-loss vs v0.12.4
+// stale-bucket balance).
+const Version = "0.15.5"
 
 // Reserved in-tunnel account query defaults (v0.15.4; -query-host/-query-url,
 // see zhdata-核心接口文档.md §3.8). The CLI uses these as flag defaults; the
