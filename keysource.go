@@ -67,10 +67,14 @@ type userSource struct {
 
 // apiUser is one entry of the admin API user set (zhdata-admin-api.md §1.2).
 // Expiry/Quota/Used are optional account fields for the in-tunnel account
-// query (0 = not provided).
+// query (0 = not provided). UpKbps/DownKbps (v0.15.6) are the bandwidth caps in
+// kbit/s (0 = that direction unlimited); they ride the same wholesale override
+// rule as max_devices, so an entry without them lifts a cap a file source set.
 type apiUser struct {
 	UUID       string
 	MaxDevices int
+	UpKbps     int   // kbit/s
+	DownKbps   int   // kbit/s
 	Expiry     int64 // unix seconds
 	Quota      int64 // bytes
 	Used       int64 // bytes
@@ -169,7 +173,14 @@ func (ks *keyStore) setAPIUsers(users []apiUser) (apiN, totalN int) {
 		if dev < 0 {
 			dev = 0
 		}
-		next[k] = userPolicy{MaxDevices: dev}
+		up, down := u.UpKbps, u.DownKbps
+		if up < 0 {
+			up = 0
+		}
+		if down < 0 {
+			down = 0
+		}
+		next[k] = userPolicy{MaxDevices: dev, UpKbps: up, DownKbps: down}
 		acc := accountInfo{Expiry: u.Expiry, Quota: u.Quota, Used: u.Used}
 		if acc != (accountInfo{}) {
 			nextAcc[k] = acc
@@ -180,9 +191,9 @@ func (ks *keyStore) setAPIUsers(users []apiUser) (apiN, totalN int) {
 	ks.apiAccounts = nextAcc
 	ks.mergeLocked()
 	apiN, totalN = len(next), len(ks.keys)
-	limited := countLimited(ks.policies)
+	limited, capped := countLimited(ks.policies), countCapped(ks.policies)
 	ks.mu.Unlock()
-	logInfo("users", "admin API users replaced: api=%d total=%d (%d device-limited)", apiN, totalN, limited)
+	logInfo("users", "admin API users replaced: api=%d total=%d (%d device-limited, %d bandwidth-limited)", apiN, totalN, limited, capped)
 	return apiN, totalN
 }
 
@@ -236,7 +247,7 @@ func (ks *keyStore) mergeLocked() {
 		policies[k] = p
 	}
 	for k, p := range ks.apiPolicies {
-		if p.MaxDevices > 0 {
+		if !p.empty() {
 			policies[k] = p
 		} else {
 			delete(policies, k)
@@ -256,10 +267,38 @@ func (ks *keyStore) mergeLocked() {
 	ks.accounts = accounts
 }
 
+// capped snapshots the users that currently carry a bandwidth cap (uuid ->
+// policy), for the admin API's GET /v1/stats. Users with no cap are left out;
+// the panel reads 0/"absent" as unlimited either way.
+func (ks *keyStore) capped() map[string]userPolicy {
+	ks.mu.RLock()
+	defer ks.mu.RUnlock()
+	out := map[string]userPolicy{}
+	for k, p := range ks.policies {
+		if p.UpKbps > 0 || p.DownKbps > 0 {
+			out[k] = p
+		}
+	}
+	return out
+}
+
 func countLimited(policies map[string]userPolicy) int {
 	n := 0
 	for _, p := range policies {
 		if p.MaxDevices > 0 {
+			n++
+		}
+	}
+	return n
+}
+
+// countCapped counts the users a bandwidth cap applies to (the [users] log
+// line reports it beside the device-limited count, so an operator can see a
+// panel push actually carried the caps).
+func countCapped(policies map[string]userPolicy) int {
+	n := 0
+	for _, p := range policies {
+		if p.UpKbps > 0 || p.DownKbps > 0 {
 			n++
 		}
 	}
@@ -391,10 +430,26 @@ func (ks *keyStore) collect() (keys []string, policies map[string]userPolicy, ac
 				continue
 			}
 			set[k] = true
-			if pol, ok := ps[k]; ok && pol.MaxDevices > 0 {
-				if old, exists := policies[k]; !exists || old.MaxDevices == 0 || pol.MaxDevices > old.MaxDevices {
+			if pol, ok := ps[k]; ok && !pol.empty() {
+				old, exists := policies[k]
+				if !exists {
 					policies[k] = pol
+					continue
 				}
+				// Two file sources both limiting the same uuid: the loosest
+				// device count wins (unchanged behaviour), and for bandwidth
+				// the first source that carries a cap wins — an unset field in
+				// one source must not erase the other's cap.
+				if pol.MaxDevices > 0 && (old.MaxDevices == 0 || pol.MaxDevices > old.MaxDevices) {
+					old.MaxDevices = pol.MaxDevices
+				}
+				if old.UpKbps == 0 {
+					old.UpKbps = pol.UpKbps
+				}
+				if old.DownKbps == 0 {
+					old.DownKbps = pol.DownKbps
+				}
+				policies[k] = old
 			}
 			if acc, ok := as[k]; ok {
 				if _, seen := accounts[k]; !seen {
@@ -501,10 +556,15 @@ func isSqliteFile(p string) bool {
 // readUsersFromDB reads keys, optional per-user policies and optional account
 // metadata from an s-ui style sqlite database by finding every table that has
 // a "uuid" column (schema-adaptive, read-only). Optional policy columns:
-// max_devices, max_clients, devices, device_limit. Optional account columns
-// (v0.15.4, in-tunnel query): expired_at|expired_time|expiry|expire for the
-// expiry (unix seconds) and traffic|quota|volume|total_traffic for the quota
-// (bytes); every optional column is skipped silently when absent.
+// max_devices, max_clients, devices, device_limit; and (v0.15.6, bandwidth
+// caps in kbit/s) up_kbps, down_kbps, or one symmetric speed_limit_kbps /
+// bwlimit_kbps / bandwidth_kbps / rate_limit_kbps / speed_limit. The kbit/s
+// suffixes are deliberate: s-ui's own clients.up / clients.down columns are
+// byte counters, and a byte column read as a rate would throttle a user a
+// thousand-fold. Optional account columns (v0.15.4, in-tunnel query):
+// expired_at|expired_time|expiry|expire for the expiry (unix seconds) and
+// traffic|quota|volume|total_traffic for the quota (bytes); every optional
+// column is skipped silently when absent.
 func readUsersFromDB(path string) ([]string, map[string]userPolicy, map[string]accountInfo, error) {
 	policies := map[string]userPolicy{}
 	accounts := map[string]accountInfo{}
@@ -540,8 +600,21 @@ func readUsersFromDB(path string) ([]string, map[string]userPolicy, map[string]a
 		// Dynamic column list: uuid + whichever optional columns exist.
 		cols := []string{quoteIdent("uuid")}
 		idxPol, idxExp, idxQuota, idxUsed := -1, -1, -1, -1
+		idxUp, idxDown, idxSpeed := -1, -1, -1
 		if c := firstColumn(db, t, "max_devices", "max_clients", "devices", "device_limit"); c != "" {
 			idxPol = len(cols)
+			cols = append(cols, quoteIdent(c))
+		}
+		if c := firstColumn(db, t, "up_kbps"); c != "" {
+			idxUp = len(cols)
+			cols = append(cols, quoteIdent(c))
+		}
+		if c := firstColumn(db, t, "down_kbps"); c != "" {
+			idxDown = len(cols)
+			cols = append(cols, quoteIdent(c))
+		}
+		if c := firstColumn(db, t, "speed_limit_kbps", "bwlimit_kbps", "bandwidth_kbps", "rate_limit_kbps", "speed_limit"); c != "" {
+			idxSpeed = len(cols)
 			cols = append(cols, quoteIdent(c))
 		}
 		if c := firstColumn(db, t, "expired_at", "expired_time", "expiry", "expire"); c != "" {
@@ -577,8 +650,36 @@ func readUsersFromDB(path string) ([]string, map[string]userPolicy, map[string]a
 				continue
 			}
 			out = append(out, k)
+			pol := userPolicy{}
+			if old, existed := policies[k]; existed {
+				pol = old
+			}
 			if idxPol >= 0 && num[idxPol-1].Valid && num[idxPol-1].Int64 > 0 {
-				policies[k] = userPolicy{MaxDevices: int(num[idxPol-1].Int64)}
+				pol.MaxDevices = int(num[idxPol-1].Int64)
+			}
+			var up, down int64
+			if idxUp >= 0 && num[idxUp-1].Valid {
+				up = num[idxUp-1].Int64
+			}
+			if idxDown >= 0 && num[idxDown-1].Valid {
+				down = num[idxDown-1].Int64
+			}
+			if idxSpeed >= 0 && num[idxSpeed-1].Valid && num[idxSpeed-1].Int64 > 0 {
+				if up == 0 {
+					up = num[idxSpeed-1].Int64
+				}
+				if down == 0 {
+					down = num[idxSpeed-1].Int64
+				}
+			}
+			if up > 0 {
+				pol.UpKbps = int(up)
+			}
+			if down > 0 {
+				pol.DownKbps = int(down)
+			}
+			if !pol.empty() {
+				policies[k] = pol
 			}
 			acc := accountInfo{}
 			if idxExp >= 0 && num[idxExp-1].Valid && num[idxExp-1].Int64 > 0 {

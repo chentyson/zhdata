@@ -136,6 +136,14 @@ func (api *adminAPI) handleVersion(w http.ResponseWriter, r *http.Request) {
 type adminUserJSON struct {
 	UUID       string `json:"uuid"`
 	MaxDevices int    `json:"max_devices"`
+	// bandwidth caps (v0.15.6), kbit/s (1000-based): 0 = that direction
+	// unlimited. speed_limit_kbps is the single-value form and covers both
+	// directions (a panel group "2M" = 2000 both ways). Like max_devices an API
+	// entry overrides the file/sqlite policy wholesale, so sending 0 lifts a
+	// cap the file source carried.
+	UpKbps         int `json:"up_kbps"`
+	DownKbps       int `json:"down_kbps"`
+	SpeedLimitKbps int `json:"speed_limit_kbps"`
 	// optional account metadata (v0.15.4): the in-tunnel account query
 	// answers with these when it has nothing better; 0 = not provided
 	Expiry int64 `json:"expiry"` // unix seconds
@@ -168,7 +176,24 @@ func (api *adminAPI) handleUsersPut(w http.ResponseWriter, r *http.Request) {
 		if k == "" || k == "null" {
 			continue
 		}
-		users = append(users, apiUser{UUID: k, MaxDevices: u.MaxDevices, Expiry: u.Expiry, Quota: u.Quota, Used: u.Used})
+		up, down := u.UpKbps, u.DownKbps
+		if u.SpeedLimitKbps > 0 {
+			if up == 0 {
+				up = u.SpeedLimitKbps
+			}
+			if down == 0 {
+				down = u.SpeedLimitKbps
+			}
+		}
+		users = append(users, apiUser{
+			UUID:       k,
+			MaxDevices: u.MaxDevices,
+			UpKbps:     up,
+			DownKbps:   down,
+			Expiry:     u.Expiry,
+			Quota:      u.Quota,
+			Used:       u.Used,
+		})
 	}
 	apiN, total := api.app.ks.setAPIUsers(users)
 	logInfo("admin", "PUT /v1/users: api=%d total=%d", apiN, total)
@@ -205,6 +230,11 @@ type adminUserStats struct {
 	Devices int    `json:"devices"`
 	Up      int64  `json:"up"`
 	Down    int64  `json:"down"`
+	// v0.15.6: the bandwidth caps currently in force for this uuid, kbit/s
+	// (0 = unlimited). Additive: the panel can confirm a group="2M" push
+	// landed instead of guessing from a speed test.
+	UpKbps   int `json:"up_kbps"`
+	DownKbps int `json:"down_kbps"`
 }
 
 // GET /v1/stats — counters cumulative since process start (contract §1.3).
@@ -235,6 +265,15 @@ func (api *adminAPI) handleStats(w http.ResponseWriter, r *http.Request) {
 		row.Devices = len(dm)
 	}
 	app.mu.Unlock()
+	// the caps in force, so "panel says 2M, core says 0" is visible at a glance
+	for uuid, pol := range app.ks.capped() {
+		row, ok := rows[uuid]
+		if !ok {
+			row = &adminUserStats{UUID: uuid}
+			rows[uuid] = row
+		}
+		row.UpKbps, row.DownKbps = pol.UpKbps, pol.DownKbps
+	}
 	users := make([]adminUserStats, 0, len(rows))
 	for _, row := range rows {
 		users = append(users, *row)
@@ -249,8 +288,8 @@ func (api *adminAPI) handleStats(w http.ResponseWriter, r *http.Request) {
 		// (file/sqlite sources ∪ API users); user_sources shows per-path load
 		// results so a wrong -users path is visible in the panel instead of
 		// only as a repeating [users] [warning] line in journald.
-		"keys_total":     app.ks.keysTotal(),
-		"user_sources":   app.ks.sources(),
+		"keys_total":   app.ks.keysTotal(),
+		"user_sources": app.ks.sources(),
 	})
 }
 

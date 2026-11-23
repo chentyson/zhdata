@@ -14,6 +14,15 @@ import (
 // and GET /v1/version reports the same string; both stay parseable by
 // zhenhanvn's `v?(?<version>\d+\.\d+\.\d+)`.
 //
+// v0.15.6 adds per-uuid bandwidth caps (bwlimit.go): one token bucket per user
+// per direction, shared by every session and stream that user owns (the client
+// runs -conns 32, so a per-session cap would be 32x the intent). The caps travel
+// with the user -- admin PUT /v1/users "up_kbps"/"down_kbps"/"speed_limit_kbps",
+// users JSON max-style fields, or kbit/s policy columns in an s-ui style sqlite
+// source -- and GET /v1/stats reports what is in force. Relay pipes are metered
+// the same way. Tunnel protocol unchanged (magic zhv7); the admin contract grew
+// additive fields only, so an older panel simply leaves users uncapped.
+//
 // v0.15.5 is log/behaviour only (protocol unchanged, magic zhv7): a session we
 // closed ourselves now reports WHY (idle recycle / stopping / local write err /
 // ctrl queue jam) instead of Go's bare "use of closed network connection", so
@@ -21,7 +30,7 @@ import (
 // 5s while nothing is running; genuine session deaths are logged at warning;
 // the idle recycle prefers streamless slots (v0.11.9 stream-loss vs v0.12.4
 // stale-bucket balance).
-const Version = "0.15.5"
+const Version = "0.15.6"
 
 // Reserved in-tunnel account query defaults (v0.15.4; -query-host/-query-url,
 // see zhdata-核心接口文档.md §3.8). The CLI uses these as flag defaults; the

@@ -169,6 +169,41 @@ max_devices > 0    同一 uuid 同时允许的活跃 device_id 数量
 zhdata device limit reached: this UUID has too many active devices
 ```
 
+#### 3.4.1 按用户带宽限速（v0.15.6 起）
+
+带宽上限同样是**用户策略**，与设备数同源、同合并规则：
+
+```text
+up_kbps / down_kbps = 0    该方向不限速
+up_kbps / down_kbps > 0    该方向的上限，单位 kbit/s（1000 进制）
+```
+
+支持来源：
+
+| 来源 | 写法 |
+|---|---|
+| txt | 每行 `uuid [max_devices] [kbit/s]`，例如 `4ae0... 2 2000`（第三个字段是**上下行对称**上限） |
+| JSON users | `{"users":[{"uuid":"...","up_kbps":1000,"down_kbps":2000}]}`，或单值 `{"speed_limit":2000}`（双向） |
+| s-ui SQLite | 可选列 `up_kbps`、`down_kbps`，或单值列 `speed_limit_kbps`/`bwlimit_kbps`/`bandwidth_kbps`/`rate_limit_kbps`/`speed_limit`。刻意要求 kbit/s 后缀：s-ui `clients.up`/`clients.down` 是**字节计数**列，被当成速率读会把用户限速一千倍 |
+| admin API | `PUT /v1/users` 条目 `up_kbps`/`down_kbps`/`speed_limit_kbps`（§3.6） |
+
+多个文件源都有该 uuid 时：设备数仍取最宽的那个，带宽取**第一个带值**的源（一个源没写不等于抹掉另一个源的限速）。API 用户集仍按整体覆盖：条目里 `up_kbps`/`down_kbps` 为 0 ⇒ 抹掉文件源的限速（与 `max_devices 0` 同一语义）。
+
+执行方式（`bwlimit.go`）：
+
+- **每个 uuid 每方向一个令牌桶**，该用户的**所有** session 与 stream 共用。这不是可选项：客户端 `-conns 32`，按 session 限就是 32 倍额度。
+- 计费点就是面板看到的计数点：上行 = 帧写入后端时，下行 = 后端字节进入隧道时。所以下行限速表现为「服务端不再排空后端」——后端自己的 TCP 窗口被填满，这就是背压。
+- 令牌桶最多攒 **1 秒**额度（下限 32KB），空闲用户起跑可以有一段 1 秒突发；持续灌满的用户被压在速率上。这是速率限制器，不是整形器：看平均值，不看每一秒。
+- 改限速（面板 push 或文件热加载）**当场生效**，不用重连、不用重启进程；取消限速下一个帧就不再限。
+- relay（`-backend zhdata`）也按同一套限。面板通常把同一份表同时推给 relay 和终点进程，**串联的限速器不会叠加**：稳态速率仍是该值，只是每一跳各自有 1 秒突发。
+- 面板可用 `GET /v1/stats` 的 `up_kbps`/`down_kbps` 直接核对「面板说 2M，核心说多少」，不必再靠测速反推。
+
+`[users]` 日志行会带上限的用户数，便于确认面板那次 push 是否真带上了限速字段：
+
+```text
+2026-11-23 20:38:14 [users] [info] admin API users replaced: api=1 total=1 (0 device-limited, 1 bandwidth-limited)
+```
+
 ### 3.5 服务端启动参数说明（C498 当前测试节点）
 
 同一个 zhdata 二进制既是客户端核心，也是服务端核心。客户端与服务端不是两套代码，差异只在运行模式和启动参数：
@@ -241,8 +276,8 @@ ExecStart=/opt/zhdata/zhdata-tunnel-linux-amd64 -mode server -listen :49888,:498
 | 端点 | 语义 | 成功返回 |
 |---|---|---|
 | `GET /v1/version` | 核心版本（与 `-version` 同串，仍满足 `v?(?<version>\d+\.\d+\.\d+)`） | `{"version":"0.15.3"}` |
-| `PUT /v1/users` | **全量替换 API 用户集**：与文件/sqlite 用户源取并集；同名 uuid 的策略 **API 覆盖文件**（`max_devices` 0=不限，可解除文件限制）；空数组清空 API 集（不影响文件源）；内存中原子换表 | `{"ok":true,"keys":N}` |
-| `GET /v1/stats` | 自进程启动累计计数：`sessions_active`=当前活跃会话；`users[]` 按 uuid 给出 `devices`（当前活跃 device_id 数，与 `max_devices` 同一张表）、`up`/`down` 隧道字节 | `{"ts":..,"sessions_active":..,"users":[{"uuid":..,"devices":..,"up":..,"down":..}]}` |
+| `PUT /v1/users` | **全量替换 API 用户集**：与文件/sqlite 用户源取并集；同名 uuid 的策略 **API 覆盖文件**（`max_devices` 0=不限，可解除文件限制；v0.15.6 起条目可带 `up_kbps`/`down_kbps`/`speed_limit_kbps`，同样 0=不限并可解除文件限速）；空数组清空 API 集（不影响文件源）；内存中原子换表 | `{"ok":true,"keys":N}` |
+| `GET /v1/stats` | 自进程启动累计计数：`sessions_active`=当前活跃会话；`users[]` 按 uuid 给出 `devices`（当前活跃 device_id 数，与 `max_devices` 同一张表）、`up`/`down` 隧道字节；v0.15.6 起另有 `up_kbps`/`down_kbps`=当前生效的带宽上限（0/缺省=不限），面板可据此核对 push 是否落地 | `{"ts":..,"sessions_active":..,"users":[{"uuid":..,"devices":..,"up":..,"down":..,"up_kbps":..,"down_kbps":..}]}` |
 | `GET /v1/sessions[?limit=n]` | v0.15.3 起：面板「入站连接列表」数据源。一条隧道会话一行，**按 `started_at` 倒序（新的在前）**；`device`=握手里的 16B device_id（32 位小写 hex；zhv4/5/6 旧客户端没有 device_id → 空串），`slot`=握手 slot，`remote`=隧道对端 `ip:port`，`started_at`=会话建立时刻（**unix 秒**），`relay`=该会话是否走 `-backend zhdata` 管道（relay 进程里全是 true，直连进程全是 false）。数据源是 `a.conns`（键 `uuid:device:slot`）+ 活管道集合。`?limit=n` 只取最近 n 条：**默认 50，越界钳到 10/100，非法值按默认**；`limit` 只是上限，**不是分页游标**（同一 query 每次返回同一批头部，面板轮询不会抖动）。`total` **始终等于全量活动会话数**，不受 limit 影响。**GET only、无副作用**；per-session 字节数 P0 不提供（用 `GET /v1/stats` 的按 uuid 累计） | `{"ts":<unix>,"total":<活动会话总数>,"sessions":[{"uuid":"..","device":"<32hex>","slot":<int>,"remote":"ip:port","started_at":<unix>,"relay":<bool>}]}` |
 | `POST /v1/users/kick` | 按 uuid 切断该用户全部会话（先发 `tGoaway` 再关 socket，客户端按既有退避重连）；uuid 大小写不敏感；空 uuid = 400（P0 只按 uuid 踢）；relay 进程里同时切断该 uuid 的活管道（§3.7） | `{"kicked":N}` |
 | `POST /v1/reload` | 契约 §1.5（原 P1）已实现：立即重读文件/sqlite 用户源，绕过 mtime/size 签名检查；API 用户集不动 | `{"ok":true,"keys":N}` |
@@ -255,6 +290,7 @@ ExecStart=/opt/zhdata/zhdata-tunnel-linux-amd64 -mode server -listen :49888,:498
 - `reloadIfChanged` 只盯文件签名，**不会**把 API 用户集重载清掉。
 - 替换 users 不强制断已有会话：被移除 uuid 的**新**连接握手被拒（reject），既有会话等 kick 或自然结束（契约 §1.2）。
 - `up` = 已写入后端的字节（pumpUp + 拨号前补写），`down` = 后端读入并送往客户端的字节（downlink pump），与 s-ui「按周期采样求增量」语义配套。zhv4-6 旧客户端同样按 uuid 计入（其握手也认证 uuid）；理论上无 uuid 的会话计入保留 key `-`，不丢字节。
+- **带宽限速在 v0.15.6 接进同一批计费点**（`bwlimit.go`，§3.4.1）：`up` 的写入前、`down` 的入隧道前各过一次按 uuid 的令牌桶，所以面板计的量与被限的量是同一份；`GET /v1/stats` 的 `up_kbps`/`down_kbps` 直接回显生效值。旧面板不带这些字段 ⇒ 该用户不限速（不会误限）。
 - `keys` 报告**本次 PUT 写入的 API 用户集大小**；合并后的总数见 `[users]` 日志行与 `GET /v1/stats`。
 - 错误返回统一 `{"error":"..."}`（400/401/404/405），不影响契约里成功响应的形状。
 - 日志 tag `admin`：info = 启动监听 / PUT / kick / reload；warning = 绑定或 serve 异常。kick 动作本身在 `[server] [warning] kick uuid=... cut N session(s)`（默认 info 级可见）。
@@ -277,7 +313,7 @@ ExecStart=/opt/zhdata/zhdata-tunnel-linux-amd64 -mode server -listen :49888,:498
 - **统计口径**：两个方向的原始字节都计入 `addTraffic(uuid, ...)`，所以 relay 与最终服务端两侧 `GET /v1/stats` 都会统计到这段流量（口径是**密文字节**，含 48B 握手，不等于 payload）。
 - **kick**：`POST /v1/users/kick` 除切会话外还会切断该 uuid 的 relay 管道，日志 `[server] [warning] kick uuid=.. cut N session(s), M relay pipe(s)`。因为 relay 不能往管道里注入 `tGoaway`，kick 的 relay 语义就是**断管道**：客户端 1–2s 退避后重连（重新握手），所以面板要**先移除用户/凭据再 kick**，否则会立刻重连回来。
 - **关掉 relay**（`PUT /v1/relay {"enabled":false}`）：只影响**新连接**——新连接在本机落地，后端按 `direct` 直连目标（`backend=zhdata` 不是 socks 地址，不会被当成 socks 拨号）；已建立的管道不动，跑到自然结束。
-- **容量口径（P0 已知代价）**：一条下游会话 = 一条上游 TCP，relay 上不另建会话池，所以上游的连接数按下游 `conns` 放大；relay 侧带宽/流量限速未实现（P1）。
+- **容量口径（P0 已知代价）**：一条下游会话 = 一条上游 TCP，relay 上不另建会话池，所以上游的连接数按下游 `conns` 放大；relay 侧**带宽限速自 v0.15.6 起生效**（§3.4.1，与终点进程同一套令牌桶，串联不叠加），流量配额（quota）仍只统计不截断。
 
 示例：
 
@@ -398,12 +434,13 @@ zhenhanvn 侧解析/过滤正则（可直接用于着色/过滤）：
 - `stderr` 仍会被 `SaveLogError` 落盘（核心偶尔在极早期（logger 初始化前）可能有一条 stderr，不影响级别体系）。
 - 日志窗"错误"高亮规则：匹配 `[error]`；"警告"匹配 `[warning]`。
 
-## 6. 功能边界（v0.15.3）
+## 6. 功能边界（v0.15.6）
 
 | 能力 | 状态 |
 |---|---|
 | 入站连接列表 | **v0.15.3 起**：`GET /v1/sessions[?limit=n]` 一条隧道会话一行（uuid/device/slot/remote `ip:port`/started_at/relay），按建立时间**倒序**（新的在前），`limit` 默认 50（钳到 10–100，非分页），`total` 恒为全量活动会话数；只读无副作用；relay 进程列出它的活管道（`relay=true`）。per-session 字节数 = P0 未做（面板要按会话流量需在核心加 per-session 计数，P1） |
-| 多级中转 / relay | **v0.15.2 起**：`-backend zhdata -upstream h:p[,h:p]`，控制面（认证/设备数/会话数/decoy/统计）在 relay，数据面字节直通不解析帧；`GET/PUT /v1/relay` 热更新上游与开关（§3.7）。relay 侧带宽限速 = P1 未做 |
+| 多级中转 / relay | **v0.15.2 起**：`-backend zhdata -upstream h:p[,h:p]`，控制面（认证/设备数/会话数/decoy/统计）在 relay，数据面字节直通不解析帧；`GET/PUT /v1/relay` 热更新上游与开关（§3.7）。relay 侧带宽限速 **v0.15.6 起**同样生效（§3.4.1） |
+| 按用户带宽限速 | **v0.15.6 起**（`bwlimit.go`，§3.4.1）：每 uuid 每方向一个令牌桶，跨该用户所有 session/stream 共用（`-conns 32` 不会变成 32 倍额度）；上限来自 admin `PUT /v1/users`（`up_kbps`/`down_kbps`/`speed_limit_kbps`）、users JSON、或 s-ui sqlite 的 kbit/s 列；改值当场生效，`GET /v1/stats` 回显生效值。s-ui 面板把 client 的 `group`（"2M"）解析成该值推给核心。流量配额（quota）仍只统计/上报，不做超额截断（P1） |
 | 作为 Go 库嵌入 | **v0.15.2 起**：仓库是 module `github.com/chentyson/zhdata`，s-ui 可直接 `import "github.com/chentyson/zhdata"`，用 `NewClient` + `DialContext` 把隧道当 `net.Conn` 用（§8）；CLI 构建路径改为 `./cmd/zhdata` |
 | 速度/流量统计 | **admin API（v0.15.1 起）**：`GET /v1/stats` 暴露 `sessions_active` 与按 uuid 的 `devices`/`up`/`down` 累计字节（§3.6），s-ui 面板按周期采样求增量入库。zhenhanvn 速度栏对 zhdata 仍恒 0（GUI 未接 admin API，与 hysteria2/brook 等一致，非错误）。clash_api `ws://:StatePort2/traffic` + `IsRunningCore` 判定方案仍未实现（backlog） |
 | 用户/凭据管理 | **admin API（v0.15.1 起）**：`PUT /v1/users` 推送 API 用户集（与文件/sqlite 源并集、API 策略覆盖）、`POST /v1/users/kick` 按 uuid 切会话、`POST /v1/reload` 强制重载（§3.6）。文件 `users` 热加载仍是独立可用路径，面板不可用时也能工作 |

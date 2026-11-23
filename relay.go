@@ -21,9 +21,15 @@ package zhdata
 //     panel must remove the user from the pushed set first, or they just
 //     reconnect upstream again).
 //
-// P0 limits (documented): no per-uuid bandwidth cap (P1), no retry on upstream
-// dial failure (the downstream connection is closed), one upstream TCP
-// connection per downstream session (no separate trunk session pool).
+// Bandwidth caps (v0.15.6): a relay meters the caps of the users it serves too,
+// from its own user sources / admin push (bwlimit.go). The panel pushes the same
+// table to the relay and to the terminating server, so a capped user passes two
+// buckets of the same rate in series; a rate limiter in series does not stack --
+// the steady rate stays the cap, each hop only gets its own one-second burst.
+//
+// P0 limits (documented): no retry on upstream dial failure (the downstream
+// connection is closed), one upstream TCP connection per downstream session (no
+// separate trunk session pool).
 
 import (
 	"fmt"
@@ -334,6 +340,11 @@ func relayCopy(a *serverApp, dst, src net.Conn, uuid string, up bool) {
 		n, err := src.Read(buf)
 		if n > 0 {
 			a.addTraffic(uuid, up, int64(n))
+			// capped user: park before the copy. The pipe has no stream to
+			// watch, so a dead pipe is noticed by the write failing below.
+			if !a.meterBW(uuid, up, int64(n), 0, nil) {
+				return
+			}
 			dst.SetWriteDeadline(deadline(writeTimeout))
 			if _, werr := dst.Write(buf[:n]); werr != nil {
 				return

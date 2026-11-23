@@ -45,6 +45,8 @@ type serverApp struct {
 	traffMu sync.Mutex               // guards the traffic map (entries are atomic)
 	traffic map[string]*trafficCount // uuid -> cumulative tunnel bytes since process start
 
+	bw *bwRegistry // uuid -> live bandwidth buckets (v0.15.6, bwlimit.go)
+
 	adminLn  net.Listener // admin API listener (nil when admin is off)
 	adminSrv *http.Server
 
@@ -197,6 +199,7 @@ func newServerApp(cfg serverConfig) (*serverApp, error) {
 		conns:   map[string]*sSession{},
 		devices: map[string]map[[16]byte]int{},
 		traffic: map[string]*trafficCount{},
+		bw:      newBWRegistry(),
 		streams: map[string]*sStream{},
 		groups:  map[string]*upGroup{},
 		fails:   map[string]*failWin{},
@@ -1250,6 +1253,9 @@ func (a *serverApp) serveBackend(sh *sSession, st *sStream, bc net.Conn, target,
 			continue
 		}
 		bc.SetWriteDeadline(deadline(backendWriteTO))
+		// Charged even though this loop holds st.mu, so it only ever parks for
+		// bwParkBound; the debt carries to pumpUp, which waits without the lock.
+		a.meterBW(st.uuid, true, int64(len(b)), bwParkBound, nil)
 		if _, werr = bc.Write(b); werr != nil {
 			break
 		}
@@ -1335,6 +1341,13 @@ func (a *serverApp) serveBackend(sh *sSession, st *sStream, bc net.Conn, target,
 		if n > 0 {
 			total += n
 			a.addTraffic(st.uuid, false, int64(n)) // admin stats: backend bytes toward client
+			// capped download: parking before the bytes enter the tunnel is the
+			// backpressure -- the read below simply stops draining the backend,
+			// and the backend's own TCP window fills up.
+			if !a.meterBW(st.uuid, false, int64(n), 0, streamDead(st)) {
+				rerr = fmt.Errorf("stream gone during bw park")
+				break
+			}
 			payload := make([]byte, n)
 			copy(payload, buf[:n])
 			st.mu.Lock()
@@ -1416,6 +1429,12 @@ func (a *serverApp) pumpUp(st *sStream, sh *sSession) {
 				continue
 			}
 			bc.SetWriteDeadline(deadline(backendWriteTO))
+			// capped upload: park outside the lock, and give up if the stream
+			// died while parked (its teardown already ran).
+			if !a.meterBW(st.uuid, true, int64(len(p)), 0, streamDead(st)) {
+				a.logf("pumpUp bw park abandoned sid=%d written=%d", st.sid, st.written)
+				return
+			}
 			n, err := bc.Write(p)
 			st.mu.Lock()
 			st.written += int64(n)
@@ -1570,6 +1589,43 @@ func (a *serverApp) addTraffic(uuid string, up bool, n int64) {
 		c.up.Add(n)
 	} else {
 		c.down.Add(n)
+	}
+}
+
+// bwFor returns the live bandwidth buckets for one uuid. The cap is read from
+// the key store on every call, so a panel push (PUT /v1/users) or a users-file
+// hot reload takes effect on the next metered frame: no reconnect, no session
+// restart, and a cap that disappears stops limiting at once. nil = uncapped,
+// and the caller must not park.
+func (a *serverApp) bwFor(uuid string) *bwPair {
+	if a.bw == nil || uuid == "" {
+		return nil
+	}
+	k := normUUID(uuid)
+	pol := a.ks.policy(k)
+	if pol.UpKbps <= 0 && pol.DownKbps <= 0 {
+		return nil
+	}
+	return a.bw.pairFor(k, pol.UpKbps, pol.DownKbps)
+}
+
+// meterBW charges n bytes against the uuid's cap for one direction and parks
+// the caller until that bucket will pay for them (v0.15.6). Bytes are charged
+// even when maxBound cuts the parking short, so the debt falls due on the next
+// metered write -- the pre-dial flush runs holding the stream lock and must not
+// sit on it. ok=false means the stream died while parked and the caller should
+// abandon the write.
+func (a *serverApp) meterBW(uuid string, up bool, n int64, maxBound time.Duration, dead func() bool) bool {
+	return waitBW(a.bwFor(uuid), up, n, maxBound, dead)
+}
+
+// streamDead is the abandon signal for a bandwidth park: a stream that died
+// mid-park must not sleep out a wait for a write that can no longer land.
+func streamDead(st *sStream) func() bool {
+	return func() bool {
+		st.mu.Lock()
+		defer st.mu.Unlock()
+		return st.closed
 	}
 }
 
