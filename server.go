@@ -1252,10 +1252,12 @@ func (a *serverApp) serveBackend(sh *sSession, st *sStream, bc net.Conn, target,
 			st.holdBuf = append(st.holdBuf, b)
 			continue
 		}
-		bc.SetWriteDeadline(deadline(backendWriteTO))
 		// Charged even though this loop holds st.mu, so it only ever parks for
 		// bwParkBound; the debt carries to pumpUp, which waits without the lock.
+		// Park before arming the write deadline: a capped queue can legitimately
+		// wait longer than backendWriteTO, and that is congestion, not a stall.
 		a.meterBW(st.uuid, true, int64(len(b)), bwParkBound, nil)
+		bc.SetWriteDeadline(deadline(backendWriteTO))
 		if _, werr = bc.Write(b); werr != nil {
 			break
 		}
@@ -1428,13 +1430,14 @@ func (a *serverApp) pumpUp(st *sStream, sh *sSession) {
 			if bc == nil {
 				continue
 			}
-			bc.SetWriteDeadline(deadline(backendWriteTO))
 			// capped upload: park outside the lock, and give up if the stream
-			// died while parked (its teardown already ran).
+			// died while parked (its teardown already ran). Park before arming
+			// the write deadline, same reason as the pre-dial flush above.
 			if !a.meterBW(st.uuid, true, int64(len(p)), 0, streamDead(st)) {
 				a.logf("pumpUp bw park abandoned sid=%d written=%d", st.sid, st.written)
 				return
 			}
+			bc.SetWriteDeadline(deadline(backendWriteTO))
 			n, err := bc.Write(p)
 			st.mu.Lock()
 			st.written += int64(n)
