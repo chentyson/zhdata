@@ -244,7 +244,7 @@ C498 当前 drop-in `/etc/systemd/system/zhdata.service.d/ports64.conf` 会把�
 ```ini
 [Service]
 ExecStart=
-ExecStart=/opt/zhdata/zhdata-tunnel-linux-amd64 -mode server -listen :49888,:49889,:49890,:49891,:49892,:49893,:49894,:49895,:49896,:49897,:49898,:49899,:49900,:49901,:49902,:49903,:49904,:49905,:49906,:49907,:49908,:49909,:49910,:49911,:49912,:49913,:49914,:49915,:49916,:49917,:49918,:49919,:49920,:49921,:49922,:49923,:49924,:49925,:49926,:49927,:49928,:49929,:49930,:49931,:49932,:49933,:49934,:49935,:49936,:49937,:49938,:49939,:49940,:49941,:49942,:49943,:49944,:49945,:49946,:49947,:49948,:49949,:49950,:49951 -users /etc/s-ui/private/s-ui.db,/opt/zhdata/users.txt -backend direct -v -max-clients 100
+ExecStart=/opt/zhdata/zhdata-tunnel-linux-amd64 -mode server -listen :49888,:49889,:49890,:49891,:49892,:49893,:49894,:49895,:49896,:49897,:49898,:49899,:49900,:49901,:49902,:49903,:49904,:49905,:49906,:49907,:49908,:49909,:49910,:49911,:49912,:49913,:49914,:49915,:49916,:49917,:49918,:49919,:49920,:49921,:49922,:49923,:49924,:49925,:49926,:49927,:49928,:49929,:49930,:49931,:49932,:49933,:49934,:49935,:49936,:49937,:49938,:49939,:49940,:49941,:49942,:49943,:49944,:49945,:49946,:49947,:49948,:49949,:49950,:49951 -admin 127.0.0.1:6070 -users /usr/local/s-ui/db/s-ui.db -backend direct -v -max-sessions 4800 -max-clients 4800
 ```
 
 当前 C498 实际生效参数含义：
@@ -265,6 +265,24 @@ ExecStart=/opt/zhdata/zhdata-tunnel-linux-amd64 -mode server -listen :49888,:498
 - 如果希望服务端保持“默认简单 + 明确故障提示”，建议改成 `-loglevel info` 或 `-loglevel warning`，去掉 `-v`。
 - 当前 `users` 里 `/etc/s-ui/private/s-ui.db` 不存在时，服务端会 warning 但仍继续从 `/opt/zhdata/users.txt` 加载 key；当前 C498 实际加载 1 个 key。
 - zhenhanvn 客户端默认基础 URI 是 `host:49888`，内部隐藏参数会自动展开为 `49888..49919`，共 32 个端口；C498 服务端监听到 `49951`，多余端口暂不影响。
+
+#### 3.5.1 部署到新节点（v0.15.7 起一条命令建用户视图）
+
+面板 sqlite 里客户的 zhdata uuid 存在 `clients.config` 的 JSON 里，而 `-users <db>` 只认「有 `uuid` 列的表/视图」，所以每个节点都要先建一个视图。**CentOS 7 自带的 sqlite3（3.7.x）没有 JSON1 扩展，建不了这个视图**；v0.15.7 起核心自带这条 SQL：
+
+```bash
+/opt/zhdata/zhdata-tunnel-linux-amd64 -init-view /usr/local/s-ui/db/s-ui.db
+# zhdata: view zhdata_users ready in /usr/local/s-ui/db/s-ui.db (26 user(s))
+```
+
+它只 `CREATE VIEW IF NOT EXISTS zhdata_users AS SELECT json_extract(config,'$.zhdata.uuid') uuid, expiry, volume, (IFNULL(up,0)+IFNULL(down,0)) used FROM clients WHERE ...`，带 `busy_timeout=5000`，幂等、可重复跑，不写其它东西。前提：面板已升到 **s-ui 1.6.3-ZY5+** 并跑过 `./sui migrate`（迁移会给存量客户补 `config.zhdata.uuid`，否则视图里 0 行）。
+
+新节点持久化部署顺序（X22 即按此部署，ZY9 + 0.15.7）：
+
+1. 面板升 ZY9 → 备份 `db/s-ui.db*` → 换 `sui` → `./sui migrate` → `systemctl start s-ui.service`（迁移日志出现 `zhdata: added zhdata credentials to N client(s)`）。
+2. `install -m 755 zhdata-linux-amd64 /opt/zhdata/zhdata-tunnel-linux-amd64`，跑 `-init-view /usr/local/s-ui/db/s-ui.db`。
+3. 建 `zhdata.service`（`-mode server -listen :49888.. -admin 127.0.0.1:6070 -users /usr/local/s-ui/db/s-ui.db -backend direct -max-sessions N`，`Restart=always`），`systemctl enable --now zhdata.service`。小内存机（X22 是 971MB）把 `-max-sessions` 收到 1200 一档，别照抄 C498 的 4800。
+4. 面板里建 zhdata **入站**（类型 zhdata，`listen_ports` 与 `-listen` 一致，`admin_addr=127.0.0.1:6070`，backend 选 direct 或面板 socks 入站）。面板每 60s 与每次保存时 `PUT /v1/users`，入站卡片显示 `core <版本> · N users pushed`；核对 `curl -s 127.0.0.1:6070/v1/stats` 里 `up_kbps` 是否落地。
 
 ### 3.6 admin 管理 API（v0.15.1 起，仅 server 模式）
 
@@ -435,13 +453,14 @@ zhenhanvn 侧解析/过滤正则（可直接用于着色/过滤）：
 - `stderr` 仍会被 `SaveLogError` 落盘（核心偶尔在极早期（logger 初始化前）可能有一条 stderr，不影响级别体系）。
 - 日志窗"错误"高亮规则：匹配 `[error]`；"警告"匹配 `[warning]`。
 
-## 6. 功能边界（v0.15.6）
+## 6. 功能边界（v0.15.7）
 
 | 能力 | 状态 |
 |---|---|
 | 入站连接列表 | **v0.15.3 起**：`GET /v1/sessions[?limit=n]` 一条隧道会话一行（uuid/device/slot/remote `ip:port`/started_at/relay），按建立时间**倒序**（新的在前），`limit` 默认 50（钳到 10–100，非分页），`total` 恒为全量活动会话数；只读无副作用；relay 进程列出它的活管道（`relay=true`）。per-session 字节数 = P0 未做（面板要按会话流量需在核心加 per-session 计数，P1） |
 | 多级中转 / relay | **v0.15.2 起**：`-backend zhdata -upstream h:p[,h:p]`，控制面（认证/设备数/会话数/decoy/统计）在 relay，数据面字节直通不解析帧；`GET/PUT /v1/relay` 热更新上游与开关（§3.7）。relay 侧带宽限速 **v0.15.6 起**同样生效（§3.4.1） |
 | 按用户带宽限速 | **v0.15.6 起**（`bwlimit.go`，§3.4.1）：每 uuid 每方向一个令牌桶，跨该用户所有 session/stream 共用（`-conns 32` 不会变成 32 倍额度）；上限来自 admin `PUT /v1/users`（`up_kbps`/`down_kbps`/`speed_limit_kbps`）、users JSON、或 s-ui sqlite 的 kbit/s 列；改值当场生效，`GET /v1/stats` 回显生效值。s-ui 面板把 client 的 `group`（"2M"）解析成该值推给核心。流量配额（quota）仍只统计/上报，不做超额截断（P1） |
+| 新节点建用户视图 | **v0.15.7 起**：`-init-view <s-ui.db>` 用核心自带的 sqlite 建 `zhdata_users` 视图（§3.5.1），解决 CentOS 7 那种自带 sqlite3 无 JSON1、建不出视图的机器；幂等，只建视图 |
 | 作为 Go 库嵌入 | **v0.15.2 起**：仓库是 module `github.com/chentyson/zhdata`，s-ui 可直接 `import "github.com/chentyson/zhdata"`，用 `NewClient` + `DialContext` 把隧道当 `net.Conn` 用（§8）；CLI 构建路径改为 `./cmd/zhdata` |
 | 速度/流量统计 | **admin API（v0.15.1 起）**：`GET /v1/stats` 暴露 `sessions_active` 与按 uuid 的 `devices`/`up`/`down` 累计字节（§3.6），s-ui 面板按周期采样求增量入库。zhenhanvn 速度栏对 zhdata 仍恒 0（GUI 未接 admin API，与 hysteria2/brook 等一致，非错误）。clash_api `ws://:StatePort2/traffic` + `IsRunningCore` 判定方案仍未实现（backlog） |
 | 用户/凭据管理 | **admin API（v0.15.1 起）**：`PUT /v1/users` 推送 API 用户集（与文件/sqlite 源并集、API 策略覆盖）、`POST /v1/users/kick` 按 uuid 切会话、`POST /v1/reload` 强制重载（§3.6）。文件 `users` 热加载仍是独立可用路径，面板不可用时也能工作 |

@@ -30,7 +30,7 @@ import (
 // 5s while nothing is running; genuine session deaths are logged at warning;
 // the idle recycle prefers streamless slots (v0.11.9 stream-loss vs v0.12.4
 // stale-bucket balance).
-const Version = "0.15.6"
+const Version = "0.15.7"
 
 // Reserved in-tunnel account query defaults (v0.15.4; -query-host/-query-url,
 // see zhdata-核心接口文档.md §3.8). The CLI uses these as flag defaults; the

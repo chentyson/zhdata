@@ -20,6 +20,7 @@ func main() {
 	server := flag.String("server", "", "zhdata server host:port, comma separated for multi-port slots (client)")
 	uuid := flag.String("uuid", "", "user uuid (client)")
 	users := flag.String("users", "", "user key sources: comma separated txt/sqlite paths, e.g. /etc/s-ui/private/s-ui.db,/opt/zhdata/users.txt (server)")
+	initView := flag.String("init-view", "", "setup step, not a mode: create the zhdata_users view in an s-ui sqlite DB and exit (json_extract over clients.config). Nodes whose own sqlite3 predates JSON1 (CentOS 7) cannot run that CREATE themselves")
 	backend := flag.String("backend", "direct", `backend: "direct", socks addr e.g. 127.0.0.1:12345, or "zhdata" = byte-level relay to -upstream (server)`)
 	upstream := flag.String("upstream", "", `upstream zhdata host:port list, comma separated; required with -backend zhdata, picked round-robin per connection (server)`)
 	maxClients := flag.Int("max-clients", 100, "compat alias for max concurrent sessions per server")
@@ -46,6 +47,16 @@ func main() {
 	if *showVer {
 		// zhenhanvn UpdateService parses X.Y.Z out of this line.
 		fmt.Println("zhdata", zhdata.Version)
+		return
+	}
+	if *initView != "" {
+		// Deployment helper: the view is what -users <panel db> reads, and it
+		// needs JSON1, which the host's sqlite3 may not have.
+		n, err := zhdata.InitUserView(*initView)
+		if err != nil {
+			fatal("init-view: %v", err)
+		}
+		fmt.Printf("zhdata: view zhdata_users ready in %s (%d user(s))\n", *initView, n)
 		return
 	}
 	log.SetFlags(log.LstdFlags)
