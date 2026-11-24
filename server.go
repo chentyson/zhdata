@@ -1172,6 +1172,28 @@ func (a *serverApp) resetOnce(key string) bool {
 	return true
 }
 
+// dialPreferred tries the IPv4 addresses first and falls back to IPv6, and
+// guarantees both families get their chance for every resolution: a host with
+// only AAAA records used to skip both loops, which left a nil conn with a nil
+// error and panicked in serveBackend (C455, 2026-11-24 13:27). It never returns
+// a nil conn together with a nil error.
+func dialPreferred(dialOne func(ip string) (net.Conn, error), v4, v6 []string) (net.Conn, error) {
+	var lastErr error
+	for _, list := range [][]string{v4, v6} {
+		for _, ip := range list {
+			bc, err := dialOne(ip)
+			if err == nil {
+				return bc, nil
+			}
+			lastErr = err
+		}
+	}
+	if lastErr == nil {
+		lastErr = errors.New("no address to dial")
+	}
+	return nil, lastErr
+}
+
 func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byte, port uint16) {
 	var bc net.Conn
 	var err error
@@ -1193,13 +1215,8 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 		// and stall backendDialTimeout per address, so domain backends time
 		// out even though the same host is reachable over IPv4. IPv6 stays as
 		// a fallback for IPv6-only targets.
-		dial := func(list []string) {
-			for _, ip := range list {
-				bc, err = net.DialTimeout("tcp", net.JoinHostPort(ip, fmt.Sprint(port)), backendDialTimeout)
-				if err == nil {
-					return
-				}
-			}
+		dialOne := func(ip string) (net.Conn, error) {
+			return net.DialTimeout("tcp", net.JoinHostPort(ip, fmt.Sprint(port)), backendDialTimeout)
 		}
 		var v4, v6 []string
 		for _, ip := range ips {
@@ -1209,10 +1226,7 @@ func (a *serverApp) openBackend(sh *sSession, st *sStream, atyp byte, addr []byt
 				v4 = append(v4, ip)
 			}
 		}
-		dial(v4)
-		if err != nil {
-			dial(v6)
-		}
+		bc, err = dialPreferred(dialOne, v4, v6)
 	} else {
 		bc, err = socksDial(backend, atyp, addr, port)
 	}
